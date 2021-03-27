@@ -17,13 +17,10 @@ This API uses a number of open source projects to work properly:
 
 ``` sh
 # Clone this repo to your local machine using
-#git clone git@github.com:Juliest88/mysql-node-express.git
+git clone https://github.com/mauro-montrond/sgcp-express-api.git
 
 # Get into the directory
 cd sgcp-express-api
-
-# Make it your own
-rm -rf .git && git init
 
 # Coppy .env-example and create your own .env file
 cp .env-example .env
