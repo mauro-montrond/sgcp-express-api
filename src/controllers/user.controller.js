@@ -5,6 +5,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 dotenv.config();
+const { getNormalizedColumnsValues } = require('../utils/userColumnNormalizer.utils');
+const getUserProfiles  = require('../models/profile.model');
 
 /******************************************************************************
  *                              User Controller
@@ -52,10 +54,63 @@ class UserController {
         res.send(userWithoutPassword);
     };
 
+    getUsersByParams = async (req, res, next) => {
+        this.checkValidation(req);
+        // convert the re.body keys into the actual names of the table's colums
+        let userList = getNormalizedColumnsValues(req.body);
+        const users = await ProfileModel.findMany(userList);
+        if (!users.length) {
+            throw new HttpException(404, 'Users not found');
+        }
+
+        res.send(users);
+    };
+
     createUser = async (req, res, next) => {
         this.checkValidation(req);
 
         await this.hashPassword(req);
+
+        /*
+        const profilesList = await getUserProfiles.findMany();
+        let activeProfiles = [];
+        profilesList.forEach(element => {
+            if(element.ESTADO === 'A')
+                activeProfiles.push(element.ID);
+        });
+        console.log("perfis ativos: " + activeProfiles);
+        */
+
+        /*
+
+        const findProfile = await getUserProfiles.findMany( { 'ID': req.body.profile_id } );
+        if(findProfile.length)
+            console.log("Perfil:: " + findProfile[0].CODIGO);
+        
+        //console.log("uProfile: " + uProfiles);
+        // check if a user with that email already exists
+        const findEmail = await UserModel.findMany( {'EMAIL': req.body.email} );
+        //console.log("findEmail: " + findEmail[0].EMAIL);
+        //console.log("findEmail: " + Object.values(findEmail)[Object.keys(findEmail).indexOf("EMAIL")]);
+        if(findEmail.length){
+            console.log("findEmail in controller: " + findEmail[0].EMAIL);
+            const findUsername = await UserModel.findMany( {'UTILIZADOR': req.body.username} );
+            if(findUsername.length){
+                throw new HttpException(409, 'User with that username and email already exists');
+            }
+            else{
+                throw new HttpException(409, 'User with that email already exists');
+            }
+        }
+        else{
+            const findUsername = await UserModel.findMany( {'UTILIZADOR': req.body.username} );
+            if(findUsername.length){
+                throw new HttpException(409, 'User with that username and email already exists');
+            }
+        }
+        */
+
+        
 
         const result = await UserModel.create(req.body);
 
@@ -71,11 +126,15 @@ class UserController {
 
         await this.hashPassword(req);
 
+        
+
+        //const { confirm_password, ...restOfUpdates } = req.body;
         const { confirm_password, ...restOfUpdates } = req.body;
+        const updates = getNormalizedColumnsValues(restOfUpdates);
 
         // do the update query and get the result
         // it can be partial edit
-        const result = await UserModel.update(restOfUpdates, req.params.id);
+        const result = await UserModel.update(updates, req.params.username);
 
         if (!result) {
             throw new HttpException(404, 'Something went wrong');
@@ -90,7 +149,7 @@ class UserController {
     };
 
     deleteUser = async (req, res, next) => {
-        const result = await UserModel.delete(req.params.id);
+        const result = await UserModel.delete(req.params.username);
         if (!result) {
             throw new HttpException(404, 'User not found');
         }

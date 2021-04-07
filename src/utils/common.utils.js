@@ -25,3 +25,27 @@ exports.multipleColumnSet = (object) => {
         values
     }
 }
+
+exports.multipleColumnGets = (object) => {
+    if (typeof object !== 'object') {
+        throw new Error('Invalid input');
+    }
+
+    const keys = Object.keys(object);
+    const values = Object.values(object);
+
+    columnGets = keys.map(key => {
+        if (key === 'DATA_REGISTO') {
+            return `${key} >= ?`
+        }
+        else if (key === 'created_at_limit') {
+            return `DATA_REGISTO < ?`;
+        }
+        return `${key} = ?`;
+    }).join(' AND ');
+
+    return {
+        columnGets,
+        values
+    }
+}

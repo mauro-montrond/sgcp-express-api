@@ -1,10 +1,10 @@
--- DROP DATABASE IF EXISTS test_db;   
--- CREATE DATABASE IF NOT EXISTS test_db;   
-USE test_db; 
+-- DROP DATABASE IF EXISTS sgcp_01;   
+-- CREATE DATABASE IF NOT EXISTS sgcp_01;   
+USE sgcp_01; 
 
-DROP TABLE IF EXISTS user; 
+DROP TABLE IF EXISTS utilizador; 
 
-CREATE TABLE IF NOT EXISTS user 
+CREATE TABLE IF NOT EXISTS utilizador 
   ( 
      id         INT PRIMARY KEY auto_increment, 
      username   VARCHAR(25) UNIQUE NOT NULL, 
