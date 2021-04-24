@@ -36,15 +36,6 @@ class ProfileController {
         res.send(profile);
     };
 
-    getProfilesByState = async (req, res, next) => {
-        const profiles = await ProfileModel.find({ ESTADO: req.params.state });
-        if (!profiles.length) {
-            throw new HttpException(404, 'Profiles not found');
-        }
-
-        res.send(profiles);
-    };
-
     getProfilesByParams = async (req, res, next) => {
         this.checkValidation(req);
         // convert the re.body keys into the actual names of the table's colums
@@ -101,6 +92,7 @@ class ProfileController {
     };
 
     deleteProfile = async (req, res, next) => {
+        this.checkValidation(req);
         const result = await ProfileModel.delete(req.params.code);
         if (!result) {
             throw new HttpException(404, 'Profile not found');

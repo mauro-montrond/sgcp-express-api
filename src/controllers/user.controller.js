@@ -19,7 +19,7 @@ class UserController {
         }
 
         userList = userList.map(user => {
-            const { password, ...userWithoutPassword } = user;
+            const { SENHA, ...userWithoutPassword } = user;
             return userWithoutPassword;
         });
 
@@ -27,29 +27,29 @@ class UserController {
     };
 
     getUserById = async (req, res, next) => {
-        const user = await UserModel.findOne({ id: req.params.id });
+        const user = await UserModel.findOne({ ID: req.params.u_id });
         if (!user) {
             throw new HttpException(404, 'User not found');
         }
 
-        const { password, ...userWithoutPassword } = user;
+        const { SENHA, ...userWithoutPassword } = user;
 
         res.send(userWithoutPassword);
     };
 
     getUserByuserName = async (req, res, next) => {
-        const user = await UserModel.findOne({ username: req.params.username });
+        const user = await UserModel.findOne({ UTILIZADOR: req.params.username });
         if (!user) {
             throw new HttpException(404, 'User not found');
         }
 
-        const { password, ...userWithoutPassword } = user;
+        const { SENHA, ...userWithoutPassword } = user;
 
         res.send(userWithoutPassword);
     };
 
     getCurrentUser = async (req, res, next) => {
-        const { password, ...userWithoutPassword } = req.currentUser;
+        const { SENHA, ...userWithoutPassword } = req.currentUser;
 
         res.send(userWithoutPassword);
     };
@@ -58,10 +58,15 @@ class UserController {
         this.checkValidation(req);
         // convert the re.body keys into the actual names of the table's colums
         let userList = getNormalizedColumnsValues(req.body);
-        const users = await ProfileModel.findMany(userList);
+        let users = await UserModel.findMany(userList);
         if (!users.length) {
             throw new HttpException(404, 'Users not found');
         }
+
+        users = users.map(user => {
+            const { SENHA, ...userWithoutPassword } = user;
+            return userWithoutPassword;
+        });
 
         res.send(users);
     };
@@ -126,8 +131,6 @@ class UserController {
 
         await this.hashPassword(req);
 
-        
-
         //const { confirm_password, ...restOfUpdates } = req.body;
         const { confirm_password, ...restOfUpdates } = req.body;
         const updates = getNormalizedColumnsValues(restOfUpdates);
@@ -149,6 +152,7 @@ class UserController {
     };
 
     deleteUser = async (req, res, next) => {
+        this.checkValidation(req);
         const result = await UserModel.delete(req.params.username);
         if (!result) {
             throw new HttpException(404, 'User not found');
@@ -161,13 +165,14 @@ class UserController {
 
         const { email, password: pass } = req.body;
 
-        const user = await UserModel.findOne({ email });
+        const user = await UserModel.findOne({ EMAIL: email });
 
         if (!user) {
             throw new HttpException(401, 'Unable to login!');
         }
 
-        const isMatch = await bcrypt.compare(pass, user.password);
+        //const isMatch = await bcrypt.compare(pass, user.password);
+        const isMatch = await bcrypt.compare(pass, user.SENHA);
 
         if (!isMatch) {
             throw new HttpException(401, 'Incorrect password!');
@@ -175,11 +180,11 @@ class UserController {
 
         // user matched!
         const secretKey = process.env.SECRET_JWT || "";
-        const token = jwt.sign({ user_id: user.id.toString() }, secretKey, {
+        const token = jwt.sign({ user_id: user.ID.toString() }, secretKey, {
             expiresIn: '24h'
         });
 
-        const { password, ...userWithoutPassword } = user;
+        const { SENHA, ...userWithoutPassword } = user;
 
         res.send({ ...userWithoutPassword, token });
     };

@@ -1,26 +1,14 @@
 exports.getNormalizedColumns = (columnsList) => {
-    // conerts body keys into profile table colum names and leaves the ones that don't match as is
+    // conerts body keys into table colum names and leaves the ones that don't match as is
     normalizedColumns =[];
     columnsList.forEach(
         element => {
             switch (element) {
-                case "u_id":
-                    normalizedColumns.push("ID");
-                    break;
-                case "username":
-                    normalizedColumns.push("UTILIZADOR");
-                    break;
-                case "name":
-                    normalizedColumns.push("NOME");
-                    break;
-                case "email":
-                    normalizedColumns.push("EMAIL");
-                    break;
                 case "profile_id":
                     normalizedColumns.push("ID_PERFIL");
                     break;
-                case "password":
-                    normalizedColumns.push("SENHA");
+                case "menu_id":
+                    normalizedColumns.push("ID_MENU");
                     break;
                 case "state":
                     normalizedColumns.push("ESTADO");
@@ -37,24 +25,14 @@ exports.getNormalizedColumns = (columnsList) => {
 }
 
 exports.getNormalizedColumnsValues = (columnsValuesList) => {
-    // converts body {key: value} pairs into {profile table column: value}
+    // converts body {key: value} pairs into {table column: value}
     normalizedColumnsValues ={};
-    if( Object.keys(columnsValuesList).includes('u_id') )
-        normalizedColumnsValues["ID"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("u_id")];
-    if( Object.keys(columnsValuesList).includes('username') )
-        normalizedColumnsValues["UTILIZADOR"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("username")];
-    if( Object.keys(columnsValuesList).includes('name') )
-        normalizedColumnsValues["NOME"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("name")];
-    if( Object.keys(columnsValuesList).includes('email') )
-        normalizedColumnsValues["EMAIL"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("email")];
     if( Object.keys(columnsValuesList).includes('profile_id') )
         normalizedColumnsValues["ID_PERFIL"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("profile_id")];
-    if( Object.keys(columnsValuesList).includes('password') )
-        normalizedColumnsValues["SENHA"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("password")];
-    if( Object.keys(columnsValuesList).includes('confirm_password') )
-        normalizedColumnsValues["confirm_password"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("confirm_password")];
+    if( Object.keys(columnsValuesList).includes('menu_id') )
+        normalizedColumnsValues["ID_MENU"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("menu_id")];
     if( Object.keys(columnsValuesList).includes('state') )
-        normalizedColumnsValues["ESTADO"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("state")];
+        normalizedColumnsValues["ESTADO"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("state")];  
     if( Object.keys(columnsValuesList).includes('created_at_range') && 
         Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("created_at_range")] === 'yes' ){
             if( !Object.keys(columnsValuesList).includes('created_at_limit') ){

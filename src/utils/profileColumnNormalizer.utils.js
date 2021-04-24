@@ -3,25 +3,24 @@ exports.getNormalizedColumns = (columnsList) => {
     normalizedColumns =[];
     columnsList.forEach(
         element => {
-            if( element === "id"  )
-                normalizedColumns.push("ID");
-            else{
-                if( element === "code" )
+            switch (element) {
+                case "id":
+                    normalizedColumns.push("ID");
+                    break;
+                case "code":
                     normalizedColumns.push("CODIGO");
-                else{
-                    if( element === "description" )
-                        normalizedColumns.push("DESCRICAO");
-                    else{
-                        if( element === "state" )
-                            normalizedColumns.push("ESTADO");
-                        else{
-                            if( element === "created_at" )
-                                normalizedColumns.push("DATA_REGISTO");
-                            else
-                                normalizedColumns.push(element);
-                        }
-                    }
-                }
+                    break;
+                case "description":
+                    normalizedColumns.push("DESCRICAO");
+                    break;
+                case "state":
+                    normalizedColumns.push("ESTADO");
+                    break;
+                case "created_at":
+                    normalizedColumns.push("DATA_REGISTO");
+                    break;
+                default:
+                    normalizedColumns.push(element);
             }
         }
     );
@@ -39,16 +38,29 @@ exports.getNormalizedColumnsValues = (columnsValuesList) => {
         normalizedColumnsValues["DESCRICAO"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("description")];
     if( Object.keys(columnsValuesList).includes('state') )
         normalizedColumnsValues["ESTADO"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("state")];
-    if( Object.keys(columnsValuesList).includes('created_at') ){
+    if( Object.keys(columnsValuesList).includes('created_at_range') && 
+        Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("created_at_range")] === 'yes' ){
+            if( !Object.keys(columnsValuesList).includes('created_at_limit') ){
+                let limit_date = new Date();
+                limit_date.setDate( limit_date.getDate() + 1 );
+                normalizedColumnsValues["created_at_limit"] = limit_date;
+            }
+            else
+                normalizedColumnsValues["created_at_limit"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("created_at_limit")];
+            if( !Object.keys(columnsValuesList).includes('created_at') ){
+                let limit_date = new Date('1900-01-01');
+                limit_date.setDate( limit_date.getDate() + 1 );
+                normalizedColumnsValues["DATA_REGISTO"] = limit_date;
+            }
+            else
+                normalizedColumnsValues["DATA_REGISTO"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("created_at")];
+
+    }
+    else if( Object.keys(columnsValuesList).includes('created_at') ){
         normalizedColumnsValues["DATA_REGISTO"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("created_at")];
-        //check if a range for dates was added
-        if( Object.keys(columnsValuesList).includes('created_at_limit') )
-            normalizedColumnsValues["created_at_limit"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("created_at_limit")];
-        else{
-            let limit_date = new Date( Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("created_at")] );
-            limit_date.setDate( limit_date.getDate() + 1 );
-            normalizedColumnsValues["created_at_limit"] = limit_date;
-        }
+        let limit_date = new Date( Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("created_at")] );
+        limit_date.setDate( limit_date.getDate() + 1 );
+        normalizedColumnsValues["created_at_limit"] = limit_date;
     }
     return normalizedColumnsValues;
 }
