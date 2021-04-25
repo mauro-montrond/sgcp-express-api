@@ -5,6 +5,9 @@ const { getNormalizedColumns } = require('../../utils/individualColumnNormalizer
 const IndividualModel  = require('../../models/individual.model');
 const UserModel  = require('../../models/user.model');
 const GeografiaModel  = require('../../models/geografia.model');
+const PrecedentModel  = require('../../models/precedent.model');
+const FingerprintModel  = require('../../models/fingerprint.model');
+const PhotoModel  = require('../../models/photo.model');
 
 
 exports.createIndividualSchema = [
@@ -848,11 +851,35 @@ exports.getIndividualsSchema = [
 exports.deleteIndividualSchema = [
     body()
         .custom(async (value, {req}) => {
-            const findCode = await IndividualModel.findOne( {'ID': req.params.id} );
-            if(findCode)
+            const findIndividual = await IndividualModel.findOne( {'ID': req.params.id} );
+            if(findIndividual)
                 return Promise.resolve();
             else
                 return Promise.reject();
         })
         .withMessage('Individual not found!')
+        .custom(async (value, {req}) => {
+            const findPrecedents = await PrecedentModel.findOne( {'ID_INDIVIDUO': req.params.id} );
+            if(findPrecedents)
+                return Promise.reject();
+            else
+                return Promise.resolve();
+        })
+        .withMessage('Individual has precedents!')
+        .custom(async (value, {req}) => {
+            const findFingerprint = await FingerprintModel.findOne( {'ID_INDIVIDUO': req.params.id} );
+            if(findFingerprint)
+                return Promise.reject();
+            else
+                return Promise.resolve();
+        })
+        .withMessage('Individual has fingerprints!')
+        .custom(async (value, {req}) => {
+            const findPhotos = await PhotoModel.findOne( {'ID_INDIVIDUO': req.params.id} );
+            if(findPhotos)
+                return Promise.reject();
+            else
+                return Promise.resolve();
+        })
+        .withMessage('Individual has photos!')
 ];

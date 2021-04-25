@@ -29,10 +29,10 @@ const auth = (roles=[]) => {
             //const ownerAuthorized = req.params.id == user.id;
             let ownerAuthorized;
             if(req.params.u_id)
-                 ownerAuthorized = req.params.u_id == user.ID;
+                 ownerAuthorized = req.params.u_id == user.ID;// owner is searching by his own id
             else{
                 if(req.params.username)
-                    ownerAuthorized = req.params.username == user.UTILIZADOR;
+                    ownerAuthorized = req.params.username == user.UTILIZADOR;// owner is searching by his own username
                 else
                     ownerAuthorized = req.body.u_id == user.ID;
             }
