@@ -26,7 +26,7 @@ router.get('/username/:username', auth(tp), awaitHandlerFactory(userController.g
 router.get('/whoami', awaitHandlerFactory(userController.getCurrentUser)); // localhost:3000/api/v1/users/whoami
 router.post('/', createUserSchema, awaitHandlerFactory(userController.createUser)); // localhost:3000/api/v1/users
 router.patch('/username/:username', auth(tp), updateUserSchema, awaitHandlerFactory(userController.updateUser)); // localhost:3000/api/v1/users/username/user03 , using patch for partial update
-router.delete('/username/:username', deleteUserSchema, awaitHandlerFactory(userController.deleteUser)); // localhost:3000/api/v1/users/username/user05
+router.delete('/id/:id', deleteUserSchema, awaitHandlerFactory(userController.deleteUser)); // localhost:3000/api/v1/users/id/3
 
 
 router.post('/login', validateLogin, awaitHandlerFactory(userController.userLogin)); // localhost:3000/api/v1/users/login

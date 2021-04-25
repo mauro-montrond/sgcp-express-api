@@ -153,7 +153,7 @@ class UserController {
 
     deleteUser = async (req, res, next) => {
         this.checkValidation(req);
-        const result = await UserModel.delete(req.params.username);
+        const result = await UserModel.delete(req.params.id);
         if (!result) {
             throw new HttpException(404, 'User not found');
         }

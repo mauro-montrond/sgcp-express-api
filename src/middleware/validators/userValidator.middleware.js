@@ -4,6 +4,8 @@ const Role = require('../../utils/userRoles.utils');
 const { getNormalizedColumns } = require('../../utils/userColumnNormalizer.utils.js');
 const ProfileModel  = require('../../models/profile.model');
 const UserModel = require('../../models/user.model');
+const PrecedentModel = require('../../models/precedent.model');
+const IndividualModel = require('../../models/individual.model');
 
 exports.createUserSchema = [
     body('username')
@@ -350,13 +352,29 @@ exports.getUsersSchema = [
 exports.deleteUserSchema = [
     body()
         .custom(async (value, {req}) => {
-            const findUsername = await UserModel.findOne( {'UTILIZADOR': req.params.username} );
-            if(findUsername)
+            const findUser = await UserModel.findOne( {'ID': req.params.id} );
+            if(findUser)
                 return Promise.resolve();
             else
                 return Promise.reject();
         })
         .withMessage('User not found!')
+        .custom(async (value, {req}) => {
+            const findPrecedents = await PrecedentModel.findOne( {'ID_UTILIZADOR': req.params.id} );
+            if(findPrecedents)
+                return Promise.reject();
+            else
+                return Promise.resolve();
+        })
+        .withMessage('User is associated with precedents!')
+        .custom(async (value, {req}) => {
+            const findIndividuals = await IndividualModel.findOne( {'ID_UTILIZADOR': req.params.id} );
+            if(findIndividuals)
+                return Promise.reject();
+            else
+                return Promise.resolve();
+        })
+        .withMessage('User is associated with individuals!')
 ];
 
 exports.validateLogin = [

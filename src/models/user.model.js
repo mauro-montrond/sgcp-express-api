@@ -62,10 +62,10 @@ class UserModel {
         return result;
     }
 
-    delete = async (username) => {
+    delete = async (id) => {
         const sql = `DELETE FROM ${this.tableName}
-        WHERE UTILIZADOR = ?`;
-        const result = await query(sql, [username]);
+        WHERE ID = ?`;
+        const result = await query(sql, [id]);
         const affectedRows = result ? result.affectedRows : 0;
 
         return affectedRows;
