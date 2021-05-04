@@ -104,6 +104,19 @@ class Menu_ProfileModel {
                 }
             }
         }
+        
+        if(params.ESTADO == 'A'){
+            let currentMenu = await MenuModel.findOne( {'ID': menu_id} );
+            if(currentMenu.ID_MENU_PAI){
+                let parent1 = await MenuModel.findOne( {'ID': currentMenu.ID_MENU_PAI} );
+                updates.push( {'ID_PERFIL': profile_id, 'ID_MENU': parent1.ID} );
+                if(parent1.ID_MENU_PAI){
+                    updates.push( {'ID_PERFIL': profile_id, 'ID_MENU': parent1.ID_MENU_PAI} );
+                }
+            }
+
+        }
+
         const { columnSet, values } = multipleColumnSet(params);
         const { rowsOr, valuesOr } = multipleRowOrSetter(updates);
         const sql = `UPDATE ${this.tableName} SET ${columnSet} WHERE ${rowsOr}`;
