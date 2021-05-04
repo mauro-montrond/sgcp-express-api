@@ -1,10 +1,11 @@
 const HttpException = require('../utils/HttpException.utils');
 const UserModel = require('../models/user.model');
+const PermissionModel = require('../models/permission.model');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 dotenv.config();
 
-const auth = (roles=[]) => {
+const auth = (menuCode) => {
     return async function (req, res, next) {
         try {
             const authHeader = req.headers.authorization;
@@ -19,7 +20,7 @@ const auth = (roles=[]) => {
 
             // Verify Token
             const decoded = jwt.verify(token, secretKey);
-            const user = await UserModel.findOne({ id: decoded.user_id });
+            const user = await UserModel.findOne({ ID: decoded.user_id });
 
             if (!user) {
                 throw new HttpException(401, 'Authentication failed!');
@@ -37,27 +38,20 @@ const auth = (roles=[]) => {
                     ownerAuthorized = req.body.u_id == user.ID;
             }
 
-            //console.log("req.currentUser.id: " + req.currentUser.id );
-            //console.log("req.params.u_id: " + req.params.u_id + " user.id: " + user.ID);
-            //console.log("roles: " + roles );
-            let included = false;
-            if(roles.length){
-                roles.forEach( element => {
-                    //console.log("element: " + element + " user.ID_PERFIL: " + user.ID_PERFIL);
-                    if(element == user.ID_PERFIL){
-                        included = true;
-                    }
-                });
-                //console.log("included: " + included );
-                //console.log("ownerAuthorized: "+ !ownerAuthorized +" roles.length: " + roles.length + " included: " + !included);       
+            let authorized = false;
+            if(menuCode){
+                const permission = await PermissionModel.findMany( { ID_UTILIZADOR: user.ID, ESTADO_UTILIZADOR: 'A', ESTADO_PERFIL: 'A', 
+                                                              ESTADO_MENU: 'A',  ESTADO_MENU_PERFIL: 'A', CODIGO_MENU: menuCode } );
+                if (permission.length) {
+                    authorized = true;
+                }
             }
-            //console.log("ownerAuthorized: "+ !ownerAuthorized +" roles.length: " + roles.length + " included: " + !included);
             // if the current user is not the owner and
             // if the user role don't have the permission to do this action.
             // the user will get this error
             //if (!ownerAuthorized && roles.length && !roles.includes(user.role)) {
             //if (!ownerAuthorized && roles.length && !included) {
-            if (!ownerAuthorized && !included) {
+            if (!ownerAuthorized && !authorized) {
                 throw new HttpException(401, 'Unauthorized');
             }
 

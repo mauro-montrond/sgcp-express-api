@@ -789,7 +789,6 @@ exports.getIndividualsSchema = [
         .trim()
         .isLength({ min: 3 })
         .withMessage('Must be at least 3 chars long'),
-
     body('state')
         .optional()
         .notEmpty()
