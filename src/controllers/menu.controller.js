@@ -72,6 +72,9 @@ class MenuController {
         }
 
         const { affectedRows, changedRows, info } = result;
+        
+        console.log("affectedRows: " + affectedRows);
+        console.log("changedRows: " + changedRows);
 
         const message = !affectedRows ? 'Menu not found' :
             affectedRows && changedRows ? 'Menu updated successfully' : 'Updated field';

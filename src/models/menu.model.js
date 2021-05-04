@@ -52,11 +52,82 @@ class MenuModel {
     }
 
     update = async (params, code) => {
+        let affectedRowsTotal = 0;
+        let changedRowsTotal = 0;
+        let currentMenu = await this.findOne( {'CODIGO': code} );
+        let state;
+        if(params.ESTADO)
+            state = params.ESTADO;
+        else {
+            state = currentMenu.ESTADO;
+        }
+
+        if(params.ESTADO){
+            let updates1 =[];
+            let childs1 = await this.findMany( {'ID_MENU_PAI': currentMenu.ID} );
+            if(childs1.length){
+                for(const element of childs1){
+                    updates1.push(element.ID);
+
+                    affectedRowsTotal += 1;
+                    changedRowsTotal += 1;
+                
+                    let childs2 = await this.findMany( {'ID_MENU_PAI': element.ID} );
+                    if(childs2.length){
+                        for(const element2 of childs2){
+                            updates1.push(element2.ID);
+                            affectedRowsTotal += 1;
+                            changedRowsTotal += 1;
+                        }
+                    }
+                }
+                let sql1 = `UPDATE ${this.tableName} SET ESTADO = ? WHERE ID IN (${updates1})`;
+                let result1 = await query(sql1, [params.ESTADO]);
+            }
+        }
+        
+        if(state == 'A'){
+            let updates2 =[];
+            let parent1;
+            if(params.ID_MENU_PAI){
+                parent1 = await this.findOne( {'ID': params.ID_MENU_PAI} );
+            }
+            else if (currentMenu.ID_MENU_PAI){
+                parent1 = await this.findOne( {'ID': currentMenu.ID_MENU_PAI} )
+            }
+            if(parent1){
+                if(parent1.ESTADO == 'I'){
+                    updates2.push(parent1.ID);
+                    affectedRowsTotal += 1;
+                    changedRowsTotal += 1;
+                }
+                if(parent1.ID_MENU_PAI){
+                    let parent2 = await this.findOne( {'ID': parent1.ID_MENU_PAI} );
+                    if(parent2.ESTADO == 'I'){
+                        updates2.push(parent2.ID);
+                        affectedRowsTotal += 1;
+                        changedRowsTotal += 1;
+                    }
+                }
+                if(updates2.length){
+                    let sql2 = `UPDATE ${this.tableName} SET ESTADO = ? WHERE ID IN (${updates2})`;
+                    let result2 = await query(sql2, [state]);
+                }
+            }
+        }
+
         const { columnSet, values } = multipleColumnSet(params)
 
         const sql = `UPDATE ${this.tableName} SET ${columnSet} WHERE CODIGO = ?`;
 
-        const result = await query(sql, [...values, code]);
+        let result = await query(sql, [...values, code]);
+        if(result){
+            result.affectedRows += affectedRowsTotal;
+            result.changedRows += changedRowsTotal;
+            let regex = /Warnings/i;
+            let newT = result.info.replace(regex, `Affected rows: ${result.affectedRows}  Changed rows: ${result.changedRows}  Warnings`);
+            result.info = newT;
+        }
 
         return result;
     }

@@ -205,12 +205,22 @@ exports.updateMenuSchema = [
                 }
                 if(!found){
                     if(childs1.length){ // x tem fidjo ma ka tem neto
-                        let parent1 = await MenuModel.findOne( {'ID': req.body.parent_menu} );
+                        let parent1
+                        if(req.body.parent_menu)
+                            parent1 = await MenuModel.findOne( {'ID': req.body.parent_menu} );
+                        else if(currentMenu.ID_MENU_PAI) {
+                            parent1 = await MenuModel.findOne( {'ID': currentMenu.ID_MENU_PAI} );
+                        }
                         if(parent1 && parent1.ID_MENU_PAI) 
                             found = true;// y tem pai, reject
                     }
                     else{// x ka tem fidjo
-                        let parent1 = await MenuModel.findOne( {'ID': req.body.parent_menu} );
+                        let parent1
+                        if(req.body.parent_menu)
+                            parent1 = await MenuModel.findOne( {'ID': req.body.parent_menu} );
+                        else if(currentMenu.ID_MENU_PAI){
+                            parent1 = await MenuModel.findOne( {'ID': currentMenu.ID_MENU_PAI} );
+                        }
                         if(parent1 && parent1.ID_MENU_PAI){ 
                              let parent2 = await MenuModel.findOne( {'ID': parent1.ID_MENU_PAI} );
                              if(parent2  && parent2.ID_MENU_PAI)
