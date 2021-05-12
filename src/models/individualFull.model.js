@@ -108,17 +108,6 @@ class IndividualModel {
             const sql1 = `UPDATE individuo SET ${iu.columnSet} WHERE ID = ?`;
 
             const result1 = await query(sql1, [...iu.values, individual_id]);
-            console.log("+++++++++++++++++++++++++");
-            console.log("result1");
-            console.log("+++++++++++++++++++++++++");
-            console.log("fieldCount: " + result1.fieldCount);
-            console.log("affectedRows: " + result1.affectedRows);
-            console.log("insertId: " + result1.insertId);
-            console.log("info: " + result1.info);
-            console.log("serverStatus: " + result1.serverStatus);
-            console.log("warningStatus: " + result1.warningStatus);
-            console.log("changedRows: " + result1.changedRows);
-            console.log("**************************");
             result.affectedRows += result1.affectedRows;
             result.changedRows += result1.changedRows;
             result.warningStatus += result1.warningStatus;
@@ -132,17 +121,6 @@ class IndividualModel {
             const sql2 = `UPDATE digitais SET ${fu.columnSet} WHERE ID_INDIVIDUO = ?`;
 
             const result2 = await query(sql2, [...fu.values, individual_id]);
-            console.log("+++++++++++++++++++++++++");
-            console.log("result2");
-            console.log("+++++++++++++++++++++++++");
-            console.log("fieldCount: " + result2.fieldCount);
-            console.log("affectedRows: " + result2.affectedRows);
-            console.log("insertId: " + result2.insertId);
-            console.log("info: " + result2.info);
-            console.log("serverStatus: " + result2.serverStatus);
-            console.log("warningStatus: " + result2.warningStatus);
-            console.log("changedRows: " + result2.changedRows);
-            console.log("**************************");
             result.affectedRows += result2.affectedRows;
             result.changedRows += result2.changedRows;
             result.warningStatus += result2.warningStatus;
@@ -156,17 +134,6 @@ class IndividualModel {
             const sql3 = `UPDATE fotos SET ${pu.columnSet} WHERE ID= ?`;
 
             const result3 = await query(sql3, [...pu.values, Object.values(photoUpdates)[Object.keys(photoUpdates).indexOf("ID")] ]);
-            console.log("+++++++++++++++++++++++++");
-            console.log("result3");
-            console.log("+++++++++++++++++++++++++");
-            console.log("fieldCount: " + result3.fieldCount);
-            console.log("affectedRows: " + result3.affectedRows);
-            console.log("insertId: " + result3.insertId);
-            console.log("info: " + result3.info);
-            console.log("serverStatus: " + result3.serverStatus);
-            console.log("warningStatus: " + result3.warningStatus);
-            console.log("changedRows: " + result3.changedRows);
-            console.log("**************************");
             result.affectedRows += result3.affectedRows;
             result.changedRows += result3.changedRows;
             result.warningStatus += result3.warningStatus;                                                  
@@ -180,7 +147,8 @@ class IndividualModel {
                                                          ...fu.values, individual_id, 
                                                          ...pu.values, Object.values(photoUpdates)[Object.keys(photoUpdates).indexOf("ID")] ] );
         */
-        result.info = `Rows matched: ${result.affectedRows}  Changed: ${result.changedRows}  Warnings: ${result.warningStatus}`
+        result.info = `Rows matched: ${result.affectedRows}  Changed: ${result.changedRows}  Warnings: ${result.warningStatus}`;
+        /*
         console.log("+++++++++++++++++++++++++");
         console.log("result");
         console.log("+++++++++++++++++++++++++");
@@ -192,6 +160,7 @@ class IndividualModel {
         console.log("warningStatus: " + result.warningStatus);
         console.log("changedRows: " + result.changedRows);
         console.log("**************************");
+        */
 
         return result;
     }
