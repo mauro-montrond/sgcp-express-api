@@ -64,11 +64,7 @@ exports.createFingerprintSchema = [
         })
         .withMessage('Fingerprint already exists')
         .custom((value, {req}) => {
-            if ( value && ((req.body.r_index && value == req.body.r_index) || (req.body.r_middle && value == req.body.r_middle) || 
-                 (req.body.r_ring && value == req.body.r_ring) || (req.body.r_little && value == req.body.r_little) || 
-                 (req.body.l_thumb && value == req.body.l_thumb) || (req.body.l_index && value == req.body.l_index) || 
-                 (req.body.l_middle && value == req.body.l_middle) || (req.body.l_ring && value == req.body.l_ring) || 
-                 (req.body.l_little && value == req.body.l_little)) )
+            if ( checkDuplicateFingerprint(req, value) > 1)
                 return false;
             else
                 return true;
@@ -93,11 +89,7 @@ exports.createFingerprintSchema = [
         })
         .withMessage('Fingerprint already exists')
         .custom((value, {req}) => {
-            if ( value && ((req.body.r_thumb && value == req.body.r_thumb) || (req.body.r_middle && value == req.body.r_middle) || 
-                 (req.body.r_ring && value == req.body.r_ring) || (req.body.r_little && value == req.body.r_little) || 
-                 (req.body.l_thumb && value == req.body.l_thumb) || (req.body.l_index && value == req.body.l_index) || 
-                 (req.body.l_middle && value == req.body.l_middle) || (req.body.l_ring && value == req.body.l_ring) || 
-                 (req.body.l_little && value == req.body.l_little)) )
+            if ( checkDuplicateFingerprint(req, value) > 1)
                 return false;
             else
                 return true;
@@ -122,11 +114,7 @@ exports.createFingerprintSchema = [
         })
         .withMessage('Fingerprint already exists')
         .custom((value, {req}) => {
-            if ( value && ((req.body.r_index && value == req.body.r_index) || (req.body.r_thumb && value == req.body.r_thumb) || 
-                 (req.body.r_ring && value == req.body.r_ring) || (req.body.r_little && value == req.body.r_little) || 
-                 (req.body.l_thumb && value == req.body.l_thumb) || (req.body.l_index && value == req.body.l_index) || 
-                 (req.body.l_middle && value == req.body.l_middle) || (req.body.l_ring && value == req.body.l_ring) || 
-                 (req.body.l_little && value == req.body.l_little)) )
+            if ( checkDuplicateFingerprint(req, value) > 1)
                 return false;
             else
                 return true;
@@ -151,11 +139,7 @@ exports.createFingerprintSchema = [
         })
         .withMessage('Fingerprint already exists')
         .custom((value, {req}) => {
-            if ( value && ((req.body.r_index && value == req.body.r_index) || (req.body.r_middle && value == req.body.r_middle) || 
-                 (req.body.r_thumb && value == req.body.r_thumb) || (req.body.r_little && value == req.body.r_little) || 
-                 (req.body.l_thumb && value == req.body.l_thumb) || (req.body.l_index && value == req.body.l_index) || 
-                 (req.body.l_middle && value == req.body.l_middle) || (req.body.l_ring && value == req.body.l_ring) || 
-                 (req.body.l_little && value == req.body.l_little)) )
+            if ( checkDuplicateFingerprint(req, value) > 1)
                 return false;
             else
                 return true;
@@ -180,11 +164,7 @@ exports.createFingerprintSchema = [
         })
         .withMessage('Fingerprint already exists')
         .custom((value, {req}) => {
-            if ( value && ((req.body.r_index && value == req.body.r_index) || (req.body.r_middle && value == req.body.r_middle) || 
-                 (req.body.r_ring && value == req.body.r_ring) || (req.body.r_thumb && value == req.body.r_thumb) || 
-                 (req.body.l_thumb && value == req.body.l_thumb) || (req.body.l_index && value == req.body.l_index) || 
-                 (req.body.l_middle && value == req.body.l_middle) || (req.body.l_ring && value == req.body.l_ring) || 
-                 (req.body.l_little && value == req.body.l_little)) )
+            if ( checkDuplicateFingerprint(req, value) > 1)
                 return false;
             else
                 return true;
@@ -209,11 +189,7 @@ exports.createFingerprintSchema = [
         })
         .withMessage('Fingerprint already exists')
         .custom((value, {req}) => {
-            if ( value && ((req.body.r_index && value == req.body.r_index) || (req.body.r_middle && value == req.body.r_middle) || 
-                 (req.body.r_ring && value == req.body.r_ring) || (req.body.r_little && value == req.body.r_little) || 
-                 (req.body.r_thumb && value == req.body.r_thumb) || (req.body.l_index && value == req.body.l_index) || 
-                 (req.body.l_middle && value == req.body.l_middle) || (req.body.l_ring && value == req.body.l_ring) || 
-                 (req.body.l_little && value == req.body.l_little)) )
+            if ( checkDuplicateFingerprint(req, value) > 1)
                 return false;
             else
                 return true;
@@ -238,11 +214,7 @@ exports.createFingerprintSchema = [
         })
         .withMessage('Fingerprint already exists')
         .custom((value, {req}) => {
-            if ( value && ((req.body.r_index && value == req.body.r_index) || (req.body.r_middle && value == req.body.r_middle) || 
-                 (req.body.r_ring && value == req.body.r_ring) || (req.body.r_little && value == req.body.r_little) || 
-                 (req.body.l_thumb && value == req.body.l_thumb) || (req.body.r_thumb && value == req.body.r_thumb) || 
-                 (req.body.l_middle && value == req.body.l_middle) || (req.body.l_ring && value == req.body.l_ring) || 
-                 (req.body.l_little && value == req.body.l_little)) )
+            if ( checkDuplicateFingerprint(req, value) > 1)
                 return false;
             else
                 return true;
@@ -267,11 +239,7 @@ exports.createFingerprintSchema = [
         })
         .withMessage('Fingerprint already exists')
         .custom((value, {req}) => {
-            if ( value && ((req.body.r_index && value == req.body.r_index) || (req.body.r_middle && value == req.body.r_middle) || 
-                 (req.body.r_ring && value == req.body.r_ring) || (req.body.r_little && value == req.body.r_little) || 
-                 (req.body.l_thumb && value == req.body.l_thumb) || (req.body.l_index && value == req.body.l_index) || 
-                 (req.body.r_thumb && value == req.body.r_thumb) || (req.body.l_ring && value == req.body.l_ring) || 
-                 (req.body.l_little && value == req.body.l_little)) )
+            if ( checkDuplicateFingerprint(req, value) > 1)
                 return false;
             else
                 return true;
@@ -296,11 +264,7 @@ exports.createFingerprintSchema = [
         })
         .withMessage('Fingerprint already exists')
         .custom((value, {req}) => {
-            if ( value && ((req.body.r_index && value == req.body.r_index) || (req.body.r_middle && value == req.body.r_middle) || 
-                 (req.body.r_ring && value == req.body.r_ring) || (req.body.r_little && value == req.body.r_little) || 
-                 (req.body.l_thumb && value == req.body.l_thumb) || (req.body.l_index && value == req.body.l_index) || 
-                 (req.body.l_middle && value == req.body.l_middle) || (req.body.r_thumb && value == req.body.r_thumb) || 
-                 (req.body.l_little && value == req.body.l_little)) )
+            if ( checkDuplicateFingerprint(req, value) > 1)
                 return false;
             else
                 return true;
@@ -325,11 +289,7 @@ exports.createFingerprintSchema = [
         })
         .withMessage('Fingerprint already exists')
         .custom((value, {req}) => {
-            if ( value && ((req.body.r_index && value == req.body.r_index) || (req.body.r_middle && value == req.body.r_middle) || 
-                 (req.body.r_ring && value == req.body.r_ring) || (req.body.r_little && value == req.body.r_little) || 
-                 (req.body.l_thumb && value == req.body.l_thumb) || (req.body.l_index && value == req.body.l_index) || 
-                 (req.body.l_middle && value == req.body.l_middle) || (req.body.l_ring && value == req.body.l_ring) || 
-                 (req.body.r_thumb && value == req.body.r_thumb)) )
+            if ( checkDuplicateFingerprint(req, value) > 1)
                 return false;
             else
                 return true;
@@ -375,11 +335,7 @@ exports.updateFingerprintSchema = [
         })
         .withMessage('Fingerprint already exists')
         .custom((value, {req}) => {
-            if ( value && ((req.body.r_index && value == req.body.r_index) || (req.body.r_middle && value == req.body.r_middle) || 
-                 (req.body.r_ring && value == req.body.r_ring) || (req.body.r_little && value == req.body.r_little) || 
-                 (req.body.l_thumb && value == req.body.l_thumb) || (req.body.l_index && value == req.body.l_index) || 
-                 (req.body.l_middle && value == req.body.l_middle) || (req.body.l_ring && value == req.body.l_ring) || 
-                 (req.body.l_little && value == req.body.l_little)) )
+            if ( checkDuplicateFingerprint(req, value) > 1)
                 return false;
             else
                 return true;
@@ -412,11 +368,7 @@ exports.updateFingerprintSchema = [
         })
         .withMessage('Fingerprint already exists')
         .custom((value, {req}) => {
-            if ( value && ((req.body.r_thumb && value == req.body.r_thumb) || (req.body.r_middle && value == req.body.r_middle) || 
-                 (req.body.r_ring && value == req.body.r_ring) || (req.body.r_little && value == req.body.r_little) || 
-                 (req.body.l_thumb && value == req.body.l_thumb) || (req.body.l_index && value == req.body.l_index) || 
-                 (req.body.l_middle && value == req.body.l_middle) || (req.body.l_ring && value == req.body.l_ring) || 
-                 (req.body.l_little && value == req.body.l_little)) )
+            if ( checkDuplicateFingerprint(req, value) > 1)
                 return false;
             else
                 return true;
@@ -449,11 +401,7 @@ exports.updateFingerprintSchema = [
         })
         .withMessage('Fingerprint already exists')
         .custom((value, {req}) => {
-            if ( value && ((req.body.r_index && value == req.body.r_index) || (req.body.r_thumb && value == req.body.r_thumb) || 
-                 (req.body.r_ring && value == req.body.r_ring) || (req.body.r_little && value == req.body.r_little) || 
-                 (req.body.l_thumb && value == req.body.l_thumb) || (req.body.l_index && value == req.body.l_index) || 
-                 (req.body.l_middle && value == req.body.l_middle) || (req.body.l_ring && value == req.body.l_ring) || 
-                 (req.body.l_little && value == req.body.l_little)) )
+            if ( checkDuplicateFingerprint(req, value) > 1)
                 return false;
             else
                 return true;
@@ -486,11 +434,7 @@ exports.updateFingerprintSchema = [
         })
         .withMessage('Fingerprint already exists')
         .custom((value, {req}) => {
-            if ( value && ((req.body.r_index && value == req.body.r_index) || (req.body.r_middle && value == req.body.r_middle) || 
-                 (req.body.r_thumb && value == req.body.r_thumb) || (req.body.r_little && value == req.body.r_little) || 
-                 (req.body.l_thumb && value == req.body.l_thumb) || (req.body.l_index && value == req.body.l_index) || 
-                 (req.body.l_middle && value == req.body.l_middle) || (req.body.l_ring && value == req.body.l_ring) || 
-                 (req.body.l_little && value == req.body.l_little)) )
+            if ( checkDuplicateFingerprint(req, value) > 1)
                 return false;
             else
                 return true;
@@ -523,11 +467,7 @@ exports.updateFingerprintSchema = [
         })
         .withMessage('Fingerprint already exists')
         .custom((value, {req}) => {
-            if ( value && ((req.body.r_index && value == req.body.r_index) || (req.body.r_middle && value == req.body.r_middle) || 
-                 (req.body.r_ring && value == req.body.r_ring) || (req.body.r_thumb && value == req.body.r_thumb) || 
-                 (req.body.l_thumb && value == req.body.l_thumb) || (req.body.l_index && value == req.body.l_index) || 
-                 (req.body.l_middle && value == req.body.l_middle) || (req.body.l_ring && value == req.body.l_ring) || 
-                 (req.body.l_little && value == req.body.l_little)) )
+            if ( checkDuplicateFingerprint(req, value) > 1)
                 return false;
             else
                 return true;
@@ -560,11 +500,7 @@ exports.updateFingerprintSchema = [
         })
         .withMessage('Fingerprint already exists')
         .custom((value, {req}) => {
-            if ( value && ((req.body.r_index && value == req.body.r_index) || (req.body.r_middle && value == req.body.r_middle) || 
-                 (req.body.r_ring && value == req.body.r_ring) || (req.body.r_little && value == req.body.r_little) || 
-                 (req.body.r_thumb && value == req.body.r_thumb) || (req.body.l_index && value == req.body.l_index) || 
-                 (req.body.l_middle && value == req.body.l_middle) || (req.body.l_ring && value == req.body.l_ring) || 
-                 (req.body.l_little && value == req.body.l_little)) )
+            if ( checkDuplicateFingerprint(req, value) > 1)
                 return false;
             else
                 return true;
@@ -597,11 +533,7 @@ exports.updateFingerprintSchema = [
         })
         .withMessage('Fingerprint already exists')
         .custom((value, {req}) => {
-            if ( value && ((req.body.r_index && value == req.body.r_index) || (req.body.r_middle && value == req.body.r_middle) || 
-                 (req.body.r_ring && value == req.body.r_ring) || (req.body.r_little && value == req.body.r_little) || 
-                 (req.body.l_thumb && value == req.body.l_thumb) || (req.body.r_thumb && value == req.body.r_thumb) || 
-                 (req.body.l_middle && value == req.body.l_middle) || (req.body.l_ring && value == req.body.l_ring) || 
-                 (req.body.l_little && value == req.body.l_little)) )
+            if ( checkDuplicateFingerprint(req, value) > 1)
                 return false;
             else
                 return true;
@@ -634,11 +566,7 @@ exports.updateFingerprintSchema = [
         })
         .withMessage('Fingerprint already exists')
         .custom((value, {req}) => {
-            if ( value && ((req.body.r_index && value == req.body.r_index) || (req.body.r_middle && value == req.body.r_middle) || 
-                 (req.body.r_ring && value == req.body.r_ring) || (req.body.r_little && value == req.body.r_little) || 
-                 (req.body.l_thumb && value == req.body.l_thumb) || (req.body.l_index && value == req.body.l_index) || 
-                 (req.body.r_thumb && value == req.body.r_thumb) || (req.body.l_ring && value == req.body.l_ring) || 
-                 (req.body.l_little && value == req.body.l_little)) )
+            if ( checkDuplicateFingerprint(req, value) > 1)
                 return false;
             else
                 return true;
@@ -671,11 +599,7 @@ exports.updateFingerprintSchema = [
         })
         .withMessage('Fingerprint already exists')
         .custom((value, {req}) => {
-            if ( value && ((req.body.r_index && value == req.body.r_index) || (req.body.r_middle && value == req.body.r_middle) || 
-                 (req.body.r_ring && value == req.body.r_ring) || (req.body.r_little && value == req.body.r_little) || 
-                 (req.body.l_thumb && value == req.body.l_thumb) || (req.body.l_index && value == req.body.l_index) || 
-                 (req.body.l_middle && value == req.body.l_middle) || (req.body.r_thumb && value == req.body.r_thumb) || 
-                 (req.body.l_little && value == req.body.l_little)) )
+            if ( checkDuplicateFingerprint(req, value) > 1)
                 return false;
             else
                 return true;
@@ -708,11 +632,7 @@ exports.updateFingerprintSchema = [
         })
         .withMessage('Fingerprint already exists')
         .custom((value, {req}) => {
-            if ( value && ((req.body.r_index && value == req.body.r_index) || (req.body.r_middle && value == req.body.r_middle) || 
-                 (req.body.r_ring && value == req.body.r_ring) || (req.body.r_little && value == req.body.r_little) || 
-                 (req.body.l_thumb && value == req.body.l_thumb) || (req.body.l_index && value == req.body.l_index) || 
-                 (req.body.l_middle && value == req.body.l_middle) || (req.body.l_ring && value == req.body.l_ring) || 
-                 (req.body.r_thumb && value == req.body.r_thumb)) )
+            if ( checkDuplicateFingerprint(req, value) > 1)
                 return false;
             else
                 return true;
@@ -927,3 +847,30 @@ exports.deleteFingerprintSchema = [
         })
         .withMessage('Fingerprints of that individual were not found!')
 ];
+
+checkDuplicateFingerprint = (req, fingerprint) => {
+    let found = 0;
+    if (fingerprint){
+        if(req.body.r_thumb && req.body.r_thumb == fingerprint)
+            found += 1;
+        if(req.body.r_index && req.body.r_index == fingerprint)
+            found += 1;
+        if(req.body.r_middle && req.body.r_middle == fingerprint)
+            found += 1;
+        if(req.body.r_ring && req.body.r_ring == fingerprint)
+            found += 1;
+        if(req.body.r_little && req.body.r_little == fingerprint)
+            found += 1;
+        if(req.body.l_thumb && req.body.l_thumb == fingerprint)
+            found += 1;
+        if(req.body.l_index && req.body.l_index == fingerprint)
+            found += 1;
+        if(req.body.l_middle && req.body.l_middle == fingerprint)
+            found += 1;
+        if(req.body.l_ring && req.body.l_ring == fingerprint)
+            found += 1;
+        if(req.body.l_little && req.body.l_little == fingerprint)
+            found += 1;
+    }
+    return found;
+}

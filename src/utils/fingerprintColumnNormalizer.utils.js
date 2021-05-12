@@ -77,17 +77,30 @@ exports.getNormalizedColumnsValues = (columnsValuesList) => {
     if( Object.keys(columnsValuesList).includes('l_ring') )
         normalizedColumnsValues["ANELAR_ESQUERDO"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("l_ring")];
     if( Object.keys(columnsValuesList).includes('l_little') )
-        normalizedColumnsValues["MINDINHO_ESQUERDO"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("l_little")];
-    if( Object.keys(columnsValuesList).includes('created_at') ){
+        normalizedColumnsValues["MINDINHO_ESQUERDO"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("l_little")]; 
+    if( Object.keys(columnsValuesList).includes('created_at_range') && 
+        Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("created_at_range")] === 'yes' ){
+            if( !Object.keys(columnsValuesList).includes('created_at_limit') ){
+                let limit_date = new Date();
+                limit_date.setDate( limit_date.getDate() + 1 );
+                normalizedColumnsValues["created_at_limit"] = limit_date;
+            }
+            else
+                normalizedColumnsValues["created_at_limit"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("created_at_limit")];
+            if( !Object.keys(columnsValuesList).includes('created_at') ){
+                let limit_date = new Date('1900-01-01');
+                limit_date.setDate( limit_date.getDate() + 1 );
+                normalizedColumnsValues["DATA_REGISTO"] = limit_date;
+            }
+            else
+                normalizedColumnsValues["DATA_REGISTO"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("created_at")];
+
+    }
+    else if( Object.keys(columnsValuesList).includes('created_at') ){
         normalizedColumnsValues["DATA_REGISTO"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("created_at")];
-        //check if a range for dates was added
-        if( Object.keys(columnsValuesList).includes('created_at_limit') )
-            normalizedColumnsValues["created_at_limit"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("created_at_limit")];
-        else{
-            let limit_date = new Date( Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("created_at")] );
-            limit_date.setDate( limit_date.getDate() + 1 );
-            normalizedColumnsValues["created_at_limit"] = limit_date;
-        }
+        let limit_date = new Date( Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("created_at")] );
+        limit_date.setDate( limit_date.getDate() + 1 );
+        normalizedColumnsValues["created_at_limit"] = limit_date;
     }
     return normalizedColumnsValues;
 }

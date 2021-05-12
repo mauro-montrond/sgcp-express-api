@@ -1,0 +1,1963 @@
+const { body } = require('express-validator');
+const IndividualStates = require('../../utils/individualStates.utils.js');
+const PhotoStates = require('../../utils/photoStates.utils.js');
+const IndividualMaritalSatus = require('../../utils/individualMaritalSatus.utils.js');
+const { getNormalizedColumns } = require('../../utils/individualFullColumnNormalizer.utils.js');
+const IndividualModel  = require('../../models/individual.model');
+const UserModel  = require('../../models/user.model');
+const GeografiaModel  = require('../../models/geografia.model');
+const PrecedentModel  = require('../../models/precedent.model');
+const FingerprintModel  = require('../../models/fingerprint.model');
+const PhotoModel  = require('../../models/photo.model');
+
+exports.createIndividualFullSchema = [
+    body('name')
+        .exists()
+        .withMessage('Name is required')
+        .trim()
+        .matches(/^[a-zA-Z-' ]+$/)
+        .withMessage("Can only contain: a-z, A-Z, - and '")
+        .isLength({ min: 2 })
+        .withMessage('Must be at least 2 chars long'),
+    body('nickname')
+        .optional()
+        .trim()
+        .matches(/^[a-zA-Z0-9-'_ ]+$/)
+        .withMessage("Can only contain: a-z, A-Z, 0-9, _, - and '")
+        .isLength({ min: 1 })
+        .withMessage('Must be at least 1 char long'),
+    body('father')
+        .exists()
+        .withMessage('Father is required')
+        .trim()
+        .matches(/^[a-zA-Z-' ]+$/)
+        .withMessage("Can only contain: a-z, A-Z, - and '")
+        .isLength({ min: 2 })
+        .withMessage('Must be at least 2 chars long'),
+    body('mother')
+        .exists()
+        .withMessage('Mother is required')
+        .trim()
+        .matches(/^[a-zA-Z-' ]+$/)
+        .withMessage("Can only contain: a-z, A-Z, - and '")
+        .isLength({ min: 2 })
+        .withMessage('Must be at least 2 chars long'),
+    body('nationality')
+        .exists()
+        .withMessage('Nationality is required')
+        .trim()
+        .isLength({ min: 2 })
+        .withMessage('Must be at least 2 chars long'),
+    body('birthplace')
+        .exists()
+        .withMessage('Birthplace is required')
+        .trim()
+        .isLength({ min: 2 })
+        .withMessage('Must be at least 2 chars long'),
+    body('birthdate')
+        .exists()
+        .withMessage('Birthdate is required')
+        .notEmpty()
+        .withMessage("Birthdate must be filled")
+        .trim()
+        .isDate({ strict: true })
+        .withMessage('Invalid date, insert a valid date in the format: YYYY-MM-DD')
+        .custom(birthdt => {
+            let today = new Date(); 
+            let inserted_date = new Date(birthdt);
+            inserted_date.setDate( inserted_date.getDate() + 1 );
+            today.setHours(0, 0, 0, 0);
+            inserted_date.setHours(0, 0, 0, 0);
+            if( inserted_date >= today)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('Birthdate must be before today'),
+    body('apparent_age')
+        .exists()
+        .withMessage('Aparent age is required')
+        .trim()
+        .isNumeric()
+        .withMessage("Aparent age must be a number"),
+    body('marital_status')
+        .exists()
+        .withMessage('Marital status is required')
+        .notEmpty()
+        .withMessage("Marital status must be filled")
+        .trim()
+        .isIn(IndividualMaritalSatus)
+        .withMessage('Invalid marital status'),
+    body('profession')
+        .exists()
+        .withMessage('Profession is required')
+        .trim()
+        .isLength({ min: 2 })
+        .withMessage('Must be at least 2 chars long'),
+    body('residence_id')
+        .exists()
+        .withMessage('Residence id is required')
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long')
+        .custom(async element => {
+            const findCode = await GeografiaModel.findOne( {'ID': element} );
+            if(findCode)
+                return Promise.resolve();
+            else
+                return Promise.reject();
+        })
+        .withMessage('Residence id does not match an existing location'),
+    body('workplace')
+        .optional()
+        .trim()
+        .isLength({ min: 2 })
+        .withMessage('Must be at least 2 chars long'),
+    body('doc_num')
+        .exists()
+        .withMessage('Document number is required')
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long')
+        .matches(/^[a-zA-Z0-9-_ ]+$/)
+        .withMessage("Can only contain: a-z, A-Z, 0-9, - and _")
+        .custom(async element => {
+            const findCode = await IndividualModel.findOne( {'NUM_DOC': element} );
+            if(findCode)
+                return Promise.reject();
+            else
+                return Promise.resolve();
+        })
+        .withMessage('Document number already exists'),
+    body('doc_issuance_date')
+        .exists()
+        .withMessage('Document issuance date is required')
+        .notEmpty()
+        .withMessage("Document issuance date must be filled")
+        .trim()
+        .isISO8601({ strict: true })
+        .withMessage('Invalid date, insert a valid date in the format: YYYY-MM-DD hh:mm:ss')
+        .custom(issuancedt => {
+            let today = new Date(); 
+            let inserted_date = new Date(issuancedt)
+            if(today < inserted_date )
+                return false;
+            else
+                return true;
+        })
+        .withMessage('Document issuance date must be before today'),
+    body('doc_issuance_place')
+        .exists()
+        .withMessage('Document issuance place is required')
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
+    body('height')
+        .exists()
+        .withMessage('Height is required')
+        .trim()
+        .isNumeric()
+        .withMessage("Height must be a number"),
+    body('hair')
+        .exists()
+        .withMessage('Hair is required')
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
+    body('beard')
+        .optional()
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
+    body('nose')
+        .exists()
+        .withMessage('Nose is required')
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
+    body('mouth')
+        .exists()
+        .withMessage('Mouth is required')
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
+    body('face')
+        .exists()
+        .withMessage('Face is required')
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
+    body('colour')
+        .exists()
+        .withMessage('Colour is required')
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
+    body('tattoos')
+        .optional()
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
+    body('police_classification')
+        .exists()
+        .withMessage('Police classification is required')
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
+    body('individualState')
+        .optional()
+        .notEmpty()
+        .withMessage("Individual state must be filled")
+        .trim()
+        .isIn(IndividualStates)
+        .withMessage('Invalid state type'),
+    ////////// fingerprints //////////
+    body('r_thumb')
+        .exists()
+        .withMessage('Right thumb is required')
+        .notEmpty()
+        .withMessage("Right thumb must be filled")
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage('Must be at least 6 chars long')
+        .isURL()
+        .withMessage('Must be a URL')
+        .custom(async element => {
+            const findFingerprint = await FingerprintModel.findFingerprint(element);
+            if(findFingerprint)
+                return Promise.reject();
+            else
+                return Promise.resolve();
+        })
+        .withMessage('Fingerprint already exists')
+        .custom((value, {req}) => {
+            if ( checkDuplicateFingerprint(req, value) > 1)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('Each fingerprint must be different'),
+    body('r_index')
+        .exists()
+        .withMessage('Right index finger is required')
+        .notEmpty()
+        .withMessage("Right index finger must be filled")
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage('Must be at least 6 chars long')
+        .isURL()
+        .withMessage('Must be a URL')
+        .custom(async element => {
+            const findFingerprint = await FingerprintModel.findFingerprint(element);
+            if(findFingerprint)
+                return Promise.reject();
+            else
+                return Promise.resolve();
+        })
+        .withMessage('Fingerprint already exists')
+        .custom((value, {req}) => {
+            if ( checkDuplicateFingerprint(req, value) > 1)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('Each fingerprint must be different'),
+    body('r_middle')
+        .exists()
+        .withMessage('Right middle finger is required')
+        .notEmpty()
+        .withMessage("Right middle finger must be filled")
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage('Must be at least 6 chars long')
+        .isURL()
+        .withMessage('Must be a URL')
+        .custom(async element => {
+            const findFingerprint = await FingerprintModel.findFingerprint(element);
+            if(findFingerprint)
+                return Promise.reject();
+            else
+                return Promise.resolve();
+        })
+        .withMessage('Fingerprint already exists')
+        .custom((value, {req}) => {
+            if ( checkDuplicateFingerprint(req, value) > 1)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('Each fingerprint must be different'),
+    body('r_ring')
+        .exists()
+        .withMessage('Right ring finger is required')
+        .notEmpty()
+        .withMessage("Right ring finger must be filled")
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage('Must be at least 6 chars long')
+        .isURL()
+        .withMessage('Must be a URL')
+        .custom(async element => {
+            const findFingerprint = await FingerprintModel.findFingerprint(element);
+            if(findFingerprint)
+                return Promise.reject();
+            else
+                return Promise.resolve();
+        })
+        .withMessage('Fingerprint already exists')
+        .custom((value, {req}) => {
+            if ( checkDuplicateFingerprint(req, value) > 1)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('Each fingerprint must be different'),
+    body('r_little')
+        .exists()
+        .withMessage('Right little finger is required')
+        .notEmpty()
+        .withMessage("Right little finger must be filled")
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage('Must be at least 6 chars long')
+        .isURL()
+        .withMessage('Must be a URL')
+        .custom(async element => {
+            const findFingerprint = await FingerprintModel.findFingerprint(element);
+            if(findFingerprint)
+                return Promise.reject();
+            else
+                return Promise.resolve();
+        })
+        .withMessage('Fingerprint already exists')
+        .custom((value, {req}) => {
+            if ( checkDuplicateFingerprint(req, value) > 1)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('Each fingerprint must be different'),
+    body('l_thumb')
+        .exists()
+        .withMessage('Left thumb is required')
+        .notEmpty()
+        .withMessage("Left thumb must be filled")
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage('Must be at least 6 chars long')
+        .isURL()
+        .withMessage('Must be a URL')
+        .custom(async element => {
+            const findFingerprint = await FingerprintModel.findFingerprint(element);
+            if(findFingerprint)
+                return Promise.reject();
+            else
+                return Promise.resolve();
+        })
+        .withMessage('Fingerprint already exists')
+        .custom((value, {req}) => {
+            if ( checkDuplicateFingerprint(req, value) > 1)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('Each fingerprint must be different'),
+    body('l_index')
+        .exists()
+        .withMessage('Left index finger is required')
+        .notEmpty()
+        .withMessage("Left index finger must be filled")
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage('Must be at least 6 chars long')
+        .isURL()
+        .withMessage('Must be a URL')
+        .custom(async element => {
+            const findFingerprint = await FingerprintModel.findFingerprint(element);
+            if(findFingerprint)
+                return Promise.reject();
+            else
+                return Promise.resolve();
+        })
+        .withMessage('Fingerprint already exists')
+        .custom((value, {req}) => {
+            if ( checkDuplicateFingerprint(req, value) > 1)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('Each fingerprint must be different'),
+    body('l_middle')
+        .exists()
+        .withMessage('Left middle finger is required')
+        .notEmpty()
+        .withMessage("Left middle finger must be filled")
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage('Must be at least 6 chars long')
+        .isURL()
+        .withMessage('Must be a URL')
+        .custom(async element => {
+            const findFingerprint = await FingerprintModel.findFingerprint(element);
+            if(findFingerprint)
+                return Promise.reject();
+            else
+                return Promise.resolve();
+        })
+        .withMessage('Fingerprint already exists')
+        .custom((value, {req}) => {
+            if ( checkDuplicateFingerprint(req, value) > 1)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('Each fingerprint must be different'),
+    body('l_ring')
+        .exists()
+        .withMessage('Left ring finger is required')
+        .notEmpty()
+        .withMessage("Left ring finger must be filled")
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage('Must be at least 6 chars long')
+        .isURL()
+        .withMessage('Must be a URL')
+        .custom(async element => {
+            const findFingerprint = await FingerprintModel.findFingerprint(element);
+            if(findFingerprint)
+                return Promise.reject();
+            else
+                return Promise.resolve();
+        })
+        .withMessage('Fingerprint already exists')
+        .custom((value, {req}) => {
+            if ( checkDuplicateFingerprint(req, value) > 1)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('Each fingerprint must be different'),
+    body('l_little')
+        .exists()
+        .withMessage('Left little finger is required')
+        .notEmpty()
+        .withMessage("Left little finger must be filled")
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage('Must be at least 6 chars long')
+        .isURL()
+        .withMessage('Must be a URL')
+        .custom(async element => {
+            const findFingerprint = await FingerprintModel.findFingerprint(element);
+            if(findFingerprint)
+                return Promise.reject();
+            else
+                return Promise.resolve();
+        })
+        .withMessage('Fingerprint already exists')
+        .custom((value, {req}) => {
+            if ( checkDuplicateFingerprint(req, value) > 1)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('Each fingerprint must be different'),
+    ////////// photos //////////
+    body('l_photo')
+        .exists()
+        .withMessage('Left photo is required')
+        .notEmpty()
+        .withMessage("Left photo must be filled")
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage('Must be at least 6 chars long')
+        .isURL()
+        .withMessage('Must be a URL')
+        .custom(async element => {
+            const findPhoto = await PhotoModel.findPhoto(element);
+            if(findPhoto)
+                return Promise.reject();
+            else
+                return Promise.resolve();
+        })
+        .withMessage('Photo already exists')
+        .custom((value, {req}) => {
+            if ( value && ((req.body.f_photo && value == req.body.f_photo) || (req.body.r_photo && value == req.body.r_photo)) )
+                return false;
+            else
+                return true;
+        })
+        .withMessage('Each photo must be different'),
+    body('f_photo')
+        .exists()
+        .withMessage('Frontal photo is required')
+        .notEmpty()
+        .withMessage("Frontal photo must be filled")
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage('Must be at least 6 chars long')
+        .isURL()
+        .withMessage('Must be a URL')
+        .custom(async element => {
+            const findPhoto = await PhotoModel.findPhoto(element);
+            if(findPhoto)
+                return Promise.reject();
+            else
+                return Promise.resolve();
+        })
+        .withMessage('Photo already exists')
+        .custom((value, {req}) => {
+            if ( value && ((req.body.l_photo && value == req.body.l_photo) || (req.body.r_photo && value == req.body.r_photo)) )
+                return false;
+            else
+                return true;
+        })
+        .withMessage('Each photo must be different'),
+    body('r_photo')
+        .exists()
+        .withMessage('Right photo is required')
+        .notEmpty()
+        .withMessage("Right photo must be filled")
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage('Must be at least 6 chars long')
+        .isURL()
+        .withMessage('Must be a URL')
+        .custom(async element => {
+            const findPhoto = await PhotoModel.findPhoto(element);
+            if(findPhoto)
+                return Promise.reject();
+            else
+                return Promise.resolve();
+        })
+        .withMessage('Photo already exists')
+        .custom((value, {req}) => {
+            if ( value && ((req.body.l_photo && value == req.body.l_photo) || (req.body.f_photo && value == req.body.f_photo)) )
+                return false;
+            else
+                return true;
+        })
+        .withMessage('Each photo must be different'),
+    body('photoState')
+        .optional()
+        .notEmpty()
+        .withMessage("Photos state must be filled")
+        .trim()
+        .isIn(PhotoStates)
+        .withMessage('Invalid state type'),
+
+    body()
+        .custom(value => {
+            //convert object keys into column names
+            var creatList = getNormalizedColumns(Object.keys(value));
+            //Set the allowed field for creation and see if the ones sent match
+            const allowCreation = ['NOME', 'ALCUNHA', 'PAI', 'MAE', 'NACIONALIDADE', 'LOCAL_NASCIMENTO', 'DATA_NASCIMENTO', 'IDADE_APARENTE', 
+                                  'ESTADO_CIVIL', 'PROFISSAO', 'ID_RESIDENCIA', 'LOCAL_TRABALHO', 'NUM_DOC', 'DATA_EMISSAO_DOC', 'LOCAL_EMISSAO_DOC', 
+                                  'ALTURA', 'CABELO', 'BARBA', 'NARIZ', 'BOCA', 'ROSTO', 'COR', 'TATUAGENS', 'CLASSIFICACAO_POLICIAL', 'ESTADO',
+                                  // fingerprints //
+                                  'POLEGAR_DIREITO', 'INDICADOR_DIREITO', 'MEDIO_DIREITO', 'ANELAR_DIREITO', 'MINDINHO_DIREITO', 
+                                  'POLEGAR_ESQUERDO', 'INDICADOR_ESQUERDO', 'MEDIO_ESQUERDO', 'ANELAR_ESQUERDO', 'MINDINHO_ESQUERDO',
+                                  // photos //
+                                  'FOTO_ESQUERDA', 'FOTO_FRONTAL', 'FOTO_DIREITA', 'ESTADO'];
+            return creatList.every(profile => allowCreation.includes(profile));
+        })
+        .withMessage('Invalid extra fields!')
+];
+
+exports.updateIndividualFullSchema = [
+    body('name')
+        .optional()
+        .notEmpty()
+        .withMessage("Name must be filled")
+        .trim()
+        .matches(/^[a-zA-Z-' ]+$/)
+        .withMessage("Can only contain: a-z, A-Z, - and '")
+        .isLength({ min: 2 })
+        .withMessage('Must be at least 2 chars long'),
+    body('nickname')
+        .optional()
+        .notEmpty()
+        .withMessage("Nickname must be filled")
+        .trim()
+        .matches(/^[a-zA-Z0-9-'_ ]+$/)
+        .withMessage("Can only contain: a-z, A-Z, 0-9, _, - and '")
+        .isLength({ min: 1 })
+        .withMessage('Must be at least 1 char long'),
+    body('father')
+        .optional()
+        .notEmpty()
+        .withMessage("Father must be filled")
+        .trim()
+        .matches(/^[a-zA-Z-' ]+$/)
+        .withMessage("Can only contain: a-z, A-Z, - and '")
+        .isLength({ min: 2 })
+        .withMessage('Must be at least 2 chars long'),
+    body('mother')
+        .optional()
+        .notEmpty()
+        .withMessage("Mother must be filled")
+        .trim()
+        .matches(/^[a-zA-Z-' ]+$/)
+        .withMessage("Can only contain: a-z, A-Z, - and '")
+        .isLength({ min: 2 })
+        .withMessage('Must be at least 2 chars long'),
+    body('nationality')
+        .optional()
+        .notEmpty()
+        .withMessage("Nationality must be filled")
+        .trim()
+        .isLength({ min: 2 })
+        .withMessage('Must be at least 2 chars long'),
+    body('birthplace')
+        .optional()
+        .notEmpty()
+        .withMessage("Birthplace must be filled")
+        .trim()
+        .isLength({ min: 2 })
+        .withMessage('Must be at least 2 chars long'),
+    body('birthdate')
+        .optional()
+        .notEmpty()
+        .withMessage("Birthdate must be filled")
+        .trim()
+        .isDate({ strict: true })
+        .withMessage('Invalid date, insert a valid date in the format: YYYY-MM-DD')
+        .custom(birthdt => {
+            let today = new Date(); 
+            let inserted_date = new Date(birthdt);
+            inserted_date.setDate( inserted_date.getDate() + 1 );
+            today.setHours(0, 0, 0, 0);
+            inserted_date.setHours(0, 0, 0, 0);
+            if( inserted_date >= today)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('Birthdate must be before today'),
+    body('apparent_age')
+        .optional()
+        .notEmpty()
+        .withMessage("Aparent age must be filled")
+        .trim()
+        .isNumeric()
+        .withMessage("Aparent age must be a number"),
+    body('marital_status')
+        .optional()
+        .notEmpty()
+        .withMessage("Marital status must be filled")
+        .trim()
+        .isIn(IndividualMaritalSatus)
+        .withMessage('Invalid marital status'),
+    body('profession')
+        .optional()
+        .notEmpty()
+        .withMessage("Profession must be filled")
+        .trim()
+        .isLength({ min: 2 })
+        .withMessage('Must be at least 2 chars long'),
+    body('residence_id')
+        .optional()
+        .notEmpty()
+        .withMessage("Residence id must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long')
+        .custom(async element => {
+            const findCode = await GeografiaModel.findOne( {'ID': element} );
+            if(findCode)
+                return Promise.resolve();
+            else
+                return Promise.reject();
+        })
+        .withMessage('Residence id does not match an existing location'),
+    body('workplace')
+        .optional()
+        .notEmpty()
+        .withMessage("Workplace must be filled")
+        .trim()
+        .isLength({ min: 2 })
+        .withMessage('Must be at least 2 chars long'),
+    body('doc_num')
+        .optional()
+        .notEmpty()
+        .withMessage("Document number must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long')
+        .matches(/^[a-zA-Z0-9-_ ]+$/)
+        .withMessage("Can only contain: a-z, A-Z, 0-9, - and _")
+        .custom(async (element, {req}) => {
+            const findIndividual = await IndividualModel.findOne( {'ID': req.params.id} );
+            if(findIndividual){
+                const findDocNum = await IndividualModel.findOne( {'NUM_DOC': element} );
+                if(findDocNum){
+                    if(findDocNum.NUM_DOC === findIndividual.NUM_DOC)
+                        return Promise.resolve();
+                    else
+                        return Promise.reject();
+                }
+                else
+                    return Promise.resolve();
+            }
+            else
+                return Promise.resolve();
+        })
+        .withMessage('Document number already exists'),
+    body('doc_issuance_date')
+        .optional()
+        .notEmpty()
+        .withMessage("Document issuance date must be filled")
+        .trim()
+        .isISO8601({ strict: true })
+        .withMessage('Invalid date, insert a valid date in the format: YYYY-MM-DD hh:mm:ss')
+        .custom(issuancedt => {
+            let today = new Date(); 
+            let inserted_date = new Date(issuancedt)
+            if(today < inserted_date )
+                return false;
+            else
+                return true;
+        })
+        .withMessage('Document issuance date must be before today'),
+    body('doc_issuance_place')
+        .optional()
+        .notEmpty()
+        .withMessage("Document issuance place must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
+    body('height')
+        .optional()
+        .notEmpty()
+        .withMessage("Height must be filled")
+        .trim()
+        .isNumeric()
+        .withMessage("Height must be a number"),
+    body('hair')
+        .optional()
+        .notEmpty()
+        .withMessage("Hair must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
+    body('beard')
+        .optional()
+        .notEmpty()
+        .withMessage("Beard must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
+    body('nose')
+        .optional()
+        .notEmpty()
+        .withMessage("Nose must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
+    body('mouth')
+        .optional()
+        .notEmpty()
+        .withMessage("Mouth must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
+    body('face')
+        .optional()
+        .notEmpty()
+        .withMessage("Face must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
+    body('colour')
+        .optional()
+        .notEmpty()
+        .withMessage("Colour must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
+    body('tattoos')
+        .optional()
+        .notEmpty()
+        .withMessage("Tattoos must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
+    body('police_classification')
+        .optional()
+        .notEmpty()
+        .withMessage("Police classification must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
+    body('individualState')
+        .optional()
+        .notEmpty()
+        .withMessage("Individual state must be filled")
+        .trim()
+        .isIn(IndividualStates)
+        .withMessage('Invalid state type'),
+    /// fingerprint ///
+    body('r_thumb')
+        .optional()
+        .notEmpty()
+        .withMessage("Right thumb must be filled")
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage('Must be at least 6 chars long')
+        .isURL()
+        .withMessage('Must be a URL')
+        .custom(async (element, {req}) => {
+            const currentPrint = await FingerprintModel.findOne({'ID_INDIVIDUO': req.params.id});
+            if(currentPrint){
+                if(currentPrint.POLEGAR_DIREITO == element)
+                    return Promise.resolve();
+                else {
+                    const findFingerprint = await FingerprintModel.findFingerprint(element);
+                    if(findFingerprint)
+                        return Promise.reject();
+                    else
+                        return Promise.resolve();
+                }
+            }
+            else
+                return Promise.resolve();
+        })
+        .withMessage('Fingerprint already exists')
+        .custom((value, {req}) => {
+            if ( checkDuplicateFingerprint(req, value) > 1)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('Each fingerprint must be different'),
+    body('r_index')
+        .optional()
+        .notEmpty()
+        .withMessage("Right index finger must be filled")
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage('Must be at least 6 chars long')
+        .isURL()
+        .withMessage('Must be a URL')
+        .custom(async (element, {req}) => {
+            const currentPrint = await FingerprintModel.findOne({'ID_INDIVIDUO': req.params.id});
+            if(currentPrint){
+                if(currentPrint.INDICADOR_DIREITO == element)
+                    return Promise.resolve();
+                else {
+                    const findFingerprint = await FingerprintModel.findFingerprint(element);
+                    if(findFingerprint)
+                        return Promise.reject();
+                    else
+                        return Promise.resolve();
+                }
+            }
+            else
+                return Promise.resolve();
+        })
+        .withMessage('Fingerprint already exists')
+        .custom((value, {req}) => {
+            if ( checkDuplicateFingerprint(req, value) > 1)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('Each fingerprint must be different'),
+    body('r_middle')
+        .optional()
+        .notEmpty()
+        .withMessage("Right middle finger must be filled")
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage('Must be at least 6 chars long')
+        .isURL()
+        .withMessage('Must be a URL')
+        .custom(async (element, {req}) => {
+            const currentPrint = await FingerprintModel.findOne({'ID_INDIVIDUO': req.params.id});
+            if(currentPrint){
+                if(currentPrint.MEDIO_DIREITO == element)
+                    return Promise.resolve();
+                else {
+                    const findFingerprint = await FingerprintModel.findFingerprint(element);
+                    if(findFingerprint)
+                        return Promise.reject();
+                    else
+                        return Promise.resolve();
+                }
+            }
+            else
+                return Promise.resolve();
+        })
+        .withMessage('Fingerprint already exists')
+        .custom((value, {req}) => {
+            if ( checkDuplicateFingerprint(req, value) > 1)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('Each fingerprint must be different'),
+    body('r_ring')
+        .optional()
+        .notEmpty()
+        .withMessage("Right ring finger must be filled")
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage('Must be at least 6 chars long')
+        .isURL()
+        .withMessage('Must be a URL')
+        .custom(async (element, {req}) => {
+            const currentPrint = await FingerprintModel.findOne({'ID_INDIVIDUO': req.params.id});
+            if(currentPrint){
+                if(currentPrint.ANELAR_DIREITO == element)
+                    return Promise.resolve();
+                else {
+                    const findFingerprint = await FingerprintModel.findFingerprint(element);
+                    if(findFingerprint)
+                        return Promise.reject();
+                    else
+                        return Promise.resolve();
+                }
+            }
+            else
+                return Promise.resolve();
+        })
+        .withMessage('Fingerprint already exists')
+        .custom((value, {req}) => {
+            if ( checkDuplicateFingerprint(req, value) > 1)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('Each fingerprint must be different'),
+    body('r_little')
+        .optional()
+        .notEmpty()
+        .withMessage("Right little finger must be filled")
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage('Must be at least 6 chars long')
+        .isURL()
+        .withMessage('Must be a URL')
+        .custom(async (element, {req}) => {
+            const currentPrint = await FingerprintModel.findOne({'ID_INDIVIDUO': req.params.id});
+            if(currentPrint){
+                if(currentPrint.MINDINHO_DIREITO == element)
+                    return Promise.resolve();
+                else {
+                    const findFingerprint = await FingerprintModel.findFingerprint(element);
+                    if(findFingerprint)
+                        return Promise.reject();
+                    else
+                        return Promise.resolve();
+                }
+            }
+            else
+                return Promise.resolve();
+        })
+        .withMessage('Fingerprint already exists')
+        .custom((value, {req}) => {
+            if ( checkDuplicateFingerprint(req, value) > 1)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('Each fingerprint must be different'),
+    body('l_thumb')
+        .optional()
+        .notEmpty()
+        .withMessage("Left thumb must be filled")
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage('Must be at least 6 chars long')
+        .isURL()
+        .withMessage('Must be a URL')
+        .custom(async (element, {req}) => {
+            const currentPrint = await FingerprintModel.findOne({'ID_INDIVIDUO': req.params.id});
+            if(currentPrint){
+                if(currentPrint.POLEGAR_ESQUERDO == element)
+                    return Promise.resolve();
+                else {
+                    const findFingerprint = await FingerprintModel.findFingerprint(element);
+                    if(findFingerprint)
+                        return Promise.reject();
+                    else
+                        return Promise.resolve();
+                }
+            }
+            else
+                return Promise.resolve();
+        })
+        .withMessage('Fingerprint already exists')
+        .custom((value, {req}) => {
+            if ( checkDuplicateFingerprint(req, value) > 1)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('Each fingerprint must be different'),
+    body('l_index')
+        .optional()
+        .notEmpty()
+        .withMessage("Left index finger must be filled")
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage('Must be at least 6 chars long')
+        .isURL()
+        .withMessage('Must be a URL')
+        .custom(async (element, {req}) => {
+            const currentPrint = await FingerprintModel.findOne({'ID_INDIVIDUO': req.params.id});
+            if(currentPrint){
+                if(currentPrint.INDICADOR_ESQUERDO == element)
+                    return Promise.resolve();
+                else {
+                    const findFingerprint = await FingerprintModel.findFingerprint(element);
+                    if(findFingerprint)
+                        return Promise.reject();
+                    else
+                        return Promise.resolve();
+                }
+            }
+            else
+                return Promise.resolve();
+        })
+        .withMessage('Fingerprint already exists')
+        .custom((value, {req}) => {
+            if ( checkDuplicateFingerprint(req, value) > 1)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('Each fingerprint must be different'),
+    body('l_middle')
+        .optional()
+        .notEmpty()
+        .withMessage("Left middle finger must be filled")
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage('Must be at least 6 chars long')
+        .isURL()
+        .withMessage('Must be a URL')
+        .custom(async (element, {req}) => {
+            const currentPrint = await FingerprintModel.findOne({'ID_INDIVIDUO': req.params.id});
+            if(currentPrint){
+                if(currentPrint.MEDIO_ESQUERDO == element)
+                    return Promise.resolve();
+                else {
+                    const findFingerprint = await FingerprintModel.findFingerprint(element);
+                    if(findFingerprint)
+                        return Promise.reject();
+                    else
+                        return Promise.resolve();
+                }
+            }
+            else
+                return Promise.resolve();
+        })
+        .withMessage('Fingerprint already exists')
+        .custom((value, {req}) => {
+            if ( checkDuplicateFingerprint(req, value) > 1)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('Each fingerprint must be different'),
+    body('l_ring')
+        .optional()
+        .notEmpty()
+        .withMessage("Left ring finger must be filled")
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage('Must be at least 6 chars long')
+        .isURL()
+        .withMessage('Must be a URL')
+        .custom(async (element, {req}) => {
+            const currentPrint = await FingerprintModel.findOne({'ID_INDIVIDUO': req.params.id});
+            if(currentPrint){
+                if(currentPrint.ANELAR_ESQUERDO == element)
+                    return Promise.resolve();
+                else {
+                    const findFingerprint = await FingerprintModel.findFingerprint(element);
+                    if(findFingerprint)
+                        return Promise.reject();
+                    else
+                        return Promise.resolve();
+                }
+            }
+            else
+                return Promise.resolve();
+        })
+        .withMessage('Fingerprint already exists')
+        .custom((value, {req}) => {
+            if ( checkDuplicateFingerprint(req, value) > 1)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('Each fingerprint must be different'),
+    body('l_little')
+        .optional()
+        .notEmpty()
+        .withMessage("Left little finger must be filled")
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage('Must be at least 6 chars long')
+        .isURL()
+        .withMessage('Must be a URL')
+        .custom(async (element, {req}) => {
+            const currentPrint = await FingerprintModel.findOne({'ID_INDIVIDUO': req.params.id});
+            if(currentPrint){
+                if(currentPrint.MINDINHO_ESQUERDO == element)
+                    return Promise.resolve();
+                else {
+                    const findFingerprint = await FingerprintModel.findFingerprint(element);
+                    if(findFingerprint)
+                        return Promise.reject();
+                    else
+                        return Promise.resolve();
+                }
+            }
+            else
+                return Promise.resolve();
+        })
+        .withMessage('Fingerprint already exists')
+        .custom((value, {req}) => {
+            if ( checkDuplicateFingerprint(req, value) > 1)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('Each fingerprint must be different'),
+    /// photos ///
+    body('photo_id')
+        .optional()
+        .notEmpty()
+        .withMessage("Photo id must be filled")
+        .trim()
+        .isNumeric()
+        .withMessage("Photo id must be a number")
+        .custom(async (element, {req}) => {
+            const currentIndinviduo = await IndividualModel.findOne( {'ID': req.params.id} );
+            if(currentIndinviduo){
+                const hasPhoto = await PhotoModel.findOne({'ID_INDIVIDUO': currentIndinviduo.ID})
+                if (!hasPhoto && element)
+                    return Promise.reject();
+                else
+                    return Promise.resolve();
+            }
+            else 
+                return Promise.resolve();
+        })
+        .withMessage('The individual has no photos')
+        .custom(async (element, {req}) => {
+            const hasPhoto = await PhotoModel.findOne({'ID_INDIVIDUO': req.params.id})
+            if (hasPhoto){
+                const currentPhoto = await PhotoModel.findOne({'ID': element});
+                if(currentPhoto && currentPhoto.ID_INDIVIDUO == req.params.id)
+                    return Promise.resolve()
+                else
+                    return Promise.reject();
+            }
+            else
+                return Promise.resolve();
+        })
+        .withMessage('The individual has no photos with that id'),
+    body('l_photo')
+        .optional()
+        .notEmpty()
+        .withMessage("Left photo must be filled")
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage('Must be at least 6 chars long')
+        .isURL()
+        .withMessage('Must be a URL')
+        .custom((element, {req}) => {
+            if (!req.body.photo_id && element)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('No photo specified')
+        .custom(async (element, {req}) => {
+            if (req.body.photo_id){
+                const currentIndinviduo = await IndividualModel.findOne( {'ID': req.params.id} );
+                const currentPhoto = await PhotoModel.findOne({'ID': req.body.photo_id});
+                if(currentPhoto && currentIndinviduo && currentPhoto.ID_INDIVIDUO == currentIndinviduo.ID){
+                    if(currentPhoto.FOTO_ESQUERDA == element)
+                        return Promise.resolve();
+                    else {
+                        const findPhoto = await PhotoModel.findPhoto(element);
+                        if(findPhoto)
+                            return Promise.reject();
+                        else
+                            return Promise.resolve();
+                    }
+                }
+                else
+                    return Promise.resolve();
+            }
+            else
+                return Promise.resolve();
+        })
+        .withMessage('Photo already exists')
+        .custom((value, {req}) => {
+            if ( value && ((req.body.f_photo && value == req.body.f_photo) || (req.body.r_photo && value == req.body.r_photo)) )
+                return false;
+            else
+                return true;
+        })
+        .withMessage('Each photo must be different'),
+    body('f_photo')
+        .optional()
+        .notEmpty()
+        .withMessage("Frontal photo must be filled")
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage('Must be at least 6 chars long')
+        .isURL()
+        .withMessage('Must be a URL')
+        .custom((element, {req}) => {
+            if (!req.body.photo_id && element)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('No photo specified')
+        .custom(async (element, {req}) => {
+            if (req.body.photo_id){
+                const currentIndinviduo = await IndividualModel.findOne( {'ID': req.params.id} );
+                const currentPhoto = await PhotoModel.findOne({'ID': req.body.photo_id});
+                if(currentPhoto && currentIndinviduo && currentPhoto.ID_INDIVIDUO == currentIndinviduo.ID){
+                    if(currentPhoto.FOTO_FRONTAL == element)
+                        return Promise.resolve();
+                    else {
+                        const findPhoto = await PhotoModel.findPhoto(element);
+                        if(findPhoto)
+                            return Promise.reject();
+                        else
+                            return Promise.resolve();
+                    }
+                }
+                else
+                    return Promise.resolve();
+            }
+            else
+                return Promise.resolve();
+        })
+        .withMessage('Photo already exists')
+        .custom((value, {req}) => {
+            if ( value && ((req.body.l_photo && value == req.body.l_photo) || (req.body.r_photo && value == req.body.r_photo)) )
+                return false;
+            else
+                return true;
+        })
+        .withMessage('Each photo must be different'),
+    body('r_photo')
+        .optional()
+        .notEmpty()
+        .withMessage("Right photo must be filled")
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage('Must be at least 6 chars long')
+        .isURL()
+        .withMessage('Must be a URL')
+        .custom((element, {req}) => {
+            if (!req.body.photo_id && element)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('No photo specified')
+        .custom(async (element, {req}) => {
+            if (req.body.photo_id){
+                const currentIndinviduo = await IndividualModel.findOne( {'ID': req.params.id} );
+                const currentPhoto = await PhotoModel.findOne({'ID': req.body.photo_id});
+                if(currentPhoto && currentIndinviduo && currentPhoto.ID_INDIVIDUO == currentIndinviduo.ID){
+                    if(currentPhoto.FOTO_DIREITA == element)
+                        return Promise.resolve();
+                    else {
+                        const findPhoto = await PhotoModel.findPhoto(element);
+                        if(findPhoto)
+                            return Promise.reject();
+                        else
+                            return Promise.resolve();
+                    }
+                }
+                else
+                    return Promise.resolve();
+            }
+            else
+                return Promise.resolve();
+        })
+        .withMessage('Photo already exists')
+        .custom((value, {req}) => {
+            if ( value && ((req.body.l_photo && value == req.body.l_photo) || (req.body.f_photo && value == req.body.f_photo)) )
+                return false;
+            else
+                return true;
+        })
+        .withMessage('Each photo must be different'),
+    body('photoState')
+        .optional()
+        .notEmpty()
+        .withMessage("State must be filled")
+        .trim()
+        .isIn(PhotoStates)
+        .withMessage('Invalid state type')
+        .withMessage('Must be a URL')
+        .custom((element, {req}) => {
+            if (!req.body.photo_id && element)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('No photo specified'),
+
+    body()
+        .custom(value => {
+            return !!Object.keys(value).length;
+        })
+        .withMessage('Please provide required field to update')
+        .custom(async (value, {req}) => {
+            const findIndividual = await IndividualModel.findOne( {'ID': req.params.id} );
+            if(findIndividual)
+                return Promise.resolve();
+            else
+                return Promise.reject();
+        })
+        .withMessage('The Individual you want to update does not exist!')
+        .custom(value => {
+            // convert object keys into colum names
+            var updatesList = getNormalizedColumns(Object.keys(value));
+            //Set the allowed field for updating and see if the ones sent match
+            const allowUpdates = ['NOME', 'ALCUNHA', 'PAI', 'MAE', 'NACIONALIDADE', 'LOCAL_NASCIMENTO', 'DATA_NASCIMENTO', 'IDADE_APARENTE', 
+                                  'ESTADO_CIVIL', 'PROFISSAO', 'ID_RESIDENCIA', 'LOCAL_TRABALHO', 'NUM_DOC', 'DATA_EMISSAO_DOC', 'LOCAL_EMISSAO_DOC', 
+                                  'ALTURA', 'CABELO', 'BARBA', 'NARIZ', 'BOCA', 'ROSTO', 'COR', 'TATUAGENS', 'CLASSIFICACAO_POLICIAL', 'ESTADO',
+                                  // fingerprints
+                                  'POLEGAR_DIREITO', 'INDICADOR_DIREITO', 'MEDIO_DIREITO', 'ANELAR_DIREITO', 'MINDINHO_DIREITO', 
+                                  'POLEGAR_ESQUERDO', 'INDICADOR_ESQUERDO', 'MEDIO_ESQUERDO', 'ANELAR_ESQUERDO', 'MINDINHO_ESQUERDO',
+                                  // photos
+                                  'ID_FOTO', 'FOTO_ESQUERDA', 'FOTO_FRONTAL', 'FOTO_DIREITA', 'ESTADO'];
+            return updatesList.every(parameter => allowUpdates.includes(parameter));
+        })
+        .withMessage('Invalid updates!')
+];
+
+exports.getIndividualsFullSchema = [
+    body('individual_id')
+        .optional()
+        .notEmpty()
+        .withMessage("Individual id must be filled")
+        .trim()
+        .isNumeric()
+        .withMessage("Individual id must be a number"),
+    body('user_id')
+        .optional()
+        .notEmpty()
+        .withMessage("User id must be filled")
+        .trim()
+        .isNumeric()
+        .withMessage("User id must be a number"),
+    body('name')
+        .optional()
+        .notEmpty()
+        .withMessage("Name must be filled")
+        .trim()
+        .matches(/^[a-zA-Z-' ]+$/)
+        .withMessage("Can only contain: a-z, A-Z, - and '")
+        .isLength({ min: 2 })
+        .withMessage('Must be at least 2 chars long'),
+    body('nickname')
+        .optional()
+        .notEmpty()
+        .withMessage("Nickname must be filled")
+        .trim()
+        .matches(/^[a-zA-Z0-9-'_ ]+$/)
+        .withMessage("Can only contain: a-z, A-Z, 0-9, _, - and '")
+        .isLength({ min: 1 })
+        .withMessage('Must be at least 1 char long'),
+    body('father')
+        .optional()
+        .notEmpty()
+        .withMessage("Father must be filled")
+        .trim()
+        .matches(/^[a-zA-Z-' ]+$/)
+        .withMessage("Can only contain: a-z, A-Z, - and '")
+        .isLength({ min: 2 })
+        .withMessage('Must be at least 2 chars long'),
+    body('mother')
+        .optional()
+        .notEmpty()
+        .withMessage("Mother must be filled")
+        .trim()
+        .matches(/^[a-zA-Z-' ]+$/)
+        .withMessage("Can only contain: a-z, A-Z, - and '")
+        .isLength({ min: 2 })
+        .withMessage('Must be at least 2 chars long'),
+    body('nationality')
+        .optional()
+        .notEmpty()
+        .withMessage("Nationality must be filled")
+        .trim()
+        .isLength({ min: 2 })
+        .withMessage('Must be at least 2 chars long'),
+    body('birthplace')
+        .optional()
+        .notEmpty()
+        .withMessage("Birthplace must be filled")
+        .trim()
+        .isLength({ min: 2 })
+        .withMessage('Must be at least 2 chars long'),
+    body('birthdate')
+        .optional()
+        .notEmpty()
+        .withMessage("Birthdate must be filled")
+        .trim()
+        .isDate({ strict: true })
+        .withMessage('Invalid date, insert a valid date in the format: YYYY-MM-DD'),
+    body('birthdate_limit')
+        .optional()
+        .notEmpty()
+        .withMessage("Birthdate limit must be filled")
+        .trim()
+        .isISO8601({ strict: true })
+        .withMessage('Invalid date, insert a valid date in the format: YYYY-MM-DD hh:mm:ss')
+        .custom((birthdate_lim, { req }) => {
+            if(req.body.birthdate && birthdate_lim <= req.body.birthdate)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('End date must be after start date'),
+    body('birthdate_range')
+        .optional()
+        .notEmpty()
+        .withMessage("Indicator must be filled")
+        .trim()
+        .isIn(['yes', 'no'])
+        .withMessage('Invalid indicator')
+        .custom((value, { req }) => { 
+            if(value === 'yes' && !req.body.birthdate && !req.body.birthdate_limit)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('No range provided'),
+    body('apparent_age')
+        .optional()
+        .notEmpty()
+        .withMessage("Apparent age must be filled")
+        .trim()
+        .isNumeric()
+        .withMessage("Apparent age must be a number"),
+    body('apparent_age_limit')
+        .optional()
+        .notEmpty()
+        .withMessage("Apparent age limit must be filled")
+        .trim()
+        .isNumeric()
+        .withMessage("Apparent age limit must be a number")
+        .custom((apparent_age_lim, { req }) => {
+            if(req.body.apparent_age && apparent_age_lim <= req.body.apparent_age)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('End age must be higher than start age'),
+    body('apparent_age_range')
+        .optional()
+        .notEmpty()
+        .withMessage("Indicator must be filled")
+        .trim()
+        .isIn(['yes', 'no'])
+        .withMessage('Invalid indicator')
+        .custom((value, { req }) => { 
+            if(value === 'yes' && !req.body.apparent_age && !req.body.apparent_age_limit)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('No range provided'),
+    body('marital_status')
+        .optional()
+        .notEmpty()
+        .withMessage("Marital status must be filled")
+        .trim()
+        .isIn(IndividualMaritalSatus)
+        .withMessage('Invalid marital status'),
+    body('profession')
+        .optional()
+        .notEmpty()
+        .withMessage("Profession must be filled")
+        .trim()
+        .isLength({ min: 2 })
+        .withMessage('Must be at least 2 chars long'),
+    body('residence_id')
+        .optional()
+        .notEmpty()
+        .withMessage("Residence id must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
+    body('workplace')
+        .optional()
+        .notEmpty()
+        .withMessage("Workplace must be filled")
+        .trim()
+        .isLength({ min: 2 })
+        .withMessage('Must be at least 2 chars long'),
+    body('doc_num')
+        .optional()
+        .notEmpty()
+        .withMessage("Document number must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long')
+        .matches(/^[a-zA-Z0-9-_ ]+$/)
+        .withMessage("Can only contain: a-z, A-Z, 0-9, - and _"),
+    body('doc_issuance_date')
+        .optional()
+        .notEmpty()
+        .withMessage("Document issuance date must be filled")
+        .trim()
+        .isISO8601({ strict: true })
+        .withMessage('Invalid date, insert a valid date in the format: YYYY-MM-DD hh:mm:ss'),
+    body('doc_issuance_date_limit')
+        .optional()
+        .notEmpty()
+        .withMessage("Document issuance date limit must be filled")
+        .trim()
+        .isISO8601({ strict: true })
+        .withMessage('Invalid date, insert a valid date in the format: YYYY-MM-DD hh:mm:ss')
+        .custom((doc_issuance_date_lim, { req }) => {
+            if(req.body.doc_issuance_date && doc_issuance_date_lim <= req.body.doc_issuance_date)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('End date must be after start date'),
+    body('doc_issuance_date_range')
+        .optional()
+        .notEmpty()
+        .withMessage("Indicator must be filled")
+        .trim()
+        .isIn(['yes', 'no'])
+        .withMessage('Invalid indicator')
+        .custom((value, { req }) => { 
+            if(value === 'yes' && !req.body.doc_issuance_date && !req.body.doc_issuance_date_limit)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('No range provided'),
+    body('doc_issuance_place')
+        .optional()
+        .notEmpty()
+        .withMessage("Document issuance place must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
+    body('height')
+        .optional()
+        .notEmpty()
+        .withMessage("Height must be filled")
+        .trim()
+        .isNumeric()
+        .withMessage("Height must be a number"),
+    body('height_limit')
+        .optional()
+        .notEmpty()
+        .withMessage("Height limit must be filled")
+        .trim()
+        .isNumeric()
+        .withMessage("Height limit must be a number").custom((height_lim, { req }) => {
+            if(req.body.height && height_lim <= req.body.height)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('End height must be higher than start height'),
+    body('height_range')
+        .optional()
+        .notEmpty()
+        .withMessage("Indicator must be filled")
+        .trim()
+        .isIn(['yes', 'no'])
+        .withMessage('Invalid indicator')
+        .custom((value, { req }) => { 
+            if(value === 'yes' && !req.body.height && !req.body.height_limit)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('No range provided'),
+    body('hair')
+        .optional()
+        .notEmpty()
+        .withMessage("Hair must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
+    body('beard')
+        .optional()
+        .notEmpty()
+        .withMessage("Beard must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
+    body('nose')
+        .optional()
+        .notEmpty()
+        .withMessage("Nose must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
+    body('mouth')
+        .optional()
+        .notEmpty()
+        .withMessage("Mouth must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
+    body('face')
+        .optional()
+        .notEmpty()
+        .withMessage("Face must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
+    body('colour')
+        .optional()
+        .notEmpty()
+        .withMessage("Colour must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
+    body('tattoos')
+        .optional()
+        .notEmpty()
+        .withMessage("Tattoos must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
+    body('police_classification')
+        .optional()
+        .notEmpty()
+        .withMessage("Police classification must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
+    body('individualState')
+        .optional()
+        .notEmpty()
+        .withMessage("Individual state must be filled")
+        .trim()
+        .isIn(IndividualStates)
+        .withMessage('Invalid state type'), 
+    body('individual_created_at')
+        .optional()
+        .notEmpty()
+        .withMessage("Individual created at must be filled")
+        .trim()
+        .isISO8601({ strict: true })
+        .withMessage('Invalid date, insert a valid date in the format: YYYY-MM-DD hh:mm:ss'),
+    body('individual_created_at_limit')
+        .optional()
+        .notEmpty()
+        .withMessage("Individual created at limit must be filled")
+        .trim()
+        .isISO8601({ strict: true })
+        .withMessage('Invalid date, insert a valid date in the format: YYYY-MM-DD hh:mm:ss')
+        .custom((created_at_lim, { req }) => {
+            if(req.body.individual_created_at && created_at_lim <= req.body.individual_created_at)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('End date must be after start date'),
+    body('individual_created_at_range')
+        .optional()
+        .notEmpty()
+        .withMessage("Indicator must be filled")
+        .trim()
+        .isIn(['yes', 'no'])
+        .withMessage('Invalid indicator')
+        .custom((value, { req }) => { 
+            if(value === 'yes' && !req.body.individual_created_at && !req.body.individual_created_at_limit)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('No range provided'),
+    /// fingerprints ///
+    body('fingerprint_id')
+        .optional()
+        .notEmpty()
+        .withMessage("Fingerprint id must be filled")
+        .trim()
+        .isNumeric()
+        .withMessage("Fingerprint id must be a number"),
+    body('r_thumb')
+        .optional()
+        .notEmpty()
+        .withMessage("Right thumb must be filled")
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage('Must be at least 6 chars long')
+        .isURL()
+        .withMessage('Must be a URL'),
+    body('r_index')
+        .optional()
+        .notEmpty()
+        .withMessage("Right index finger must be filled")
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage('Must be at least 6 chars long')
+        .isURL()
+        .withMessage('Must be a URL'),
+    body('r_middle')
+        .optional()
+        .notEmpty()
+        .withMessage("Right middle finger must be filled")
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage('Must be at least 6 chars long')
+        .isURL()
+        .withMessage('Must be a URL'),
+    body('r_ring')
+        .optional()
+        .notEmpty()
+        .withMessage("Right ring finger must be filled")
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage('Must be at least 6 chars long')
+        .isURL()
+        .withMessage('Must be a URL'),
+    body('r_little')
+        .optional()
+        .notEmpty()
+        .withMessage("Right little finger must be filled")
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage('Must be at least 6 chars long')
+        .isURL()
+        .withMessage('Must be a URL'),
+    body('l_thumb')
+        .optional()
+        .notEmpty()
+        .withMessage("Left thumb must be filled")
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage('Must be at least 6 chars long')
+        .isURL()
+        .withMessage('Must be a URL'),
+    body('l_index')
+        .optional()
+        .notEmpty()
+        .withMessage("Left index finger must be filled")
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage('Must be at least 6 chars long')
+        .isURL()
+        .withMessage('Must be a URL'),
+    body('l_middle')
+        .optional()
+        .notEmpty()
+        .withMessage("Left middle finger must be filled")
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage('Must be at least 6 chars long')
+        .isURL()
+        .withMessage('Must be a URL'),
+    body('l_ring')
+        .optional()
+        .notEmpty()
+        .withMessage("Left ring finger must be filled")
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage('Must be at least 6 chars long')
+        .isURL()
+        .withMessage('Must be a URL'),
+    body('l_little')
+        .optional()
+        .notEmpty()
+        .withMessage("Left little finger must be filled")
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage('Must be at least 6 chars long')
+        .isURL()
+        .withMessage('Must be a URL'),
+    body('fingerprint_created_at')
+        .optional()
+        .notEmpty()
+        .withMessage("Fingerprint created at must be filled")
+        .trim()
+        .isISO8601({ strict: true })
+        .withMessage('Invalid date, insert a valid date in the format: YYYY-MM-DD hh:mm:ss'),
+    body('fingerprint_created_at_limit')
+        .optional()
+        .notEmpty()
+        .withMessage("Fingerprint created at limit must be filled")
+        .trim()
+        .isISO8601({ strict: true })
+        .withMessage('Invalid date, insert a valid date in the format: YYYY-MM-DD hh:mm:ss')
+        .custom((created_at_lim, { req }) => {
+            if(req.body.fingerprint_created_at && created_at_lim <= req.body.fingerprint_created_at)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('End date must be after start date'),
+    body('fingerprint_created_at_range')
+        .optional()
+        .notEmpty()
+        .withMessage("Indicator must be filled")
+        .trim()
+        .isIn(['yes', 'no'])
+        .withMessage('Invalid indicator')
+        .custom((value, { req }) => { 
+            if(value === 'yes' && !req.body.fingerprint_created_at && !req.body.fingerprint_created_at_limit)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('No range provided'),
+    /// photos ///
+    body('photo_id')
+        .optional()
+        .notEmpty()
+        .withMessage("Photo id must be filled")
+        .trim()
+        .isNumeric()
+        .withMessage("Photo id must be a number"),
+    body('l_photo')
+        .optional()
+        .notEmpty()
+        .withMessage("Left photo must be filled")
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage('Must be at least 6 chars long')
+        .isURL()
+        .withMessage('Must be a URL'),
+    body('f_photo')
+        .optional()
+        .notEmpty()
+        .withMessage("Frontal photo must be filled")
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage('Must be at least 6 chars long')
+        .isURL()
+        .withMessage('Must be a URL'),
+    body('r_photo')
+        .optional()
+        .notEmpty()
+        .withMessage("Right photo must be filled")
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage('Must be at least 6 chars long')
+        .isURL()
+        .withMessage('Must be a URL'),
+    body('photo_created_at')
+        .optional()
+        .notEmpty()
+        .withMessage("Photo created at must be filled")
+        .trim()
+        .isISO8601({ strict: true })
+        .withMessage('Invalid date, insert a valid date in the format: YYYY-MM-DD hh:mm:ss'),
+    body('photo_created_at_limit')
+        .optional()
+        .notEmpty()
+        .withMessage("Photo created at limit must be filled")
+        .trim()
+        .isISO8601({ strict: true })
+        .withMessage('Invalid date, insert a valid date in the format: YYYY-MM-DD hh:mm:ss')
+        .custom((created_at_lim, { req }) => {
+            if(req.body.photo_created_at && created_at_lim <= req.body.photo_created_at)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('End date must be after start date'),
+    body('photo_created_at_range')
+        .optional()
+        .notEmpty()
+        .withMessage("Indicator must be filled")
+        .trim()
+        .isIn(['yes', 'no'])
+        .withMessage('Invalid indicator')
+        .custom((value, { req }) => { 
+            if(value === 'yes' && !req.body.photo_created_at && !req.body.photo_created_at_limit)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('No range provided'),
+    body('photoState')
+        .optional()
+        .notEmpty()
+        .withMessage("Photo state must be filled")
+        .trim()
+        .isIn(PhotoStates)
+        .withMessage('Invalid state type'),
+
+
+    body()
+        .custom(value => {
+            // convert object keys into colum names
+            var searchList = getNormalizedColumns(Object.keys(value));
+            //Set the allowed field for searching and see if the ones sent match
+            const allowSearch = ['ID_INDIVIDUO', 'ID_UTILIZADOR', 'NOME', 'ALCUNHA', 'PAI', 'MAE', 'NACIONALIDADE', 'LOCAL_NASCIMENTO', 'DATA_NASCIMENTO', 
+                                 'IDADE_APARENTE', 'ESTADO_CIVIL', 'PROFISSAO', 'ID_RESIDENCIA', 'LOCAL_TRABALHO', 'NUM_DOC', 'DATA_EMISSAO_DOC', 
+                                 'LOCAL_EMISSAO_DOC', 'ALTURA', 'CABELO', 'BARBA', 'NARIZ', 'BOCA', 'ROSTO', 'COR', 'TATUAGENS', 'CLASSIFICACAO_POLICIAL', 
+                                 'ESTADO', 'DATA_REGISTO', 'birthdate_limit', 'birthdate_range', 'apparent_age_limit', 'apparent_age_range', 
+                                 'doc_issuance_date_limit', 'doc_issuance_date_range', 'height_limit', 'height_range', 'individual_created_at_limit', 
+                                 'individual_created_at_range',
+                                 // fingerprint
+                                 'ID_DIGITAIS', 'POLEGAR_DIREITO', 'INDICADOR_DIREITO', 'MEDIO_DIREITO', 'ANELAR_DIREITO', 'MINDINHO_DIREITO', 
+                                 'POLEGAR_ESQUERDO', 'INDICADOR_ESQUERDO', 'MEDIO_ESQUERDO', 'ANELAR_ESQUERDO', 'MINDINHO_ESQUERDO', 'DATA_REGISTO', 
+                                 'created_at_limit', 'created_at_range',
+                                 // photo
+                                 'ID_FOTO', 'FOTO_ESQUERDA', 'FOTO_FRONTAL', 'FOTO_DIREITA', 'ESTADO', 'DATA_REGISTO', 
+                                 'photo_created_at_limit', 'photo_created_at_range'];
+            return searchList.every(parameter => allowSearch.includes(parameter));
+        })
+        .withMessage('Invalid extra fields!')
+];
+
+exports.deleteIndividualFullSchema = [
+    body()
+        .custom(async (value, {req}) => {
+            const findIndividual = await IndividualModel.findOne( {'ID': req.params.id} );
+            if(findIndividual)
+                return Promise.resolve();
+            else
+                return Promise.reject();
+        })
+        .withMessage('Individual not found!')
+];
+
+checkDuplicateFingerprint = (req, fingerprint) => {
+    let found = 0;
+    if (fingerprint){
+        if(req.body.r_thumb && req.body.r_thumb == fingerprint)
+            found += 1;
+        if(req.body.r_index && req.body.r_index == fingerprint)
+            found += 1;
+        if(req.body.r_middle && req.body.r_middle == fingerprint)
+            found += 1;
+        if(req.body.r_ring && req.body.r_ring == fingerprint)
+            found += 1;
+        if(req.body.r_little && req.body.r_little == fingerprint)
+            found += 1;
+        if(req.body.l_thumb && req.body.l_thumb == fingerprint)
+            found += 1;
+        if(req.body.l_index && req.body.l_index == fingerprint)
+            found += 1;
+        if(req.body.l_middle && req.body.l_middle == fingerprint)
+            found += 1;
+        if(req.body.l_ring && req.body.l_ring == fingerprint)
+            found += 1;
+        if(req.body.l_little && req.body.l_little == fingerprint)
+            found += 1;
+    }
+    return found;
+}

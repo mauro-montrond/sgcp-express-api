@@ -54,6 +54,7 @@ class MenuModel {
     update = async (params, code) => {
         let affectedRowsTotal = 0;
         let changedRowsTotal = 0;
+        let warningStatusTotal = 0;
         let currentMenu = await this.findOne( {'CODIGO': code} );
         let state;
         if(params.ESTADO)
@@ -68,21 +69,19 @@ class MenuModel {
             if(childs1.length){
                 for(const element of childs1){
                     updates1.push(element.ID);
-
-                    affectedRowsTotal += 1;
-                    changedRowsTotal += 1;
                 
                     let childs2 = await this.findMany( {'ID_MENU_PAI': element.ID} );
                     if(childs2.length){
                         for(const element2 of childs2){
                             updates1.push(element2.ID);
-                            affectedRowsTotal += 1;
-                            changedRowsTotal += 1;
                         }
                     }
                 }
                 let sql1 = `UPDATE ${this.tableName} SET ESTADO = ? WHERE ID IN (${updates1})`;
                 let result1 = await query(sql1, [params.ESTADO]);
+                affectedRowsTotal += result1.affectedRows;
+                changedRowsTotal += result1.changedRows;
+                warningStatusTotal += result1.warningStatus;
             }
         }
         
@@ -98,20 +97,19 @@ class MenuModel {
             if(parent1){
                 if(parent1.ESTADO == 'I'){
                     updates2.push(parent1.ID);
-                    affectedRowsTotal += 1;
-                    changedRowsTotal += 1;
                 }
                 if(parent1.ID_MENU_PAI){
                     let parent2 = await this.findOne( {'ID': parent1.ID_MENU_PAI} );
                     if(parent2.ESTADO == 'I'){
                         updates2.push(parent2.ID);
-                        affectedRowsTotal += 1;
-                        changedRowsTotal += 1;
                     }
                 }
                 if(updates2.length){
                     let sql2 = `UPDATE ${this.tableName} SET ESTADO = ? WHERE ID IN (${updates2})`;
                     let result2 = await query(sql2, [state]);
+                    affectedRowsTotal += result2.affectedRows;
+                    changedRowsTotal += result2.changedRows;
+                    warningStatusTotal += result2.warningStatus;
                 }
             }
         }
@@ -124,9 +122,8 @@ class MenuModel {
         if(result){
             result.affectedRows += affectedRowsTotal;
             result.changedRows += changedRowsTotal;
-            let regex = /Warnings/i;
-            let newT = result.info.replace(regex, `Affected rows: ${result.affectedRows}  Changed rows: ${result.changedRows}  Warnings`);
-            result.info = newT;
+            result.warningStatus += warningStatusTotal;
+            result.info = `Rows matched: ${result.affectedRows}  Changed: ${result.changedRows}  Warnings: ${result.warningStatus}`
         }
 
         return result;

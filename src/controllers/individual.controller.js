@@ -26,15 +26,6 @@ class IndividualController {
         res.send(individual);
     };
 
-    getIndividualByCode = async (req, res, next) => {
-        const individual = await IndividualModel.findOne({ CODIGO: req.params.code });
-        if (!individual) {
-            throw new HttpException(404, 'Individual not found');
-        }
-
-        res.send(individual);
-    };
-
     getIndividualsByParams = async (req, res, next) => {
         this.checkValidation(req);
         // convert the re.body keys into the actual names of the table's colums
