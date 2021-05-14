@@ -11,6 +11,7 @@ const { createIndividualFullSchema, updateIndividualFullSchema, getIndividualsFu
 
 router.get('/', auth(Action.Individual.listIndividual.listIndividualByParams), awaitHandlerFactory(individualController.getAllProfile)); // localhost:3000/api/v1/individuals
 router.get('/params', auth(Action.Individual.listIndividual.listIndividualByParams), getIndividualsSchema, awaitHandlerFactory(individualController.getIndividualsByParams)); // localhost:3000/api/v1/individuals/params
+router.get('/full/params', auth(Action.Individual.listIndividual.listIndividualByParams), getIndividualsFullSchema, awaitHandlerFactory(individualFullController.getIndividualsFullByParams)); // localhost:3000/api/v1/individuals/full/params
 router.get('/id/:id', auth(Action.Individual.listIndividual.listIndividualByParams), awaitHandlerFactory(individualController.getIndividualById)); // localhost:3000/api/v1/individuals/id/1
 router.get('/doc_num/:doc_num', auth(Action.Individual.listIndividual.listIndividualByParams), awaitHandlerFactory(individualController.getIndividualByCode)); // localhost:3000/api/v1/individuals/doc_num/123456789 
 router.post('/', auth(Action.Individual.createIndividual), createIndividualSchema, awaitHandlerFactory(individualController.createIndividual)); // localhost:3000/api/v1/individuals

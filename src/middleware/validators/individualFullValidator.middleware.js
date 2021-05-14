@@ -1,6 +1,7 @@
 const { body } = require('express-validator');
 const IndividualStates = require('../../utils/individualStates.utils.js');
 const PhotoStates = require('../../utils/photoStates.utils.js');
+const PrecedentStates = require('../../utils/precedentStates.utils.js');
 const IndividualMaritalSatus = require('../../utils/individualMaritalSatus.utils.js');
 const { getNormalizedColumns } = require('../../utils/individualFullColumnNormalizer.utils.js');
 const IndividualModel  = require('../../models/individual.model');
@@ -11,9 +12,9 @@ const FingerprintModel  = require('../../models/fingerprint.model');
 const PhotoModel  = require('../../models/photo.model');
 
 exports.createIndividualFullSchema = [
-    body('name')
+    body('individual_name')
         .exists()
-        .withMessage('Name is required')
+        .withMessage('Individual name is required')
         .trim()
         .matches(/^[a-zA-Z-' ]+$/)
         .withMessage("Can only contain: a-z, A-Z, - and '")
@@ -545,30 +546,83 @@ exports.createIndividualFullSchema = [
         .trim()
         .isIn(PhotoStates)
         .withMessage('Invalid state type'),
+    ////////// precedent //////////
+    body('reference_num')
+        .exists()
+        .withMessage('Reference number is required')
+        .notEmpty()
+        .withMessage("Reference number must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
+    body('detention_reason')
+        .exists()
+        .withMessage('Detention reason is required')
+        .notEmpty()
+        .withMessage("Detention reason must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
+    body('destination')
+        .exists()
+        .withMessage('Destination is required')
+        .notEmpty()
+        .withMessage("Destination must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
+    body('date')
+        .optional()
+        .notEmpty()
+        .withMessage("Date must be filled")
+        .trim()
+        .isDate({ strict: true })
+        .withMessage('Invalid date, insert a valid date in the format: YYYY-MM-DD')
+        .custom(incidentDacte => {
+            let today = new Date(); 
+            let inserted_date = new Date(incidentDacte);
+            inserted_date.setDate( inserted_date.getDate() + 1 );
+            today.setHours(0, 0, 0, 0);
+            inserted_date.setHours(0, 0, 0, 0);
+            if( inserted_date > today)
+                return false;
+            else
+                return true;
+        })
+        .withMessage("Date can't be after today"),
+    body('precedentState')
+        .optional()
+        .notEmpty()
+        .withMessage("State must be filled")
+        .trim()
+        .isIn(PrecedentStates)
+        .withMessage('Invalid state type'),
 
     body()
         .custom(value => {
             //convert object keys into column names
             var creatList = getNormalizedColumns(Object.keys(value));
             //Set the allowed field for creation and see if the ones sent match
-            const allowCreation = ['NOME', 'ALCUNHA', 'PAI', 'MAE', 'NACIONALIDADE', 'LOCAL_NASCIMENTO', 'DATA_NASCIMENTO', 'IDADE_APARENTE', 
+            const allowCreation = ['NOME_INDIVIDUO', 'ALCUNHA', 'PAI', 'MAE', 'NACIONALIDADE', 'LOCAL_NASCIMENTO', 'DATA_NASCIMENTO', 'IDADE_APARENTE', 
                                   'ESTADO_CIVIL', 'PROFISSAO', 'ID_RESIDENCIA', 'LOCAL_TRABALHO', 'NUM_DOC', 'DATA_EMISSAO_DOC', 'LOCAL_EMISSAO_DOC', 
-                                  'ALTURA', 'CABELO', 'BARBA', 'NARIZ', 'BOCA', 'ROSTO', 'COR', 'TATUAGENS', 'CLASSIFICACAO_POLICIAL', 'ESTADO',
+                                  'ALTURA', 'CABELO', 'BARBA', 'NARIZ', 'BOCA', 'ROSTO', 'COR', 'TATUAGENS', 'CLASSIFICACAO_POLICIAL', 'ESTADO_INDIVIDUO',
                                   // fingerprints //
                                   'POLEGAR_DIREITO', 'INDICADOR_DIREITO', 'MEDIO_DIREITO', 'ANELAR_DIREITO', 'MINDINHO_DIREITO', 
                                   'POLEGAR_ESQUERDO', 'INDICADOR_ESQUERDO', 'MEDIO_ESQUERDO', 'ANELAR_ESQUERDO', 'MINDINHO_ESQUERDO',
                                   // photos //
-                                  'FOTO_ESQUERDA', 'FOTO_FRONTAL', 'FOTO_DIREITA', 'ESTADO'];
+                                  'FOTO_ESQUERDA', 'FOTO_FRONTAL', 'FOTO_DIREITA', 'ESTADO_FOTOS',
+                                  // precedent //
+                                  'NO_REFERENCIA', 'MOTIVO_DETENCAO', 'DESTINO', 'DATA', 'ESTADO_ANTECEDENTE'];
             return creatList.every(profile => allowCreation.includes(profile));
         })
         .withMessage('Invalid extra fields!')
 ];
 
 exports.updateIndividualFullSchema = [
-    body('name')
+    body('individual_name')
         .optional()
         .notEmpty()
-        .withMessage("Name must be filled")
+        .withMessage("Individual name must be filled")
         .trim()
         .matches(/^[a-zA-Z-' ]+$/)
         .withMessage("Can only contain: a-z, A-Z, - and '")
@@ -1299,11 +1353,10 @@ exports.updateIndividualFullSchema = [
     body('photoState')
         .optional()
         .notEmpty()
-        .withMessage("State must be filled")
+        .withMessage("Photo state must be filled")
         .trim()
         .isIn(PhotoStates)
         .withMessage('Invalid state type')
-        .withMessage('Must be a URL')
         .custom((element, {req}) => {
             if (!req.body.photo_id && element)
                 return false;
@@ -1311,6 +1364,122 @@ exports.updateIndividualFullSchema = [
                 return true;
         })
         .withMessage('No photo specified'),
+    /// precedent ///
+    body('precedent_id')
+        .optional()
+        .notEmpty()
+        .withMessage("Precedent id must be filled")
+        .trim()
+        .isNumeric()
+        .withMessage("Precedent id must be a number")
+        .custom(async (element, {req}) => {
+            const currentIndinviduo = await IndividualModel.findOne( {'ID': req.params.id} );
+            if(currentIndinviduo){
+                const hasPrecedent = await PrecedentModel.findOne({'ID_INDIVIDUO': currentIndinviduo.ID})
+                if (!hasPrecedent && element)
+                    return Promise.reject();
+                else
+                    return Promise.resolve();
+            }
+            else 
+                return Promise.resolve();
+        })
+        .withMessage('The individual has no precedents')
+        .custom(async (element, {req}) => {
+            const hasPrecedent= await PrecedentModel.findOne({'ID_INDIVIDUO': req.params.id})
+            if (hasPrecedent){
+                const currentPrecedent = await PrecedentModel.findOne({'ID': element});
+                if(currentPrecedent && currentPrecedent.ID_INDIVIDUO == req.params.id)
+                    return Promise.resolve()
+                else
+                    return Promise.reject();
+            }
+            else
+                return Promise.resolve();
+        })
+        .withMessage('The individual has no precedents with that id'),
+    body('reference_num')
+        .optional()
+        .notEmpty()
+        .withMessage("Reference number must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long')
+        .custom((element, {req}) => {
+            if (!req.body.precedent_id && element)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('No precedent specified'),
+    body('detention_reason')
+        .optional()
+        .notEmpty()
+        .withMessage("Detention reason must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long')
+        .custom((element, {req}) => {
+            if (!req.body.precedent_id && element)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('No precedent specified'),
+    body('destination')
+        .optional()
+        .notEmpty()
+        .withMessage("Destination must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long')
+        .custom((element, {req}) => {
+            if (!req.body.precedent_id && element)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('No precedent specified'),
+    body('date')
+        .optional()
+        .notEmpty()
+        .withMessage("Date must be filled")
+        .trim()
+        .isDate({ strict: true })
+        .withMessage('Invalid date, insert a valid date in the format: YYYY-MM-DD')
+        .custom(incidentDacte => {
+            let today = new Date(); 
+            let inserted_date = new Date(incidentDacte);
+            inserted_date.setDate( inserted_date.getDate() + 1 );
+            today.setHours(0, 0, 0, 0);
+            inserted_date.setHours(0, 0, 0, 0);
+            if( inserted_date > today)
+                return false;
+            else
+                return true;
+        })
+        .withMessage("Date can't be after today")
+        .custom((element, {req}) => {
+            if (!req.body.precedent_id && element)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('No precedent specified'),
+    body('precedentState')
+        .optional()
+        .notEmpty()
+        .withMessage("Precedent state must be filled")
+        .trim()
+        .isIn(PrecedentStates)
+        .withMessage('Invalid state type')
+        .custom((element, {req}) => {
+            if (!req.body.precedent_id && element)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('No precedent specified'),
 
     body()
         .custom(value => {
@@ -1329,14 +1498,16 @@ exports.updateIndividualFullSchema = [
             // convert object keys into colum names
             var updatesList = getNormalizedColumns(Object.keys(value));
             //Set the allowed field for updating and see if the ones sent match
-            const allowUpdates = ['NOME', 'ALCUNHA', 'PAI', 'MAE', 'NACIONALIDADE', 'LOCAL_NASCIMENTO', 'DATA_NASCIMENTO', 'IDADE_APARENTE', 
+            const allowUpdates = ['NOME_INDIVIDUO', 'ALCUNHA', 'PAI', 'MAE', 'NACIONALIDADE', 'LOCAL_NASCIMENTO', 'DATA_NASCIMENTO', 'IDADE_APARENTE', 
                                   'ESTADO_CIVIL', 'PROFISSAO', 'ID_RESIDENCIA', 'LOCAL_TRABALHO', 'NUM_DOC', 'DATA_EMISSAO_DOC', 'LOCAL_EMISSAO_DOC', 
-                                  'ALTURA', 'CABELO', 'BARBA', 'NARIZ', 'BOCA', 'ROSTO', 'COR', 'TATUAGENS', 'CLASSIFICACAO_POLICIAL', 'ESTADO',
+                                  'ALTURA', 'CABELO', 'BARBA', 'NARIZ', 'BOCA', 'ROSTO', 'COR', 'TATUAGENS', 'CLASSIFICACAO_POLICIAL', 'ESTADO_INDIVIDUO',
                                   // fingerprints
                                   'POLEGAR_DIREITO', 'INDICADOR_DIREITO', 'MEDIO_DIREITO', 'ANELAR_DIREITO', 'MINDINHO_DIREITO', 
                                   'POLEGAR_ESQUERDO', 'INDICADOR_ESQUERDO', 'MEDIO_ESQUERDO', 'ANELAR_ESQUERDO', 'MINDINHO_ESQUERDO',
                                   // photos
-                                  'ID_FOTO', 'FOTO_ESQUERDA', 'FOTO_FRONTAL', 'FOTO_DIREITA', 'ESTADO'];
+                                  'ID_FOTOS', 'FOTO_ESQUERDA', 'FOTO_FRONTAL', 'FOTO_DIREITA', 'ESTADO_FOTOS',
+                                  // precedent
+                                  'ID_ANTECEDENTE', 'NO_REFERENCIA', 'MOTIVO_DETENCAO', 'DESTINO', 'DATA', 'ESTADO_ANTECEDENTE'];
             return updatesList.every(parameter => allowUpdates.includes(parameter));
         })
         .withMessage('Invalid updates!')
@@ -1350,14 +1521,7 @@ exports.getIndividualsFullSchema = [
         .trim()
         .isNumeric()
         .withMessage("Individual id must be a number"),
-    body('user_id')
-        .optional()
-        .notEmpty()
-        .withMessage("User id must be filled")
-        .trim()
-        .isNumeric()
-        .withMessage("User id must be a number"),
-    body('name')
+    body('individual_name')
         .optional()
         .notEmpty()
         .withMessage("Name must be filled")
@@ -1477,34 +1641,6 @@ exports.getIndividualsFullSchema = [
                 return true;
         })
         .withMessage('No range provided'),
-    body('marital_status')
-        .optional()
-        .notEmpty()
-        .withMessage("Marital status must be filled")
-        .trim()
-        .isIn(IndividualMaritalSatus)
-        .withMessage('Invalid marital status'),
-    body('profession')
-        .optional()
-        .notEmpty()
-        .withMessage("Profession must be filled")
-        .trim()
-        .isLength({ min: 2 })
-        .withMessage('Must be at least 2 chars long'),
-    body('residence_id')
-        .optional()
-        .notEmpty()
-        .withMessage("Residence id must be filled")
-        .trim()
-        .isLength({ min: 3 })
-        .withMessage('Must be at least 3 chars long'),
-    body('workplace')
-        .optional()
-        .notEmpty()
-        .withMessage("Workplace must be filled")
-        .trim()
-        .isLength({ min: 2 })
-        .withMessage('Must be at least 2 chars long'),
     body('doc_num')
         .optional()
         .notEmpty()
@@ -1556,6 +1692,71 @@ exports.getIndividualsFullSchema = [
         .trim()
         .isLength({ min: 3 })
         .withMessage('Must be at least 3 chars long'),
+    body('marital_status')
+        .optional()
+        .notEmpty()
+        .withMessage("Marital status must be filled")
+        .trim()
+        .isIn(IndividualMaritalSatus)
+        .withMessage('Invalid marital status'),
+    body('profession')
+        .optional()
+        .notEmpty()
+        .withMessage("Profession must be filled")
+        .trim()
+        .isLength({ min: 2 })
+        .withMessage('Must be at least 2 chars long'),
+    body('workplace')
+        .optional()
+        .notEmpty()
+        .withMessage("Workplace must be filled")
+        .trim()
+        .isLength({ min: 2 })
+        .withMessage('Must be at least 2 chars long'),
+    /// location ///
+    body('residence_id')
+        .optional()
+        .notEmpty()
+        .withMessage("Residence id must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
+    body('district_id')
+        .optional()
+        .notEmpty()
+        .withMessage("Residence id must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
+    body('parish_id')
+        .optional()
+        .notEmpty()
+        .withMessage("Residence id must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
+    body('county_id')
+        .optional()
+        .notEmpty()
+        .withMessage("Residence id must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
+    body('island_id')
+        .optional()
+        .notEmpty()
+        .withMessage("Island must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
+    body('country_id')
+        .optional()
+        .notEmpty()
+        .withMessage("Country must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
+    /// physical description ///
     body('height')
         .optional()
         .notEmpty()
@@ -1688,6 +1889,84 @@ exports.getIndividualsFullSchema = [
                 return true;
         })
         .withMessage('No range provided'),
+    /// individual register ///
+    body('individual_register_id')
+        .optional()
+        .notEmpty()
+        .withMessage("Individual register's id must be filled")
+        .trim()
+        .isNumeric()
+        .withMessage("Individual register's id must be a number"),
+    body('individual_register_name')
+        .optional()
+        .notEmpty()
+        .withMessage("Individual register's name must be filled")
+        .trim()
+        .matches(/^[a-zA-Z-' ]+$/)
+        .withMessage("Can only contain: a-z, A-Z, - and '")
+        .isLength({ min: 2 })
+        .withMessage('Must be at least 2 chars long'),
+    body('individual_register_email')
+        .notEmpty()
+        .withMessage("Individual register's email must be filled")
+        .optional()
+        .isEmail()
+        .withMessage('Must be a valid email')
+        .normalizeEmail()
+        .trim(), 
+    body('individual_register_profile')
+        .optional()
+        .notEmpty()
+        .withMessage("Individual register's profile code must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long')
+        .isLength({ max: 10 })
+        .withMessage('Code can contain max 10 characters')
+        .matches(/^[a-zA-Z0-9-_ ]+$/)
+        .withMessage("Can only contain: letters a-z, A-Z, 0-9, - and _"), 
+    body('individual_register_state')
+        .optional()
+        .notEmpty()
+        .withMessage("Individual register's state must be filled")
+        .trim()
+        .isIn(IndividualStates)
+        .withMessage('Invalid state type'), 
+    body('individual_register_created_at')
+        .optional()
+        .notEmpty()
+        .withMessage("Individual register's created at must be filled")
+        .trim()
+        .isISO8601({ strict: true })
+        .withMessage('Invalid date, insert a valid date in the format: YYYY-MM-DD hh:mm:ss'),
+    body('individual_register_created_at_limit')
+        .optional()
+        .notEmpty()
+        .withMessage("Individual register's created at limit must be filled")
+        .trim()
+        .isISO8601({ strict: true })
+        .withMessage('Invalid date, insert a valid date in the format: YYYY-MM-DD hh:mm:ss')
+        .custom((created_at_lim, { req }) => {
+            if(req.body.individual_register_created_at && created_at_lim <= req.body.individual_register_created_at)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('End date must be after start date'),
+    body('individual_register_created_at_range')
+        .optional()
+        .notEmpty()
+        .withMessage("Indicator must be filled")
+        .trim()
+        .isIn(['yes', 'no'])
+        .withMessage('Invalid indicator')
+        .custom((value, { req }) => { 
+            if(value === 'yes' && !req.body.individual_register_created_at && !req.body.individual_register_created_at_limit)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('No range provided'),  
     /// fingerprints ///
     body('fingerprint_id')
         .optional()
@@ -1856,6 +2135,13 @@ exports.getIndividualsFullSchema = [
         .withMessage('Must be at least 6 chars long')
         .isURL()
         .withMessage('Must be a URL'),
+    body('photoState')
+        .optional()
+        .notEmpty()
+        .withMessage("Photo state must be filled")
+        .trim()
+        .isIn(PhotoStates)
+        .withMessage('Invalid state type'),
     body('photo_created_at')
         .optional()
         .notEmpty()
@@ -1891,13 +2177,183 @@ exports.getIndividualsFullSchema = [
                 return true;
         })
         .withMessage('No range provided'),
-    body('photoState')
+    /// precedent ///
+     body('precedent_id')
         .optional()
         .notEmpty()
-        .withMessage("Photo state must be filled")
+        .withMessage("Precedent id must be filled")
         .trim()
-        .isIn(PhotoStates)
+        .isNumeric()
+        .withMessage("Precedent id must be a number"),     
+    body('detention_reason')
+        .optional()
+        .notEmpty()
+        .withMessage("Detention reason must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
+    body('destination')
+        .optional()
+        .notEmpty()
+        .withMessage("Destination must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
+    body('date')
+        .optional()
+        .notEmpty()
+        .withMessage("Date must be filled")
+        .trim()
+        .isISO8601({ strict: true })
+        .withMessage('Invalid date, insert a valid date in the format: YYYY-MM-DD hh:mm:ss'),
+    body('date_limit')
+        .optional()
+        .notEmpty()
+        .withMessage("Date limit must be filled")
+        .trim()
+        .isISO8601({ strict: true })
+        .withMessage('Invalid date, insert a valid date in the format: YYYY-MM-DD hh:mm:ss')
+        .custom((date_lim, { req }) => {
+            if(req.body.date && date_lim <= req.body.date)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('End date must be after start date'),
+    body('date_range')
+        .optional()
+        .notEmpty()
+        .withMessage("Indicator must be filled")
+        .trim()
+        .isIn(['yes', 'no'])
+        .withMessage('Invalid indicator')
+        .custom((value, { req }) => { 
+            if(value === 'yes' && !req.body.date && !req.body.date_limit)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('No range provided'),
+    body('precedentState')
+        .optional()
+        .notEmpty()
+        .withMessage("State must be filled")
+        .trim()
+        .isIn(PrecedentStates)
         .withMessage('Invalid state type'),
+    body('precedent_created_at')
+        .optional()
+        .notEmpty()
+        .withMessage("Precedent created at must be filled")
+        .trim()
+        .isISO8601({ strict: true })
+        .withMessage('Invalid date, insert a valid date in the format: YYYY-MM-DD hh:mm:ss'),
+    body('precedent_created_at_limit')
+        .optional()
+        .notEmpty()
+        .withMessage("Precedent created at limit must be filled")
+        .trim()
+        .isISO8601({ strict: true })
+        .withMessage('Invalid date, insert a valid date in the format: YYYY-MM-DD hh:mm:ss')
+        .custom((created_at_lim, { req }) => {
+            if(req.body.precedent_created_at && created_at_lim <= req.body.precedent_created_at)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('End date must be after start date'),
+    body('precedent_created_at_range')
+        .optional()
+        .notEmpty()
+        .withMessage("Indicator must be filled")
+        .trim()
+        .isIn(['yes', 'no'])
+        .withMessage('Invalid indicator')
+        .custom((value, { req }) => { 
+            if(value === 'yes' && !req.body.precedent_created_at && !req.body.precedent_created_at_limit)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('No range provided'),
+    /// precedent register ///
+    body('precedent_register_id')
+        .optional()
+        .notEmpty()
+        .withMessage("Precedent register's id must be filled")
+        .trim()
+        .isNumeric()
+        .withMessage("Precedent register's id must be a number"),
+    body('precedent_register_name')
+        .optional()
+        .notEmpty()
+        .withMessage("Precedent register's name must be filled")
+        .trim()
+        .matches(/^[a-zA-Z-' ]+$/)
+        .withMessage("Can only contain: a-z, A-Z, - and '")
+        .isLength({ min: 2 })
+        .withMessage('Must be at least 2 chars long'),
+    body('precedent_register_email')
+        .notEmpty()
+        .withMessage("Precedent register's email must be filled")
+        .optional()
+        .isEmail()
+        .withMessage('Must be a valid email')
+        .normalizeEmail()
+        .trim(), 
+    body('precedent_register_profile')
+        .optional()
+        .notEmpty()
+        .withMessage("Precedent register's profile code must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long')
+        .isLength({ max: 10 })
+        .withMessage('Code can contain max 10 characters')
+        .matches(/^[a-zA-Z0-9-_ ]+$/)
+        .withMessage("Can only contain: letters a-z, A-Z, 0-9, - and _"), 
+    body('precedent_register_state')
+        .optional()
+        .notEmpty()
+        .withMessage("Precedent register's state must be filled")
+        .trim()
+        .isIn(IndividualStates)
+        .withMessage('Invalid state type'), 
+    body('precedent_register_created_at')
+        .optional()
+        .notEmpty()
+        .withMessage("Precedent register's created at must be filled")
+        .trim()
+        .isISO8601({ strict: true })
+        .withMessage('Invalid date, insert a valid date in the format: YYYY-MM-DD hh:mm:ss'),
+    body('precedent_register_created_at_limit')
+        .optional()
+        .notEmpty()
+        .withMessage("Precedent register's created at limit must be filled")
+        .trim()
+        .isISO8601({ strict: true })
+        .withMessage('Invalid date, insert a valid date in the format: YYYY-MM-DD hh:mm:ss')
+        .custom((created_at_lim, { req }) => {
+            if(req.body.precedent_register_created_at && created_at_lim <= req.body.precedent_register_created_at)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('End date must be after start date'),
+    body('precedent_register_created_at_range')
+        .optional()
+        .notEmpty()
+        .withMessage("Indicator must be filled")
+        .trim()
+        .isIn(['yes', 'no'])
+        .withMessage('Invalid indicator')
+        .custom((value, { req }) => { 
+            if(value === 'yes' && !req.body.precedent_register_created_at && !req.body.precedent_register_created_at_limit)
+                return false;
+            else
+                return true;
+        })
+        .withMessage('No range provided'),  
 
 
     body()
@@ -1905,19 +2361,31 @@ exports.getIndividualsFullSchema = [
             // convert object keys into colum names
             var searchList = getNormalizedColumns(Object.keys(value));
             //Set the allowed field for searching and see if the ones sent match
-            const allowSearch = ['ID_INDIVIDUO', 'ID_UTILIZADOR', 'NOME', 'ALCUNHA', 'PAI', 'MAE', 'NACIONALIDADE', 'LOCAL_NASCIMENTO', 'DATA_NASCIMENTO', 
-                                 'IDADE_APARENTE', 'ESTADO_CIVIL', 'PROFISSAO', 'ID_RESIDENCIA', 'LOCAL_TRABALHO', 'NUM_DOC', 'DATA_EMISSAO_DOC', 
+            const allowSearch = ['ID_INDIVIDUO', 'NOME_INDIVIDUO', 'ALCUNHA', 'PAI', 'MAE', 'NACIONALIDADE', 'LOCAL_NASCIMENTO', 
+                                 'DATA_NASCIMENTO', 'IDADE_APARENTE', 'ESTADO_CIVIL', 'PROFISSAO', 'LOCAL_TRABALHO', 'NUM_DOC', 'DATA_EMISSAO_DOC', 
                                  'LOCAL_EMISSAO_DOC', 'ALTURA', 'CABELO', 'BARBA', 'NARIZ', 'BOCA', 'ROSTO', 'COR', 'TATUAGENS', 'CLASSIFICACAO_POLICIAL', 
-                                 'ESTADO', 'DATA_REGISTO', 'birthdate_limit', 'birthdate_range', 'apparent_age_limit', 'apparent_age_range', 
+                                 'ESTADO_INDIVIDUO', 'DATA_REGISTO_INDIVIDUO', 'birthdate_limit', 'birthdate_range', 'apparent_age_limit', 'apparent_age_range', 
                                  'doc_issuance_date_limit', 'doc_issuance_date_range', 'height_limit', 'height_range', 'individual_created_at_limit', 
                                  'individual_created_at_range',
+                                 // residencia
+                                 'ID_RESIDENCIA', 'ID_ZONA', 'ID_FREGUESIA', 'ID_CONCELHO', 'ID_ILHA', 'ID_PAIS',
                                  // fingerprint
                                  'ID_DIGITAIS', 'POLEGAR_DIREITO', 'INDICADOR_DIREITO', 'MEDIO_DIREITO', 'ANELAR_DIREITO', 'MINDINHO_DIREITO', 
-                                 'POLEGAR_ESQUERDO', 'INDICADOR_ESQUERDO', 'MEDIO_ESQUERDO', 'ANELAR_ESQUERDO', 'MINDINHO_ESQUERDO', 'DATA_REGISTO', 
-                                 'created_at_limit', 'created_at_range',
+                                 'POLEGAR_ESQUERDO', 'INDICADOR_ESQUERDO', 'MEDIO_ESQUERDO', 'ANELAR_ESQUERDO', 'MINDINHO_ESQUERDO', 'DATA_REGISTO_DIGITAIS', 
+                                 'fingerprint_created_at_limit', 'fingerprint_created_at_range',
                                  // photo
-                                 'ID_FOTO', 'FOTO_ESQUERDA', 'FOTO_FRONTAL', 'FOTO_DIREITA', 'ESTADO', 'DATA_REGISTO', 
-                                 'photo_created_at_limit', 'photo_created_at_range'];
+                                 'ID_FOTO', 'FOTO_ESQUERDA', 'FOTO_FRONTAL', 'FOTO_DIREITA', 'ESTADO_FOTOS', 'DATA_REGISTO_FOTOS', 
+                                 'photo_created_at_limit', 'photo_created_at_range',
+                                 // individual register
+                                 'ID_CADASTRANTE_INDIVIDUO', `NOME_CADASTRANTE_INDIVIDUO`, 'EMAIL_CADASTRANTE_INDIVIDUO', 'PERFIL_CADASTRANTE_INDIVIDUO', 
+                                 'ESTADO_CADASTRANTE_INDIVIDUO', 'DATA_REGISTO_CADASTRANTE_INDIVIDUO', 'individual_register_created_at_limit', 
+                                 'individual_register_created_at_range',
+                                 // precedent
+                                 'ID_ANTECEDENTE', 'NO_REFERENCIA', 'MOTIVO_DETENCAO', 'DESTINO', 'DATA', 'ESTADO_ANTECEDENTE', 'DATA_REGISTO_ANTECEDENTE',
+                                 'date_limit', 'date_range', 'precedent_created_at_limit', 'precedent_created_at_range',
+                                // precedent register
+                                'ID_CADASTRANTE_ANTECEDENTE', `NOME_CADASTRANTE_ANTECEDENTE`, 'PERFIL_CADASTRANTE_ANTECEDENTE', 'EMAIL_CADASTRANTE_ANTECEDENTE',
+                                'DATA_REGISTO_CADASTRANTE_ANTECEDENTE', 'precedent_register_created_at_limit', 'precedent_register_created_at_range',];
             return searchList.every(parameter => allowSearch.includes(parameter));
         })
         .withMessage('Invalid extra fields!')

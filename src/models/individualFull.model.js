@@ -13,7 +13,9 @@ class IndividualModel {
         const { columnSet, values } = multipleColumnSet(params)
         sql += ` WHERE ${columnSet}`;
 
-        return await query(sql, [...values]);
+        const result = await query(sql, [...values]);
+        
+        return result;
     }
 
     findMany = async (params = {}) => {
@@ -41,24 +43,24 @@ class IndividualModel {
         return result[0];
     }
 
-    createFull = async ({ name, nickname, father, mother, nationality, birthplace, birthdate, apparent_age, marital_status, profession, 
-                      residence_id, workplace, doc_num, doc_issuance_date, doc_issuance_place, height, hair, beard, nose, mouth, face, colour, tattoos, 
-                      police_classification, individualState = 'A',
+    createFull = async ({ individual_name, nickname, father, mother, nationality, birthplace, birthdate, apparent_age, marital_status, profession, 
+                      residence_id, workplace, doc_num, doc_issuance_date, doc_issuance_place, height, hair, beard = null, nose, mouth, face, colour, 
+                      tattoos = null, police_classification, individualState = 'A',
                       r_thumb, r_index, r_middle, r_ring, r_little, l_thumb, l_index, l_middle, l_ring, l_little,
-                      l_photo, f_photo, r_photo, photoState = 'A'}, user_id) => {
+                      l_photo, f_photo, r_photo, photoState = 'A',
+                      reference_num, detention_reason, destination, date = new Date(), precedentState = 'A'}, user_id) => {
         let affectedRows = 0;
         const sql1 = `INSERT INTO individuo
         (ID_UTILIZADOR, NOME, ALCUNHA, PAI, MAE, NACIONALIDADE, LOCAL_NASCIMENTO, DATA_NASCIMENTO, IDADE_APARENTE, ESTADO_CIVIL, PROFISSAO, ID_RESIDENCIA, 
          LOCAL_TRABALHO, NUM_DOC, DATA_EMISSAO_DOC, LOCAL_EMISSAO_DOC, ALTURA, CABELO, BARBA, NARIZ, BOCA, ROSTO, COR, TATUAGENS, 
          CLASSIFICACAO_POLICIAL, ESTADO) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
 
-        const result1 = await query(sql1, [user_id, name, nickname, father, mother, nationality, birthplace, birthdate, apparent_age, marital_status, 
+        const result1 = await query(sql1, [user_id, individual_name, nickname, father, mother, nationality, birthplace, birthdate, apparent_age, marital_status, 
                                          profession, residence_id, workplace, doc_num, doc_issuance_date, doc_issuance_place, height, hair, beard, nose, 
                                          mouth, face, colour, tattoos, police_classification, individualState]);
         const affectedRows1 = result1 ? result1.affectedRows : 0;
 
         if(affectedRows1 != 0){
-            console.log("affectedRows1: " + affectedRows1);
             affectedRows += affectedRows1;
             let individual_id = result1.insertId;
             const sql2 = `INSERT INTO digitais
@@ -69,7 +71,6 @@ class IndividualModel {
             const affectedRows2 = result2 ? result2.affectedRows : 0;
 
             if(affectedRows2 != 0){
-                console.log("affectedRows2: " + affectedRows2);
                 affectedRows += affectedRows2;
                 const sql3 = `INSERT INTO fotos
                 (ID_INDIVIDUO, FOTO_ESQUERDA, FOTO_FRONTAL, FOTO_DIREITA, ESTADO) VALUES (?,?,?,?,?)`;
@@ -78,8 +79,14 @@ class IndividualModel {
                 const affectedRows3 = result3 ? result3.affectedRows : 0;
 
                 if(affectedRows3 != 0){
-                    console.log("affectedRows3: " + affectedRows3);
                     affectedRows += affectedRows3;
+                    const sql4 = `INSERT INTO antecedente
+                    (ID_UTILIZADOR, ID_INDIVIDUO, NO_REFERENCIA, MOTIVO_DETENCAO, DESTINO, DATA, ESTADO) VALUES (?,?,?,?,?,?,?)`;
+
+                    const result4 = await query(sql4, [user_id, individual_id, reference_num, detention_reason, destination, date, precedentState]);
+                    const affectedRows4 = result4 ? result4.affectedRows : 0;
+                    if(affectedRows4 != 0)
+                        affectedRows += affectedRows3;
                 }
             }
         }
@@ -88,7 +95,7 @@ class IndividualModel {
         return affectedRows;
     }
 
-    updateFull = async (individualUpdates, fingerprintUpdates, photoUpdates, individual_id) => {
+    updateFull = async (individualUpdates, fingerprintUpdates, photoUpdates, precedentUpdates, individual_id) => {
 
         let result = {
             fieldCount : 0,
@@ -139,6 +146,19 @@ class IndividualModel {
             result.warningStatus += result3.warningStatus;                                                  
         }
 
+        if(Object.keys(precedentUpdates).length){
+            let pru = multipleColumnSet(precedentUpdates)
+            //console.log("photo columnSet: " + pru.columnSet);
+            //console.log("photo values: " + [...pru.values]);
+
+            const sql4 = `UPDATE antecedente SET ${pru.columnSet} WHERE ID= ?`;
+
+            const result4 = await query(sql4, [...pru.values, Object.values(photoUpdates)[Object.keys(photoUpdates).indexOf("ID")] ]);
+            result.affectedRows += result4.affectedRows;
+            result.changedRows += result4.changedRows;
+            result.warningStatus += result4.warningStatus;                                                  
+        }
+
         //console.log("result sql: " + `${sql1}; ${sql2}; ${sql3}`);
         /*
         const finalQuery = `${sql1}; ${sql2}; ${sql3}`;
@@ -178,11 +198,16 @@ class IndividualModel {
         const result2 = await query(sql2, [id]);
         const affectedRows2 = result2 ? result2.affectedRows : 0;
         affectedRows += affectedRows2;
-        const sql3 = `DELETE FROM individuo
-        WHERE ID = ?`;
+        const sql3 = `DELETE FROM antecedente
+        WHERE ID_INDIVIDUO = ?`;
         const result3 = await query(sql3, [id]);
         const affectedRows3 = result3 ? result3.affectedRows : 0;
         affectedRows += affectedRows3;
+        const sql4 = `DELETE FROM individuo
+        WHERE ID = ?`;
+        const result4 = await query(sql4, [id]);
+        const affectedRows4 = result4 ? result4.affectedRows : 0;
+        affectedRows += affectedRows4;
 
         return affectedRows;
     }

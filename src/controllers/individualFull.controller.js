@@ -63,10 +63,8 @@ class IndividualFullController {
 
         if( Object.keys(req.body).includes('individual_id') )
             individualUpdates["ID"] = Object.values(req.body)[Object.keys(req.body).indexOf("individual_id")];
-        if( Object.keys(req.body).includes('user_id') )
-            individualUpdates["ID_UTILIZADOR"] = Object.values(req.body)[Object.keys(req.body).indexOf("user_id")];
-        if( Object.keys(req.body).includes('name') )
-            individualUpdates["NOME"] = Object.values(req.body)[Object.keys(req.body).indexOf("name")];
+        if( Object.keys(req.body).includes('individual_name') )
+            individualUpdates["NOME"] = Object.values(req.body)[Object.keys(req.body).indexOf("individual_name")];
         if( Object.keys(req.body).includes('nickname') )
             individualUpdates["ALCUNHA"] = Object.values(req.body)[Object.keys(req.body).indexOf("nickname")];
         if( Object.keys(req.body).includes('father') )
@@ -118,8 +116,6 @@ class IndividualFullController {
         
         let fingerprintUpdates = {};
  
-        if( Object.keys(req.body).includes('fingerprint_id') )
-            fingerprintUpdates["ID"] = Object.values(req.body)[Object.keys(req.body).indexOf("fingerprint_id")];
         if( Object.keys(req.body).includes('r_thumb') )
             fingerprintUpdates["POLEGAR_DIREITO"] = Object.values(req.body)[Object.keys(req.body).indexOf("r_thumb")];
         if( Object.keys(req.body).includes('r_index') )
@@ -153,17 +149,23 @@ class IndividualFullController {
             photoUpdates["FOTO_DIREITA"] = Object.values(req.body)[Object.keys(req.body).indexOf("r_photo")];
         if( Object.keys(req.body).includes('photoState') )
             photoUpdates["ESTADO"] = Object.values(req.body)[Object.keys(req.body).indexOf("photoState")]; 
+
+        console.log("photoUpdates keys: " + Object.keys(photoUpdates));
+        console.log("photoUpdates values: " + Object.values(photoUpdates));
+        let precedentUpdates = {};
         
-        /*
-        let updates = getNormalizedColumnsValues(req.body);
-        // remove the limits, they are not used in updating
-        delete updates['birthdate_limit'];
-        delete updates['apparent_age_limit'];
-        delete updates['doc_issuance_date_limit'];
-        delete updates['height_limit'];
-        console.log("updates: " + updates);
-        */
-        const result = await IndividualFullModel.updateFull(individualUpdates, fingerprintUpdates, photoUpdates, req.params.id);
+        if( Object.keys(req.body).includes('precedent_id') )
+            precedentUpdates["ID"] = Object.values(req.body)[Object.keys(req.body).indexOf("precedent_id")];
+        if( Object.keys(req.body).includes('reference_num') )
+            precedentUpdates["NO_REFERENCIA"] = Object.values(req.body)[Object.keys(req.body).indexOf("reference_num")];
+        if( Object.keys(req.body).includes('detention_reason') )
+            precedentUpdates["MOTIVO_DETENCAO"] = Object.values(req.body)[Object.keys(req.body).indexOf("detention_reason")];
+        if( Object.keys(req.body).includes('destination') )
+            precedentUpdates["DESTINO"] = Object.values(req.body)[Object.keys(req.body).indexOf("destination")];
+        if( Object.keys(req.body).includes('precedentState') )
+            precedentUpdates["ESTADO"] = Object.values(req.body)[Object.keys(req.body).indexOf("precedentState")]; 
+
+        const result = await IndividualFullModel.updateFull(individualUpdates, fingerprintUpdates, photoUpdates, precedentUpdates, req.params.id);
 
         if (!result) {
             throw new HttpException(404, 'Something went wrong');
