@@ -30,12 +30,12 @@ class IndividualFullController {
         this.checkValidation(req);
         // convert the re.body keys into the actual names of the table's colums
         let individualList = getNormalizedColumnsValues(req.body);
-        const individual = await IndividualFullModel.findMany(individualList);
-        if (!individual.length) {
+        const individuals = await IndividualFullModel.findMany(individualList, 'ID_INDIVIDUO');
+        if (!individuals.length) {
             throw new HttpException(404, 'Individuals not found');
         }
-
-        res.send(individual);
+        
+        res.send(individuals);
     };
 
     createIndividualFull = async (req, res, next) => {

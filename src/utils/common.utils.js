@@ -47,6 +47,42 @@ exports.multipleColumnGets = (object) => {
         else if (key === 'created_at_limit') {
             return `DATA_REGISTO < ?`;
         }
+        else if (key === 'DATA_REGISTO_INDIVIDUO') {
+            return `${key} >= ?`
+        }
+        else if (key === 'individual_created_at_limit') {
+            return `DATA_REGISTO_INDIVIDUO < ?`;
+        }
+        else if (key === 'DATA_REGISTO_DIGITAIS') {
+            return `${key} >= ?`
+        }
+        else if (key === 'fingerprint_created_at_limit') {
+            return `DATA_REGISTO_DIGITAIS < ?`;
+        }
+        else if (key === 'DATA_REGISTO_FOTOS') {
+            return `${key} >= ?`
+        }
+        else if (key === 'photo_created_at_limit') {
+            return `DATA_REGISTO_FOTOS < ?`;
+        }
+        else if (key === 'DATA_REGISTO_CADASTRANTE_INDIVIDUO') {
+            return `${key} >= ?`
+        }
+        else if (key === 'individual_register_created_at_limit') {
+            return `DATA_REGISTO_CADASTRANTE_INDIVIDUO < ?`;
+        }
+        else if (key === 'DATA_REGISTO_ANTECEDENTE') {
+            return `${key} >= ?`
+        }
+        else if (key === 'precedent_created_at_limit') {
+            return `DATA_REGISTO_ANTECEDENTE < ?`;
+        }
+        else if (key === 'DATA_REGISTO_CADASTRANTE_ANTECEDENTE') {
+            return `${key} >= ?`
+        }
+        else if (key === 'precedent_register_created_at_limit') {
+            return `DATA_REGISTO_CADASTRANTE_ANTECEDENTE < ?`;
+        }
         else if (key === 'DATA_NASCIMENTO') {
             return `DATA_NASCIMENTO >= ?`;
         }
