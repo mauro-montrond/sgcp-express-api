@@ -41,11 +41,11 @@ class MenuModel {
         return result[0];
     }
 
-    create = async ({ code, description, parent_menu = null, state = 'A'}) => {
+    create = async ({ code, title, description, parent_menu = null, state = 'A'}) => {
         const sql = `INSERT INTO ${this.tableName}
-        (CODIGO, DESCRICAO, ID_MENU_PAI, ESTADO) VALUES (?,?,?,?)`;
+        (CODIGO, TITULO, DESCRICAO, ID_MENU_PAI, ESTADO) VALUES (?,?,?,?,?)`;
 
-        const result = await query(sql, [code, description, parent_menu, state]);
+        const result = await query(sql, [code, title, description, parent_menu, state]);
         const affectedRows = result ? result.affectedRows : 0;
 
         return affectedRows;

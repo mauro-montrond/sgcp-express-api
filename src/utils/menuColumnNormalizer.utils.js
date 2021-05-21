@@ -10,6 +10,9 @@ exports.getNormalizedColumns = (columnsList) => {
                 case "code":
                     normalizedColumns.push("CODIGO");
                     break;
+                case "title":
+                    normalizedColumns.push("TITULO");
+                    break;
                 case "description":
                     normalizedColumns.push("DESCRICAO");
                     break;
@@ -37,6 +40,8 @@ exports.getNormalizedColumnsValues = (columnsValuesList) => {
         normalizedColumnsValues["ID"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("id")];
     if( Object.keys(columnsValuesList).includes('code') )
         normalizedColumnsValues["CODIGO"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("code")];
+    if( Object.keys(columnsValuesList).includes('title') )
+        normalizedColumnsValues["TITULO"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("title")];
     if( Object.keys(columnsValuesList).includes('description') )
         normalizedColumnsValues["DESCRICAO"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("description")];
     if( Object.keys(columnsValuesList).includes('parent_menu') )

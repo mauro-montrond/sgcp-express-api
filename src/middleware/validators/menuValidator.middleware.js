@@ -26,6 +26,14 @@ exports.createMenuSchema = [
                 return Promise.resolve();
         })
         .withMessage('Code already exists'),
+    body('title')
+        .exists()
+        .withMessage('A title is required')
+        .notEmpty()
+        .withMessage("Title must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'), 
     body('description')
         .exists()
         .withMessage('A description is required')
@@ -87,7 +95,7 @@ exports.createMenuSchema = [
             //convert object keys into column names
             var creatList = getNormalizedColumns(Object.keys(value));
             //Set the allowed field for creation and see if the ones sent match
-            const allowCreation = ['CODIGO', 'DESCRICAO', 'ID_MENU_PAI', 'ESTADO'];
+            const allowCreation = ['CODIGO', 'TITULO', 'DESCRICAO', 'ID_MENU_PAI', 'ESTADO'];
             return creatList.every(parameter => allowCreation.includes(parameter));
         })
         .withMessage('Invalid extra fields!')
@@ -123,6 +131,13 @@ exports.updateMenuSchema = [
                 return Promise.resolve();
         })
         .withMessage('Code already exists'),
+    body('title')
+        .optional()
+        .notEmpty()
+        .withMessage("Title must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
     body('description')
         .optional()
         .notEmpty()
@@ -239,7 +254,7 @@ exports.updateMenuSchema = [
             // convert object keys into colum names
             var updatesList = getNormalizedColumns(Object.keys(value));
             //Set the allowed field for updating and see if the ones sent match
-            const allowUpdates = ['CODIGO', 'DESCRICAO', 'ID_MENU_PAI', 'ESTADO'];
+            const allowUpdates = ['CODIGO', 'TITULO', 'DESCRICAO', 'ID_MENU_PAI', 'ESTADO'];
             return updatesList.every(parameter => allowUpdates.includes(parameter));
         })
         .withMessage('Invalid updates!')
@@ -264,6 +279,13 @@ exports.getMenusSchema = [
         .withMessage('Code can contain max 18 characters')
         .matches(/^[a-zA-Z0-9-_ ]+$/)
         .withMessage("Can only contain: letters a-z, A-Z, - and _"),
+    body('title')
+        .optional()
+        .notEmpty()
+        .withMessage("Title must be filled")
+        .trim()
+        .isLength({ min: 3 })
+        .withMessage('Must be at least 3 chars long'),
     body('description')
         .optional()
         .notEmpty()
@@ -325,7 +347,7 @@ exports.getMenusSchema = [
             // convert object keys into colum names
             var searchList = getNormalizedColumns(Object.keys(value));
             //Set the allowed field for searching and see if the ones sent match
-            const allowSearch = ['ID', 'CODIGO', 'DESCRICAO', 'ID_MENU_PAI', 'DATA_REGISTO', 'ESTADO','created_at_limit', 'created_at_range'];
+            const allowSearch = ['ID', 'CODIGO', 'TITULO', 'DESCRICAO', 'ID_MENU_PAI', 'DATA_REGISTO', 'ESTADO','created_at_limit', 'created_at_range'];
             return searchList.every(parameter => allowSearch.includes(parameter));
         })
         .withMessage('Invalid extra fields!')
