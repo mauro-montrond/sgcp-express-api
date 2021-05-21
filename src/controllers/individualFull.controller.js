@@ -30,7 +30,12 @@ class IndividualFullController {
         this.checkValidation(req);
         // convert the re.body keys into the actual names of the table's colums
         let individualList = getNormalizedColumnsValues(req.body);
-        const individuals = await IndividualFullModel.findMany(individualList, 'ID_INDIVIDUO');
+        let sorter = individualList['sorter'];
+        delete individualList['sorter'];
+        const individuals = await IndividualFullModel.findMany(individualList, sorter);
+        //const individuals = await IndividualFullModel.findMany(individualList, 'ID_INDIVIDUO');
+        //const individuals = await IndividualFullModel.findMany(individualList, 'ID_CADASTRANTE_INDIVIDUO');
+        //const individuals = await IndividualFullModel.findMany(individualList, 'ID_CADASTRANTE_ANTECEDENTEO');
         if (!individuals.length) {
             throw new HttpException(404, 'Individuals not found');
         }

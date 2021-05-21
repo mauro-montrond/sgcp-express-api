@@ -424,14 +424,14 @@ exports.getNormalizedColumnsValues = (columnsValuesList) => {
             if( !Object.keys(columnsValuesList).includes('individual_register_created_at') ){
                 let limit_date = new Date('1900-01-01');
                 limit_date.setDate( limit_date.getDate() + 1 );
-                normalizedColumnsValues["ESTADO_CADASTRANTE_INDIVIDUO"] = limit_date;
+                normalizedColumnsValues["DATA_REGISTO_CADASTRANTE_INDIVIDUO"] = limit_date;
             }
             else
-                normalizedColumnsValues["ESTADO_CADASTRANTE_INDIVIDUO"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("individual_register_created_at")];
+                normalizedColumnsValues["DATA_REGISTO_CADASTRANTE_INDIVIDUO"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("individual_register_created_at")];
 
     }
     else if( Object.keys(columnsValuesList).includes('individual_register_created_at') ){
-        normalizedColumnsValues["ESTADO_CADASTRANTE_INDIVIDUO"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("individual_register_created_at")];
+        normalizedColumnsValues["DATA_REGISTO_CADASTRANTE_INDIVIDUO"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("individual_register_created_at")];
         let limit_date = new Date( Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("individual_register_created_at")] );
         limit_date.setDate( limit_date.getDate() + 1 );
         normalizedColumnsValues["individual_register_created_at_limit"] = limit_date;
@@ -520,7 +520,7 @@ exports.getNormalizedColumnsValues = (columnsValuesList) => {
     }
     // precedent
     if( Object.keys(columnsValuesList).includes('precedent_id') )
-        normalizedColumnsValues["ID"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("precedent_id")];
+        normalizedColumnsValues["ID_ANTECEDENTE"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("precedent_id")];
     if( Object.keys(columnsValuesList).includes('reference_num') )
         normalizedColumnsValues["NO_REFERENCIA"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("reference_num")];
     if( Object.keys(columnsValuesList).includes('detention_reason') )
@@ -600,18 +600,21 @@ exports.getNormalizedColumnsValues = (columnsValuesList) => {
             if( !Object.keys(columnsValuesList).includes('precedent_register_created_at') ){
                 let limit_date = new Date('1900-01-01');
                 limit_date.setDate( limit_date.getDate() + 1 );
-                normalizedColumnsValues["ESTADO_CADASTRANTE_ANTECEDENTE"] = limit_date;
+                normalizedColumnsValues["DATA_REGISTO_CADASTRANTE_ANTECEDENTE"] = limit_date;
             }
             else
-                normalizedColumnsValues["ESTADO_CADASTRANTE_ANTECEDENTE"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("precedent_register_created_at")];
+                normalizedColumnsValues["DATA_REGISTO_CADASTRANTE_ANTECEDENTE"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("precedent_register_created_at")];
 
     }
     else if( Object.keys(columnsValuesList).includes('precedent_register_created_at') ){
-        normalizedColumnsValues["ESTADO_CADASTRANTE_ANTECEDENTE"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("precedent_register_created_at")];
+        normalizedColumnsValues["DATA_REGISTO_CADASTRANTE_ANTECEDENTE"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("precedent_register_created_at")];
         let limit_date = new Date( Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("precedent_register_created_at")] );
         limit_date.setDate( limit_date.getDate() + 1 );
         normalizedColumnsValues["precedent_register_created_at_limit"] = limit_date;
     }
+
+    if( Object.keys(columnsValuesList).includes('sorter') )
+        normalizedColumnsValues["sorter"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("sorter")];
 
     return normalizedColumnsValues;
 }

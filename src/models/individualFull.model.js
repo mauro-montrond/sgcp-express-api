@@ -42,7 +42,7 @@ class IndividualFullModel {
                 unsortedList = result.filter(item => item.ID_CADASTRANTE_INDIVIDUO); // sorted by individual register
             }
             else if(sorter == 'ID_CADASTRANTE_ANTECEDENTEO'){
-                unsortedList = result.filter(item => item.ID_CADASTRANTE_ANTECEDENTE); // sorted by precedent register
+                unsortedList = result.filter(item => item.ID_CADASTRANTE_INDIVIDUO); // sorted by precedent register
             }
             //console.log(sBI);
             //console.log("::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
@@ -58,6 +58,16 @@ class IndividualFullModel {
                     sortedList = this.srotByPrecedentRegister(sortedList, item, sorter);
                 }
             });
+			if(sorter == 'ID_CADASTRANTE_ANTECEDENTEO'){
+				for(let i = 0; i < sortedList.length; i++){
+					if(sortedList[i].INDIVIDUOS.length > 1){
+						for(let i2=0; i2 < sortedList[i].INDIVIDUOS.length; i2++){
+							if(!sortedList[i].INDIVIDUOS[i2].ID_INDIVIDUO)
+								sortedList[i].INDIVIDUOS.splice(i2, 1);
+						}
+					}
+				}
+			}
             //console.log(sortedList);
             return sortedList;
         }
@@ -76,7 +86,7 @@ class IndividualFullModel {
 				individual.FOTOS.push(photos);
 				individual['ANTECEDENTES'] = [];
 				let precedent = this.addPrecedent(item);
-				let precedentRegister = this.addPrecedentRegister(item);
+				let precedentRegister = this.addPrecedentRegister(item, 'individual');
 				precedent['CADASTRANTE_ANTECEDENTE'] = precedentRegister;
 				individual.ANTECEDENTES.push(precedent);
 				sortedList.push(individual);
@@ -90,7 +100,7 @@ class IndividualFullModel {
 				}
 				if(!this.checkIDByAtr(sortedList[index].ANTECEDENTES, 'ID_ANTECEDENTE', item.ID_ANTECEDENTE)){
 					let precedent = this.addPrecedent(item);
-					let precedentRegister = this.addPrecedentRegister(item);
+					let precedentRegister = this.addPrecedentRegister(item, 'individual');
 					precedent['CADASTRANTE_ANTECEDENTE'] = precedentRegister;
 					sortedList[index].ANTECEDENTES.push(precedent);
 					
@@ -107,7 +117,7 @@ class IndividualFullModel {
 			individual.FOTOS.push(photos);
 			individual['ANTECEDENTES'] = [];
 			let precedent = this.addPrecedent(item);
-			let precedentRegister = this.addPrecedentRegister(item);
+			let precedentRegister = this.addPrecedentRegister(item, 'individual');
 			precedent['CADASTRANTE_ANTECEDENTE'] = precedentRegister;
 			individual.ANTECEDENTES.push(precedent);
 			sortedList.push(individual);
@@ -128,7 +138,7 @@ class IndividualFullModel {
 				individual.FOTOS.push(photos);
 				individual['ANTECEDENTES'] = [];
 				let precedent = this.addPrecedent(item);
-				let precedentRegister = this.addPrecedentRegister(item);
+				let precedentRegister = this.addPrecedentRegister(item, 'individualRegister');
 				precedent['CADASTRANTE_ANTECEDENTE'] = precedentRegister;
 				individual.ANTECEDENTES.push(precedent);
 				individualRegister.INDIVIDUOS.push(individual);
@@ -145,7 +155,7 @@ class IndividualFullModel {
 					individual.FOTOS.push(photos);
 					individual['ANTECEDENTES'] = [];
 					let precedent = this.addPrecedent(item);
-					let precedentRegister = this.addPrecedentRegister(item);
+					let precedentRegister = this.addPrecedentRegister(item, 'individualRegister');
 					precedent['CADASTRANTE_ANTECEDENTE'] = precedentRegister;
 					individual.ANTECEDENTES.push(precedent);
                     console.log("1");
@@ -160,7 +170,7 @@ class IndividualFullModel {
 					}
 					if(!this.checkIDByAtr(sortedList[index].INDIVIDUOS[index2].ANTECEDENTES, 'ID_ANTECEDENTE', item.ID_ANTECEDENTE)){
 						let precedent = this.addPrecedent(item);
-						let precedentRegister = this.addPrecedentRegister(item);
+						let precedentRegister = this.addPrecedentRegister(item, 'individualRegister');
 						precedent['CADASTRANTE_ANTECEDENTE'] = precedentRegister;
 						sortedList[index].INDIVIDUOS[index2].ANTECEDENTES.push(precedent);
 					}
@@ -178,7 +188,7 @@ class IndividualFullModel {
 			individual.FOTOS.push(photos);
 			individual['ANTECEDENTES'] = [];
 			let precedent = this.addPrecedent(item);
-			let precedentRegister = this.addPrecedentRegister(item);
+			let precedentRegister = this.addPrecedentRegister(item, 'individualRegister');
 			precedent['CADASTRANTE_ANTECEDENTE'] = precedentRegister;
 			individual.ANTECEDENTES.push(precedent);
 			individualRegister.INDIVIDUOS.push(individual);
@@ -188,26 +198,15 @@ class IndividualFullModel {
 	};
     
 	srotByPrecedentRegister = (sortedList, item) => {
-		if(item.ID_CADASTRANTE_ANTECEDENTE){
-			if(!this.checkIDByAtr(sortedList, 'ID_CADASTRANTE_ANTECEDENTE', item.ID_CADASTRANTE_ANTECEDENTE)){
-				let precedentRegister = this.addPrecedentRegister(item); 
+		//console.log(item);
+		if(item.ID_CADASTRANTE_INDIVIDUO){
+			if(!this.checkIDByAtr(sortedList, 'ID_CADASTRANTE_ANTECEDENTE', item.ID_CADASTRANTE_INDIVIDUO)){
+				let precedentRegister = this.addPrecedentRegister(item, 'precedentRegister'); 
 				precedentRegister['INDIVIDUOS'] = [];
-				let individual = this.addIndividual(item); 
-				let fingerprints = this.addFingerprints(item);
-				individual['DIGITAIS'] = fingerprints;
-				individual['FOTOS'] = [];
-				let photos = this.addPhotos(item);
-				individual.FOTOS.push(photos);
-				individual['ANTECEDENTES'] = [];
-				let precedent = this.addPrecedent(item);
-				individual.ANTECEDENTES.push(precedent);
-				precedentRegister.INDIVIDUOS.push(individual);
-				sortedList.push(precedentRegister);
-			}
-			else{
-				let index = this.getIndexByAtr(sortedList, 'ID_CADASTRANTE_ANTECEDENTE', item.ID_CADASTRANTE_ANTECEDENTE);
-				if(!this.checkIDByAtr(sortedList[index].INDIVIDUOS, 'ID_INDIVIDUO', item.ID_INDIVIDUO)){
-					let individual = this.addIndividual(item); 
+				let individual = {};
+				if(item.ID_CADASTRANTE_INDIVIDUO == item.ID_CADASTRANTE_ANTECEDENTE){
+					individual = this.addIndividual(item); 
+					individual['CADASTRANTE_INDIVIDUO'] = this.addIndivRegister(item);
 					let fingerprints = this.addFingerprints(item);
 					individual['DIGITAIS'] = fingerprints;
 					individual['FOTOS'] = [];
@@ -216,7 +215,39 @@ class IndividualFullModel {
 					individual['ANTECEDENTES'] = [];
 					let precedent = this.addPrecedent(item);
 					individual.ANTECEDENTES.push(precedent);
-					sortedList[index].INDIVIDUOS.push(individual);
+				}
+				else {
+					let nullItem = {};
+					individual = this.addIndividual(nullItem); 
+					individual['CADASTRANTE_INDIVIDUO'] = this.addIndivRegister(nullItem);
+					let fingerprints = this.addFingerprints(nullItem);
+					individual['DIGITAIS'] = fingerprints;
+					individual['FOTOS'] = [];
+					let photos = this.addPhotos(nullItem);
+					individual.FOTOS.push(photos);
+					individual['ANTECEDENTES'] = [];
+					let precedent = this.addPrecedent(nullItem);
+					individual.ANTECEDENTES.push(precedent);
+				}
+				precedentRegister.INDIVIDUOS.push(individual);
+				sortedList.push(precedentRegister);
+			}
+			else{
+				let index = this.getIndexByAtr(sortedList, 'ID_CADASTRANTE_ANTECEDENTE', item.ID_CADASTRANTE_INDIVIDUO);
+				if(!this.checkIDByAtr(sortedList[index].INDIVIDUOS, 'ID_INDIVIDUO', item.ID_INDIVIDUO)){
+					if(sortedList[index].ID_CADASTRANTE_ANTECEDENTE == item.ID_CADASTRANTE_ANTECEDENTE){
+						let individual = this.addIndividual(item); 
+						individual['CADASTRANTE_INDIVIDUO'] = this.addIndivRegister(item);
+						let fingerprints = this.addFingerprints(item);
+						individual['DIGITAIS'] = fingerprints;
+						individual['FOTOS'] = [];
+						let photos = this.addPhotos(item);
+						individual.FOTOS.push(photos);
+						individual['ANTECEDENTES'] = [];
+						let precedent = this.addPrecedent(item);
+						individual.ANTECEDENTES.push(precedent);
+						sortedList[index].INDIVIDUOS.push(individual);
+					}
 				}
 				else{
 					let index2 = this.getIndexByAtr(sortedList[index].INDIVIDUOS, 'ID_INDIVIDUO', item.ID_INDIVIDUO);
@@ -224,7 +255,8 @@ class IndividualFullModel {
 						let photos = this.addPhotos(item);
 						sortedList[index].INDIVIDUOS[index2].FOTOS.push(photos);	
 					}
-					if(!this.checkIDByAtr(sortedList[index].INDIVIDUOS[index2].ANTECEDENTES, 'ID_ANTECEDENTE', item.ID_ANTECEDENTE)){
+					if(!this.checkIDByAtr(sortedList[index].INDIVIDUOS[index2].ANTECEDENTES, 'ID_ANTECEDENTE', item.ID_ANTECEDENTE) 
+						&& sortedList[index].ID_CADASTRANTE_ANTECEDENTE == item.ID_CADASTRANTE_ANTECEDENTE){
 						let precedent = this.addPrecedent(item);
 						sortedList[index].INDIVIDUOS[index2].ANTECEDENTES.push(precedent);
 					}
@@ -232,9 +264,10 @@ class IndividualFullModel {
 			}
 		}
 		else {
-			let precedentRegister = this.addPrecedentRegister(item); 
+			let precedentRegister = this.addPrecedentRegister(item, 'precedentRegister'); 
 			precedentRegister['INDIVIDUOS'] = [];
 			let individual = this.addIndividual(item); 
+            individual['CADASTRANTE_INDIVIDUO'] = this.addIndivRegister(item);
 			let fingerprints = this.addFingerprints(item);
 			individual['DIGITAIS'] = fingerprints;
 			individual['FOTOS'] = [];
@@ -465,7 +498,8 @@ class IndividualFullModel {
 		precedent["ID_ANTECEDENTE"] = null;
 		precedent["NO_REFERENCIA"] = null;
 		precedent["MOTIVO_DETENCAO"] = null;
-		precedent["DATA_ANTECEDENTE"] = null;
+		precedent["DESTINO"] = null;
+		precedent["DATA"] = null;
 		precedent["DATA_REGISTO_ANTECEDENTE"] = null;
 		precedent["ESTADO_ANTECEDENTE"] = null;
 		if(item.ID_ANTECEDENTE){
@@ -474,8 +508,10 @@ class IndividualFullModel {
 				precedent["NO_REFERENCIA"] = item.NO_REFERENCIA;
 			if(item.MOTIVO_DETENCAO)
 				precedent["MOTIVO_DETENCAO"] = item.MOTIVO_DETENCAO;
-			if(item.DATA_ANTECEDENTE)
-				precedent["DATA_ANTECEDENTE"] = item.DATA_ANTECEDENTE;
+			if(item.DESTINO)
+				precedent["DESTINO"] = item.DESTINO;
+			if(item.DATA)
+				precedent["DATA"] = item.DATA;
 			if(item.DATA_REGISTO_ANTECEDENTE)
 				precedent["DATA_REGISTO_ANTECEDENTE"] = item.DATA_REGISTO_ANTECEDENTE;
 			if(item.ESTADO_ANTECEDENTE)
@@ -484,7 +520,7 @@ class IndividualFullModel {
 		return precedent;
     };
 
-    addPrecedentRegister = (item) => {
+    addPrecedentRegister = (item, origin) => {
 		let precedentRegister = {};
 		precedentRegister["ID_CADASTRANTE_ANTECEDENTE"] = null;
 		precedentRegister["NOME_CADASTRANTE_ANTECEDENTE"] = null;
@@ -492,18 +528,35 @@ class IndividualFullModel {
 		precedentRegister["PERFIL_CADASTRANTE_ANTECEDENTE"] = null;
 		precedentRegister["DATA_REGISTO_CADASTRANTE_ANTECEDENTE"] = null;
 		precedentRegister["ESTADO_CADASTRANTE_ANTECEDENTE"] = null;
-		if(item.ID_CADASTRANTE_ANTECEDENTE){
-			precedentRegister["ID_CADASTRANTE_ANTECEDENTE"] = item.ID_CADASTRANTE_ANTECEDENTE;
-			if(item.NOME_CADASTRANTE_ANTECEDENTE)
-				precedentRegister["NOME_CADASTRANTE_ANTECEDENTE"] = item.NOME_CADASTRANTE_ANTECEDENTE;
-			if(item.EMAIL_CADASTRANTE_ANTECEDENTE)
-				precedentRegister["EMAIL_CADASTRANTE_ANTECEDENTE"] = item.EMAIL_CADASTRANTE_ANTECEDENTE;
-			if(item.PERFIL_CADASTRANTE_ANTECEDENTE)
-				precedentRegister["PERFIL_CADASTRANTE_ANTECEDENTE"] = item.PERFIL_CADASTRANTE_ANTECEDENTE;
-			if(item.DATA_REGISTO_CADASTRANTE_ANTECEDENTE)
-				precedentRegister["DATA_REGISTO_CADASTRANTE_ANTECEDENTE"] = item.DATA_REGISTO_CADASTRANTE_ANTECEDENTE;
-			if(item.ESTADO_CADASTRANTE_ANTECEDENTE)
-				precedentRegister["ESTADO_CADASTRANTE_ANTECEDENTE"] = item.ESTADO_CADASTRANTE_ANTECEDENTE;
+		if(origin != 'precedentRegister'){
+			if(item.ID_CADASTRANTE_ANTECEDENTE){
+				precedentRegister["ID_CADASTRANTE_ANTECEDENTE"] = item.ID_CADASTRANTE_ANTECEDENTE;
+				if(item.NOME_CADASTRANTE_ANTECEDENTE)
+					precedentRegister["NOME_CADASTRANTE_ANTECEDENTE"] = item.NOME_CADASTRANTE_ANTECEDENTE;
+				if(item.EMAIL_CADASTRANTE_ANTECEDENTE)
+					precedentRegister["EMAIL_CADASTRANTE_ANTECEDENTE"] = item.EMAIL_CADASTRANTE_ANTECEDENTE;
+				if(item.PERFIL_CADASTRANTE_ANTECEDENTE)
+					precedentRegister["PERFIL_CADASTRANTE_ANTECEDENTE"] = item.PERFIL_CADASTRANTE_ANTECEDENTE;
+				if(item.DATA_REGISTO_CADASTRANTE_ANTECEDENTE)
+					precedentRegister["DATA_REGISTO_CADASTRANTE_ANTECEDENTE"] = item.DATA_REGISTO_CADASTRANTE_ANTECEDENTE;
+				if(item.ESTADO_CADASTRANTE_ANTECEDENTE)
+					precedentRegister["ESTADO_CADASTRANTE_ANTECEDENTE"] = item.ESTADO_CADASTRANTE_ANTECEDENTE;
+			}
+		}
+		else{
+			if(item.ID_CADASTRANTE_INDIVIDUO){
+				precedentRegister["ID_CADASTRANTE_ANTECEDENTE"] = item.ID_CADASTRANTE_INDIVIDUO;
+				if(item.NOME_CADASTRANTE_INDIVIDUO)
+					precedentRegister["NOME_CADASTRANTE_ANTECEDENTE"] = item.NOME_CADASTRANTE_INDIVIDUO;
+				if(item.EMAIL_CADASTRANTE_INDIVIDUO)
+					precedentRegister["EMAIL_CADASTRANTE_ANTECEDENTE"] = item.EMAIL_CADASTRANTE_INDIVIDUO;
+				if(item.PERFIL_CADASTRANTE_INDIVIDUO)
+					precedentRegister["PERFIL_CADASTRANTE_ANTECEDENTE"] = item.PERFIL_CADASTRANTE_INDIVIDUO;
+				if(item.DATA_REGISTO_CADASTRANTE_INDIVIDUO)
+					precedentRegister["DATA_REGISTO_CADASTRANTE_ANTECEDENTE"] = item.DATA_REGISTO_CADASTRANTE_INDIVIDUO;
+				if(item.ESTADO_CADASTRANTE_INDIVIDUO)
+					precedentRegister["ESTADO_CADASTRANTE_ANTECEDENTE"] = item.ESTADO_CADASTRANTE_INDIVIDUO;
+			}
 		}
 		return precedentRegister;
     };

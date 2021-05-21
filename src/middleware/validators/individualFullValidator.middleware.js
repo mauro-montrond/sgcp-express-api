@@ -2353,7 +2353,15 @@ exports.getIndividualsFullSchema = [
             else
                 return true;
         })
-        .withMessage('No range provided'),  
+        .withMessage('No range provided'),
+    body('sorter')
+        .exists()
+        .withMessage('Sorter is required')
+        .notEmpty()
+        .withMessage("Sorter must be filled")
+        .trim()
+        .isIn(['ID_INDIVIDUO', 'ID_CADASTRANTE_INDIVIDUO', 'ID_CADASTRANTE_ANTECEDENTEO'])
+        .withMessage('Invalid sorter'),
 
 
     body()
@@ -2374,7 +2382,7 @@ exports.getIndividualsFullSchema = [
                                  'POLEGAR_ESQUERDO', 'INDICADOR_ESQUERDO', 'MEDIO_ESQUERDO', 'ANELAR_ESQUERDO', 'MINDINHO_ESQUERDO', 'DATA_REGISTO_DIGITAIS', 
                                  'fingerprint_created_at_limit', 'fingerprint_created_at_range',
                                  // photo
-                                 'ID_FOTO', 'FOTO_ESQUERDA', 'FOTO_FRONTAL', 'FOTO_DIREITA', 'ESTADO_FOTOS', 'DATA_REGISTO_FOTOS', 
+                                 'ID_FOTOS', 'FOTO_ESQUERDA', 'FOTO_FRONTAL', 'FOTO_DIREITA', 'ESTADO_FOTOS', 'DATA_REGISTO_FOTOS', 
                                  'photo_created_at_limit', 'photo_created_at_range',
                                  // individual register
                                  'ID_CADASTRANTE_INDIVIDUO', `NOME_CADASTRANTE_INDIVIDUO`, 'EMAIL_CADASTRANTE_INDIVIDUO', 'PERFIL_CADASTRANTE_INDIVIDUO', 
@@ -2384,8 +2392,13 @@ exports.getIndividualsFullSchema = [
                                  'ID_ANTECEDENTE', 'NO_REFERENCIA', 'MOTIVO_DETENCAO', 'DESTINO', 'DATA', 'ESTADO_ANTECEDENTE', 'DATA_REGISTO_ANTECEDENTE',
                                  'date_limit', 'date_range', 'precedent_created_at_limit', 'precedent_created_at_range',
                                 // precedent register
-                                'ID_CADASTRANTE_ANTECEDENTE', `NOME_CADASTRANTE_ANTECEDENTE`, 'PERFIL_CADASTRANTE_ANTECEDENTE', 'EMAIL_CADASTRANTE_ANTECEDENTE',
-                                'DATA_REGISTO_CADASTRANTE_ANTECEDENTE', 'precedent_register_created_at_limit', 'precedent_register_created_at_range',];
+                                'ID_CADASTRANTE_ANTECEDENTE', `NOME_CADASTRANTE_ANTECEDENTE`, 'EMAIL_CADASTRANTE_ANTECEDENTE', 'PERFIL_CADASTRANTE_ANTECEDENTE',
+                                'ESTADO_CADASTRANTE_ANTECEDENTE', 'DATA_REGISTO_CADASTRANTE_ANTECEDENTE', 'precedent_register_created_at_limit', 'precedent_register_created_at_range', 'sorter'];
+            
+            searchList.forEach(item => {
+                if(!allowSearch.includes(item))
+                    console.log(item);
+            });
             return searchList.every(parameter => allowSearch.includes(parameter));
         })
         .withMessage('Invalid extra fields!')
