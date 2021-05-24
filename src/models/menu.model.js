@@ -123,9 +123,7 @@ class MenuModel {
                     if(result1){
                         for(let i = 0; i < updates1.length; i++){
                             const { ID, ...prevVal } = prevVals1[i];
-                            console.log("res1 1");
                             const resultLog = await this.menuLog(u_id, updates1[i], prevVal, 'Editar');
-                            console.log("res1 1");
                         }
                     }
                 }
