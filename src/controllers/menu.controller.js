@@ -49,7 +49,13 @@ class MenuController {
 
     createMenu = async (req, res, next) => {
         this.checkValidation(req);
-        const result = await MenuModel.create(req.body);
+
+        if(!req.currentUser){
+            throw new HttpException(401, 'Unauthorized');
+        }
+        const { SENHA, ...userWithoutPassword } = req.currentUser;
+
+        const result = await MenuModel.create(req.body, userWithoutPassword.ID);
 
         if (!result) {
             throw new HttpException(500, 'Something went wrong');
@@ -60,12 +66,17 @@ class MenuController {
 
     updateMenu = async (req, res, next) => {
         this.checkValidation(req);
+
+        if(!req.currentUser){
+            throw new HttpException(401, 'Unauthorized');
+        }
+        const { SENHA, ...userWithoutPassword } = req.currentUser;
         // do the update query and get the result
         // it can be partial edit
         // convert the re.body keys into the actual names of the table's colums
         let updates = getNormalizedColumnsValues(req.body);
         
-        const result = await MenuModel.update(updates, req.params.code);
+        const result = await MenuModel.update(updates, req.params.code, userWithoutPassword.ID);
 
         if (!result) {
             throw new HttpException(404, 'Something went wrong');
@@ -81,7 +92,13 @@ class MenuController {
 
     deleteMenu = async (req, res, next) => {
         this.checkValidation(req);
-        const result = await MenuModel.delete(req.params.code);
+
+        if(!req.currentUser){
+            throw new HttpException(401, 'Unauthorized');
+        }
+        const { SENHA, ...userWithoutPassword } = req.currentUser;
+
+        const result = await MenuModel.delete(req.params.code, userWithoutPassword.ID);
         if (!result) {
             throw new HttpException(404, 'Menu not found');
         }
