@@ -41,24 +41,38 @@ class Menu_ProfileController {
 
     createMenu_Profile = async (req, res, next) => {
         this.checkValidation(req);
-        const result = await Menu_ProfileModel.create(req.body);
 
-        if (!result) {
+        if(!req.currentUser){
+            throw new HttpException(401, 'Unauthorized');
+        }
+        const { SENHA, ...userWithoutPassword } = req.currentUser;
+
+        const result = await Menu_ProfileModel.create(req.body, userWithoutPassword.ID);
+
+        if (result == -1) {
             throw new HttpException(500, 'Something went wrong');
         }
-
-        res.status(201).send('Menu-Profile association was created!');
+        else if(result == 0) {
+            res.status(201).send('No changes were needed!');
+        }
+        else
+            res.status(201).send('Menu-Profile association was created!');
     };
 
     updateMenu_Profile = async (req, res, next) => {
         this.checkValidation(req);
+
+        if(!req.currentUser){
+            throw new HttpException(401, 'Unauthorized');
+        }
+        const { SENHA, ...userWithoutPassword } = req.currentUser;
 
         // do the update query and get the result
         // it can be partial edit
         // convert the re.body keys into the actual names of the table's colums
         let updates = getNormalizedColumnsValues(req.body);
         
-        const result = await Menu_ProfileModel.update(updates, req.params.profile_id, req.params.menu_id);
+        const result = await Menu_ProfileModel.update(updates, req.params.profile_id, req.params.menu_id, userWithoutPassword.ID);
 
         if (!result) {
             throw new HttpException(404, 'Something went wrong');
@@ -74,7 +88,13 @@ class Menu_ProfileController {
 
     deleteMenu_Profile = async (req, res, next) => {
         this.checkValidation(req);
-        const result = await Menu_ProfileModel.delete(req.params.profile_id, req.params.menu_id);
+
+        if(!req.currentUser){
+            throw new HttpException(401, 'Unauthorized');
+        }
+        const { SENHA, ...userWithoutPassword } = req.currentUser;
+
+        const result = await Menu_ProfileModel.delete(req.params.profile_id, req.params.menu_id, userWithoutPassword.ID);
         if (!result) {
             throw new HttpException(404, 'Menu-Profile association not found');
         }
