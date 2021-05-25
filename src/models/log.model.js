@@ -59,6 +59,25 @@ class LogModel {
 
         return affectedRows;
     }
+    
+    logPrep = (u_id, id, prevVal, newVal, act) => {
+        const newLog = {
+            user_id: u_id, 
+            table: this.tableName, 
+            object_id: id, 
+            previous_value: prevVal, 
+            new_value: newVal, 
+            action: act
+        };
+        return newLog;
+    }
+
+    logChange = async (u_id, id, prevVal, newVal, act) => {
+        const newLog = this.logPrep(u_id, id, prevVal, newVal, act);
+        return await this.create(newLog);
+    }
+
+
 }
 
 module.exports = new LogModel;

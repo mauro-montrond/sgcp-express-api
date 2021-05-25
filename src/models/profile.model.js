@@ -41,31 +41,71 @@ class ProfileModel {
         return result[0];
     }
 
-    create = async ({ code, description, state = 'A' }) => {
+    logPrep = (u_id, id, prevVal, newVal, act) => {
+        const newLog = {
+            user_id: u_id, 
+            table: this.tableName, 
+            object_id: id, 
+            previous_value: prevVal, 
+            new_value: newVal, 
+            action: act
+        };
+        return newLog;
+    }
+
+    profileLog = async (u_id, id, prevVal, act) => {
+        let newLog = null;
+        if(act != 'Eliminar'){
+            let nv = await this.findOne({'ID': id});
+            const { ID, ...newVal } = nv;
+            newLog = this.logPrep(u_id, id, prevVal, newVal, act);
+        }
+        else{
+            newLog = this.logPrep(u_id, id, prevVal, null, act);
+        }
+        return await logModel.create(newLog);
+    }
+
+    create = async ({ code, description, state = 'A' }, u_id) => {
         const sql = `INSERT INTO ${this.tableName}
         (CODIGO, DESCRICAO, ESTADO) VALUES (?,?,?)`;
 
         const result = await query(sql, [code, description, state]);
         const affectedRows = result ? result.affectedRows : 0;
+        if(result){
+            const resultLog = await this.profileLog(u_id, result.insertId, null, 'Criar');
+            affectedRows = resultLog ? affectedRows + resultLog : 0;
+        }
 
         return affectedRows;
     }
 
     update = async (params, code) => {
+        let currentProfile = await this.findOne( {'CODIGO': code} );
+        const { ID, ...prevVal} = currentProfile;
         const { columnSet, values } = multipleColumnSet(params)
 
         const sql = `UPDATE ${this.tableName} SET ${columnSet} WHERE CODIGO = ?`;
 
         const result = await query(sql, [...values, code]);
+        
+        if(result && result.changedRows){
+            const resultLog = await this.profileLog(u_id, currentMenu.ID, prevVal, 'Editar');
+        }
 
         return result;
     }
 
-    delete = async (code) => {
+    delete = async (code, u_id) => {
+        let currentProfile = await this.findOne( {'CODIGO': code} );
+        const { ID, ...prevVal} = currentProfile;
         const sql = `DELETE FROM ${this.tableName}
         WHERE CODIGO = ?`;
         const result = await query(sql, [code]);
         const affectedRows = result ? result.affectedRows : 0;
+        if(affectedRows){
+            const resultLog = await this.profileLog(u_id, currentProfile.ID, prevVal, 'Eliminar');
+        }
 
         return affectedRows;
     }

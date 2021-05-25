@@ -43,29 +43,10 @@ class MenuModel {
         return result[0];
     }
 
-    logPrep = (u_id, id, prevVal, newVal, act) => {
-        const newLog = {
-            user_id: u_id, 
-            table: this.tableName, 
-            object_id: id, 
-            previous_value: prevVal, 
-            new_value: newVal, 
-            action: act
-        };
-        return newLog;
-    }
-
-    menuLog = async (u_id, id, prevVal, act) => {
-        let newLog = null;
-        if(act != 'Eliminar'){
-            let nv = await this.findOne({'ID': id});
-            const { ID, ...newVal } = nv;
-            newLog = this.logPrep(u_id, id, prevVal, newVal, act);
-        }
-        else{
-            newLog = this.logPrep(u_id, id, prevVal, null, act);
-        }
-        return await logModel.create(newLog);
+    getVal = async (id) => {
+        let nv = await this.findOne({'ID': id});
+        const { ID, ...newVal } = nv;
+        return newVal;
     }
 
     create = async ({ code, title, description, parent_menu = null, state = 'A'}, u_id) => {
@@ -75,7 +56,8 @@ class MenuModel {
         const result = await query(sql, [code, title, description, parent_menu, state]);
         let affectedRows = result ? result.affectedRows : 0;
         if(result){
-            const resultLog = await this.menuLog(u_id, result.insertId, null, 'Criar');
+            const newVal = await this.getVal(result.insertId);
+            const resultLog = await logModel.logChange(u_id, result.insertId, null, newVal, 'Criar');
             affectedRows = resultLog ? affectedRows + resultLog : 0;
         }
         return affectedRows;
@@ -123,7 +105,8 @@ class MenuModel {
                     if(result1){
                         for(let i = 0; i < updates1.length; i++){
                             const { ID, ...prevVal } = prevVals1[i];
-                            const resultLog = await this.menuLog(u_id, updates1[i], prevVal, 'Editar');
+                            const newVal = await this.getVal(updates1[i]);
+                            const resultLog = await logModel.logChange(u_id, updates1[i], prevVal, newVal, 'Editar');
                         }
                     }
                 }
@@ -161,7 +144,8 @@ class MenuModel {
                     if(result2){
                         for(let i = 0; i < updates2.length; i++){
                             const { ID, ...prevVal } = prevVals2[i];
-                            const resultLog = await this.menuLog(u_id, updates2[i], prevVal, 'Editar');
+                            const newVal = await this.getVal(updates1[i]);
+                            const resultLog = await logModel.logChange(u_id, updates1[i], prevVal, newVal, 'Editar');
                         }
                     }
                 }
@@ -177,7 +161,8 @@ class MenuModel {
         let result = await query(sql, [...values, code]);
         if(result){
             if(result.changedRows){
-                const resultLog = await this.menuLog(u_id, currentMenu.ID, prevVal, 'Editar');
+                const newVal = await this.getVal(currentMenu.ID);
+                const resultLog = await logModel.logChange(u_id, currentMenu.ID, prevVal, newVal, 'Editar');
             }
             result.affectedRows += affectedRowsTotal;
             result.changedRows += changedRowsTotal;
@@ -196,7 +181,7 @@ class MenuModel {
         const result = await query(sql, [code]);
         const affectedRows = result ? result.affectedRows : 0;
         if(affectedRows){
-            const resultLog = await this.menuLog(u_id, currentMenu.ID, prevVal, 'Eliminar');
+            const resultLog = await logModel.logChange(u_id, currentMenu.ID, prevVal, null, 'Eliminar');
         }
 
         return affectedRows;
