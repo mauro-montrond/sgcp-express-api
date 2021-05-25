@@ -1,5 +1,6 @@
 const query = require('../db/db-connection');
 const { multipleColumnSet, multipleColumnGets } = require('../utils/common.utils');
+const logModel = require('./log.model');
 class ProfileModel {
     tableName = 'perfil';
 
@@ -41,29 +42,10 @@ class ProfileModel {
         return result[0];
     }
 
-    logPrep = (u_id, id, prevVal, newVal, act) => {
-        const newLog = {
-            user_id: u_id, 
-            table: this.tableName, 
-            object_id: id, 
-            previous_value: prevVal, 
-            new_value: newVal, 
-            action: act
-        };
-        return newLog;
-    }
-
-    profileLog = async (u_id, id, prevVal, act) => {
-        let newLog = null;
-        if(act != 'Eliminar'){
-            let nv = await this.findOne({'ID': id});
-            const { ID, ...newVal } = nv;
-            newLog = this.logPrep(u_id, id, prevVal, newVal, act);
-        }
-        else{
-            newLog = this.logPrep(u_id, id, prevVal, null, act);
-        }
-        return await logModel.create(newLog);
+    getVal = async (id) => {
+        let nv = await this.findOne({'ID': id});
+        const { ID, ...newVal } = nv;
+        return newVal;
     }
 
     create = async ({ code, description, state = 'A' }, u_id) => {
@@ -71,16 +53,17 @@ class ProfileModel {
         (CODIGO, DESCRICAO, ESTADO) VALUES (?,?,?)`;
 
         const result = await query(sql, [code, description, state]);
-        const affectedRows = result ? result.affectedRows : 0;
+        let affectedRows = result ? result.affectedRows : 0;
         if(result){
-            const resultLog = await this.profileLog(u_id, result.insertId, null, 'Criar');
+            const newVal = await this.getVal(result.insertId);
+            const resultLog = await logModel.logChange(u_id, result.insertId, null, newVal, 'Criar');
             affectedRows = resultLog ? affectedRows + resultLog : 0;
         }
 
         return affectedRows;
     }
 
-    update = async (params, code) => {
+    update = async (params, code, u_id) => {
         let currentProfile = await this.findOne( {'CODIGO': code} );
         const { ID, ...prevVal} = currentProfile;
         const { columnSet, values } = multipleColumnSet(params)
@@ -90,7 +73,8 @@ class ProfileModel {
         const result = await query(sql, [...values, code]);
         
         if(result && result.changedRows){
-            const resultLog = await this.profileLog(u_id, currentMenu.ID, prevVal, 'Editar');
+            const newVal = await this.getVal(currentProfile.ID);
+            const resultLog = await logModel.logChange(u_id, currentProfile.ID, prevVal, newVal, 'Editar');
         }
 
         return result;
@@ -104,7 +88,7 @@ class ProfileModel {
         const result = await query(sql, [code]);
         const affectedRows = result ? result.affectedRows : 0;
         if(affectedRows){
-            const resultLog = await this.profileLog(u_id, currentProfile.ID, prevVal, 'Eliminar');
+            const resultLog = await logModel.logChange(u_id, currentProfile.ID, prevVal, null, 'Eliminar');
         }
 
         return affectedRows;

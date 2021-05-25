@@ -50,7 +50,13 @@ class ProfileController {
 
     createProfile = async (req, res, next) => {
         this.checkValidation(req);
-        const result = await ProfileModel.create(req.body);
+
+        if(!req.currentUser){
+            throw new HttpException(401, 'Unauthorized');
+        }
+        const { SENHA, ...userWithoutPassword } = req.currentUser;
+
+        const result = await ProfileModel.create(req.body, userWithoutPassword.ID);
 
         if (!result) {
             throw new HttpException(500, 'Something went wrong');
@@ -62,22 +68,17 @@ class ProfileController {
     updateProfile = async (req, res, next) => {
         this.checkValidation(req);
 
-        /*
-
-        // Check if the update code already exists and is different from the one we are updating
-        const profile = await ProfileModel.findOne({ CODIGO: Object.values(req.body)[Object.keys(req.body).indexOf("code")] });
-
-        if ( profile && !(Object.values(req.body)[Object.keys(req.body).indexOf("code")] === req.params.code) ) {
-            throw new HttpException(409, 'Profile with that code already exists');
+        if(!req.currentUser){
+            throw new HttpException(401, 'Unauthorized');
         }
-        */
+        const { SENHA, ...userWithoutPassword } = req.currentUser;
 
         // do the update query and get the result
         // it can be partial edit
         // convert the re.body keys into the actual names of the table's colums
         let updates = getNormalizedColumnsValues(req.body);
         
-        const result = await ProfileModel.update(updates, req.params.code);
+        const result = await ProfileModel.update(updates, req.params.code, userWithoutPassword.ID);
 
         if (!result) {
             throw new HttpException(404, 'Something went wrong');
@@ -93,7 +94,13 @@ class ProfileController {
 
     deleteProfile = async (req, res, next) => {
         this.checkValidation(req);
-        const result = await ProfileModel.delete(req.params.code);
+
+        if(!req.currentUser){
+            throw new HttpException(401, 'Unauthorized');
+        }
+        const { SENHA, ...userWithoutPassword } = req.currentUser;
+
+        const result = await ProfileModel.delete(req.params.code, userWithoutPassword.ID);
         if (!result) {
             throw new HttpException(404, 'Profile not found');
         }

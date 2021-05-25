@@ -1,7 +1,6 @@
 const query = require('../db/db-connection');
 const { multipleColumnSet, multipleColumnGets } = require('../utils/common.utils');
 const logModel = require('./log.model');
-const { update } = require('./user.model');
 class MenuModel {
     tableName = 'menu';
 
