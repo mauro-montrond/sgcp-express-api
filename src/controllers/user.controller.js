@@ -74,50 +74,14 @@ class UserController {
     createUser = async (req, res, next) => {
         this.checkValidation(req);
 
+        if(!req.currentUser){
+            throw new HttpException(401, 'Unauthorized');
+        }
+        const { SENHA, ...userWithoutPassword } = req.currentUser;
+
         await this.hashPassword(req);
 
-        /*
-        const profilesList = await getUserProfiles.findMany();
-        let activeProfiles = [];
-        profilesList.forEach(element => {
-            if(element.ESTADO === 'A')
-                activeProfiles.push(element.ID);
-        });
-        console.log("perfis ativos: " + activeProfiles);
-        */
-
-        /*
-
-        const findProfile = await getUserProfiles.findMany( { 'ID': req.body.profile_id } );
-        if(findProfile.length)
-            console.log("Perfil:: " + findProfile[0].CODIGO);
-        
-        //console.log("uProfile: " + uProfiles);
-        // check if a user with that email already exists
-        const findEmail = await UserModel.findMany( {'EMAIL': req.body.email} );
-        //console.log("findEmail: " + findEmail[0].EMAIL);
-        //console.log("findEmail: " + Object.values(findEmail)[Object.keys(findEmail).indexOf("EMAIL")]);
-        if(findEmail.length){
-            console.log("findEmail in controller: " + findEmail[0].EMAIL);
-            const findUsername = await UserModel.findMany( {'UTILIZADOR': req.body.username} );
-            if(findUsername.length){
-                throw new HttpException(409, 'User with that username and email already exists');
-            }
-            else{
-                throw new HttpException(409, 'User with that email already exists');
-            }
-        }
-        else{
-            const findUsername = await UserModel.findMany( {'UTILIZADOR': req.body.username} );
-            if(findUsername.length){
-                throw new HttpException(409, 'User with that username and email already exists');
-            }
-        }
-        */
-
-        
-
-        const result = await UserModel.create(req.body);
+        const result = await UserModel.create(req.body, userWithoutPassword.ID);
 
         if (!result) {
             throw new HttpException(500, 'Something went wrong');
@@ -129,6 +93,11 @@ class UserController {
     updateUser = async (req, res, next) => {
         this.checkValidation(req);
 
+        if(!req.currentUser){
+            throw new HttpException(401, 'Unauthorized');
+        }
+        const { SENHA, ...userWithoutPassword } = req.currentUser;
+
         await this.hashPassword(req);
 
         //const { confirm_password, ...restOfUpdates } = req.body;
@@ -137,7 +106,7 @@ class UserController {
 
         // do the update query and get the result
         // it can be partial edit
-        const result = await UserModel.update(updates, req.params.username);
+        const result = await UserModel.update(updates, req.params.username, userWithoutPassword.ID);
 
         if (!result) {
             throw new HttpException(404, 'Something went wrong');
@@ -153,7 +122,13 @@ class UserController {
 
     deleteUser = async (req, res, next) => {
         this.checkValidation(req);
-        const result = await UserModel.delete(req.params.id);
+
+        if(!req.currentUser){
+            throw new HttpException(401, 'Unauthorized');
+        }
+        const { SENHA, ...userWithoutPassword } = req.currentUser;
+        
+        const result = await UserModel.delete(req.params.id, userWithoutPassword.ID);
         if (!result) {
             throw new HttpException(404, 'User not found');
         }
