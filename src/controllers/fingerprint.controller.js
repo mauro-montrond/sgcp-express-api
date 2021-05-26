@@ -54,7 +54,13 @@ class FingerprintController {
 
     createFingerprint = async (req, res, next) => {
         this.checkValidation(req);
-        const result = await FingerprintModel.create(req.body);
+
+        if(!req.currentUser){
+            throw new HttpException(401, 'Unauthorized');
+        }
+        const { SENHA, ...userWithoutPassword } = req.currentUser;
+
+        const result = await FingerprintModel.create(req.body, userWithoutPassword.ID);
 
         if (!result) {
             throw new HttpException(500, 'Something went wrong');
@@ -66,12 +72,17 @@ class FingerprintController {
     updateFingerprint = async (req, res, next) => {
         this.checkValidation(req);
 
+        if(!req.currentUser){
+            throw new HttpException(401, 'Unauthorized');
+        }
+        const { SENHA, ...userWithoutPassword } = req.currentUser;
+
         // do the update query and get the result
         // it can be partial edit
         // convert the re.body keys into the actual names of the table's colums
         let updates = getNormalizedColumnsValues(req.body);
         
-        const result = await FingerprintModel.update(updates, req.params.individual_id);
+        const result = await FingerprintModel.update(updates, req.params.individual_id, userWithoutPassword.ID);
 
         if (!result) {
             throw new HttpException(404, 'Something went wrong');
@@ -87,7 +98,13 @@ class FingerprintController {
 
     deleteFingerprint = async (req, res, next) => {
         this.checkValidation(req);
-        const result = await FingerprintModel.delete(req.params.individual_id);
+
+        if(!req.currentUser){
+            throw new HttpException(401, 'Unauthorized');
+        }
+        const { SENHA, ...userWithoutPassword } = req.currentUser;
+
+        const result = await FingerprintModel.delete(req.params.individual_id, userWithoutPassword.ID);
         if (!result) {
             throw new HttpException(404, 'Fingerprints not found');
         }
