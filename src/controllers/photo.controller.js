@@ -54,7 +54,13 @@ class FingerprintController {
 
     createPhoto = async (req, res, next) => {
         this.checkValidation(req);
-        const result = await PhotoModel.create(req.body);
+
+        if(!req.currentUser){
+            throw new HttpException(401, 'Unauthorized');
+        }
+        const { SENHA, ...userWithoutPassword } = req.currentUser;
+
+        const result = await PhotoModel.create(req.body, userWithoutPassword.ID);
 
         if (!result) {
             throw new HttpException(500, 'Something went wrong');
@@ -66,12 +72,17 @@ class FingerprintController {
     updatePhoto = async (req, res, next) => {
         this.checkValidation(req);
 
+        if(!req.currentUser){
+            throw new HttpException(401, 'Unauthorized');
+        }
+        const { SENHA, ...userWithoutPassword } = req.currentUser;
+
         // do the update query and get the result
         // it can be partial edit
         // convert the re.body keys into the actual names of the table's colums
         let updates = getNormalizedColumnsValues(req.body);
         
-        const result = await PhotoModel.update(updates, req.params.id);
+        const result = await PhotoModel.update(updates, req.params.id, userWithoutPassword.ID);
 
         if (!result) {
             throw new HttpException(404, 'Something went wrong');
@@ -87,7 +98,13 @@ class FingerprintController {
 
     deletePhoto = async (req, res, next) => {
         this.checkValidation(req);
-        const result = await PhotoModel.delete(req.params.id);
+
+        if(!req.currentUser){
+            throw new HttpException(401, 'Unauthorized');
+        }
+        const { SENHA, ...userWithoutPassword } = req.currentUser;
+
+        const result = await PhotoModel.delete(req.params.id, userWithoutPassword.ID);
         if (!result) {
             throw new HttpException(404, 'Photos not found');
         }

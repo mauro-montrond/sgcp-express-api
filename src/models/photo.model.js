@@ -1,5 +1,6 @@
 const query = require('../db/db-connection');
 const { multipleColumnSet, multipleColumnGets } = require('../utils/common.utils');
+const logModel = require('./log.model');
 class PhotoModel {
     tableName = 'fotos';
 
@@ -50,12 +51,18 @@ class PhotoModel {
         return result[0];
     }
 
-    create = async ({ individual_id, l_photo, f_photo, r_photo, state='A'}) => {
+    getVal = async (id) => {
+        let nv = await this.findOne({'ID': id});
+        const { ID, ...newVal } = nv;
+        return newVal;
+    }
+
+    create = async ({ individual_id, l_photo, f_photo, r_photo, state='A'}, u_id) => {
         let deactivation = 'OK';
         if(state == 'A') {
             const photos = await this.findMany({ 'ID_INDIVIDUO': individual_id, 'ESTADO': 'A' });
             for( let photo of photos ){
-                const deactivate = await this.update( {'ESTADO': 'I'}, photo.ID );
+                const deactivate = await this.update( {'ESTADO': 'I'}, photo.ID, u_id );
                 if(!deactivate) {
                     deactivation = 'Something went wrong';
                 }
@@ -67,20 +74,26 @@ class PhotoModel {
         (ID_INDIVIDUO, FOTO_ESQUERDA, FOTO_FRONTAL, FOTO_DIREITA, ESTADO) VALUES (?,?,?,?,?)`;
 
         const result = await query(sql, [individual_id, l_photo, f_photo, r_photo, state]);
-        const affectedRows = result ? result.affectedRows : 0;
+        let affectedRows = result ? result.affectedRows : 0;
+        if(result){
+            const newVal = await this.getVal(result.insertId);
+            const resultLog = await logModel.logChange(u_id, this.tableName, result.insertId, null, newVal, 'Criar');
+            affectedRows = resultLog ? affectedRows + resultLog : 0;
+        }
 
         return affectedRows;
     }
 
-    update = async (params, id) => {
+    update = async (params, id, u_id) => {
+        let currentPhoto= await this.findOne( {'ID': id} );
+        const { ID, ...prevVal} = currentPhoto;
         let deactivation = 'OK';
         if(params.ESTADO == 'A') {
             const findphoto = await this.findOne({ 'ID': id});
             if(findphoto) {
                 const activePhotos = await this.findMany({ 'ID_INDIVIDUO': findphoto.ID_INDIVIDUO, 'ESTADO': 'A' });
                 for( let photo of activePhotos ){
-                    console.log("photo.ID: " + photo.ID);
-                    const deactivate = await this.update( {'ESTADO': 'I'}, photo.ID );
+                    const deactivate = await this.update( {'ESTADO': 'I'}, photo.ID, u_id );
                     if(!deactivate) {
                         deactivation = 'Something went wrong';
                     }
@@ -94,15 +107,25 @@ class PhotoModel {
         const sql = `UPDATE ${this.tableName} SET ${columnSet} WHERE ID = ?`;
 
         const result = await query(sql, [...values, id]);
+        
+        if(result && result.changedRows){
+            const newVal = await this.getVal(currentPhoto.ID);
+            const resultLog = await logModel.logChange(u_id, this.tableName, currentPhoto.ID, prevVal, newVal, 'Editar');
+        }
 
         return result;
     }
 
-    delete = async (id) => {
+    delete = async (id, u_id) => {
+        let currentPhoto = await this.findOne( {'ID': id} );
+        const { ID, ...prevVal} = currentPhoto;
         const sql = `DELETE FROM ${this.tableName}
         WHERE ID = ?`;
         const result = await query(sql, [id]);
         const affectedRows = result ? result.affectedRows : 0;
+        if(affectedRows){
+            const resultLog = await logModel.logChange(u_id, this.tableName, currentPhoto.ID, prevVal, null, 'Eliminar');
+        }
 
         return affectedRows;
     }
