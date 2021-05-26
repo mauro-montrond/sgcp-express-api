@@ -1,5 +1,6 @@
 const query = require('../db/db-connection');
 const { multipleColumnSet, multipleColumnGets } = require('../utils/common.utils');
+const logModel = require('./log.model');
 class IndividualModel {
     tableName = 'individuo';
 
@@ -41,6 +42,12 @@ class IndividualModel {
         return result[0];
     }
 
+    getVal = async (id) => {
+        let nv = await this.findOne({'ID': id});
+        const { ID, ...newVal } = nv;
+        return newVal;
+    }
+
     create = async ({ name, nickname, father, mother, nationality, birthplace, birthdate, apparent_age, marital_status, profession, 
                       residence_id, workplace, doc_num, doc_issuance_date, doc_issuance_place, height, hair, beard, nose, mouth, face, colour, tattoos, 
                       police_classification, state = 'A'}, user_id) => {
@@ -52,26 +59,44 @@ class IndividualModel {
         const result = await query(sql, [user_id, name, nickname, father, mother, nationality, birthplace, birthdate, apparent_age, marital_status, 
                                          profession, residence_id, workplace, doc_num, doc_issuance_date, doc_issuance_place, height, hair, beard, nose, 
                                          mouth, face, colour, tattoos, police_classification, state]);
-        const affectedRows = result ? result.affectedRows : 0;
+        let affectedRows = result ? result.affectedRows : 0;
+        
+        if(result){
+            const newVal = await this.getVal(result.insertId);
+            const resultLog = await logModel.logChange(user_id, this.tableName, result.insertId, null, newVal, 'Criar');
+            affectedRows = resultLog ? affectedRows + resultLog : 0;
+        }
 
         return affectedRows;
     }
 
-    update = async (params, id) => {
+    update = async (params, id, u_id) => {
+        let currentIndividual = await this.findOne( {'ID': id} );
+        const { ID, ...prevVal} = currentIndividual;
         const { columnSet, values } = multipleColumnSet(params)
 
         const sql = `UPDATE ${this.tableName} SET ${columnSet} WHERE ID = ?`;
 
         const result = await query(sql, [...values, id]);
+        
+        if(result && result.changedRows){
+            const newVal = await this.getVal(currentIndividual.ID);
+            const resultLog = await logModel.logChange(u_id, this.tableName, currentIndividual.ID, prevVal, newVal, 'Editar');
+        }
 
         return result;
     }
 
-    delete = async (id) => {
+    delete = async (id, u_id) => {
+        let currentIndividual = await this.findOne( {'ID': id} );
+        const { ID, ...prevVal} = currentIndividual;
         const sql = `DELETE FROM ${this.tableName}
         WHERE ID = ?`;
         const result = await query(sql, [id]);
         const affectedRows = result ? result.affectedRows : 0;
+        if(affectedRows){
+            const resultLog = await logModel.logChange(u_id, this.tableName, currentIndividual.ID, prevVal, null, 'Eliminar');
+        }
 
         return affectedRows;
     }

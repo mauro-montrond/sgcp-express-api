@@ -121,13 +121,13 @@ class Menu_ProfileModel {
                 for(let i = 0; i < inserts.length; i++){
                     const currentItem = await this.findOne({'ID_PERFIL': inserts[i].ID_PERFIL, 'ID_MENU': inserts[i].ID_MENU});
                     const newVal = await this.getVal(inserts[i].ID_PERFIL, inserts[i].ID_MENU);
-                    const resultLog = await logModel.logChange(u_id, currentItem.ID, null, newVal, 'Criar');
+                    const resultLog = await logModel.logChange(u_id, this.tableName, currentItem.ID, null, newVal, 'Criar');
                     affectedRows = resultLog ? affectedRows + resultLog : -1;
                 }
                 for(let i = 0; i < updates.length; i++){
                     const { ID, ...prevVal } = updatesPrev[i];
                     const newVal = await this.getVal(updates[i].ID_PERFIL, updates[i].ID_MENU);
-                    const resultLog = await logModel.logChange(u_id, updatesPrev[i].ID, prevVal, newVal, 'Editar');
+                    const resultLog = await logModel.logChange(u_id, this.tableName, updatesPrev[i].ID, prevVal, newVal, 'Editar');
                     affectedRows = resultLog ? affectedRows + resultLog : -1;
                 }
             }
@@ -200,7 +200,7 @@ class Menu_ProfileModel {
                 for(let i = 0; i < updates.length; i++){
                     const { ID, ...prevVal } = updatesPrev[i];
                     const newVal = await this.getVal(updates[i].ID_PERFIL, updates[i].ID_MENU);
-                    const resultLog = await logModel.logChange(u_id, updatesPrev[i].ID, prevVal, newVal, 'Editar');
+                    const resultLog = await logModel.logChange(u_id, this.tableName, updatesPrev[i].ID, prevVal, newVal, 'Editar');
                     result.affectedRows = resultLog ? result.affectedRows + resultLog : -1;
                 }
             }
@@ -248,7 +248,7 @@ class Menu_ProfileModel {
             for(let i = 0; i < deletesPrev.length; i++){
                 const currentId = deletesPrev[i].ID;
                 const {ID, ...prevVal} =  deletesPrev[i];
-                const resultLog = await logModel.logChange(u_id, currentId, prevVal, null, 'Eliminar');
+                const resultLog = await logModel.logChange(u_id, this.tableName, currentId, prevVal, null, 'Eliminar');
             }
 
         }

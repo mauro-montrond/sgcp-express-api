@@ -60,10 +60,10 @@ class LogModel {
         return affectedRows;
     }
     
-    logPrep = (u_id, id, prevVal, newVal, act) => {
+    logPrep = (u_id, tblName, id, prevVal, newVal, act) => {
         const newLog = {
             user_id: u_id, 
-            table: this.tableName, 
+            table: tblName, 
             object_id: id, 
             previous_value: prevVal, 
             new_value: newVal, 
@@ -72,8 +72,8 @@ class LogModel {
         return newLog;
     }
 
-    logChange = async (u_id, id, prevVal, newVal, act) => {
-        const newLog = this.logPrep(u_id, id, prevVal, newVal, act);
+    logChange = async (u_id, tblName, id, prevVal, newVal, act) => {
+        const newLog = this.logPrep(u_id, tblName, id, prevVal, newVal, act);
         return await this.create(newLog);
     }
 

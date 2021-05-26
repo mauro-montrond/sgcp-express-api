@@ -90,8 +90,7 @@ exports.createIndividualFullSchema = [
         .isIn(IndividualMaritalSatus)
         .withMessage('Invalid marital status'),
     body('profession')
-        .exists()
-        .withMessage('Profession is required')
+        .optional()
         .trim()
         .isLength({ min: 2 })
         .withMessage('Must be at least 2 chars long'),

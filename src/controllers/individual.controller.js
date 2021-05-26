@@ -56,6 +56,11 @@ class IndividualController {
 
     updateIndividual = async (req, res, next) => {
         this.checkValidation(req);
+        
+        if(!req.currentUser){
+            throw new HttpException(401, 'Unauthorized');
+        }
+        const { SENHA, ...userWithoutPassword } = req.currentUser;
         // do the update query and get the result
         // it can be partial edit
         // convert the re.body keys into the actual names of the table's colums
@@ -65,7 +70,7 @@ class IndividualController {
         delete updates['apparent_age_limit'];
         delete updates['doc_issuance_date_limit'];
         delete updates['height_limit'];
-        const result = await IndividualModel.update(updates, req.params.id);
+        const result = await IndividualModel.update(updates, req.params.id, userWithoutPassword.ID);
 
         if (!result) {
             throw new HttpException(404, 'Something went wrong');
@@ -81,7 +86,13 @@ class IndividualController {
 
     deleteIndividual = async (req, res, next) => {
         this.checkValidation(req);
-        const result = await IndividualModel.delete(req.params.id);
+        
+        if(!req.currentUser){
+            throw new HttpException(401, 'Unauthorized');
+        }
+        const { SENHA, ...userWithoutPassword } = req.currentUser;
+
+        const result = await IndividualModel.delete(req.params.id, userWithoutPassword.ID);
         if (!result) {
             throw new HttpException(404, 'Individual not found');
         }

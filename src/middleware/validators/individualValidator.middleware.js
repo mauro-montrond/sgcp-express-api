@@ -20,8 +20,7 @@ exports.createIndividualSchema = [
         .isLength({ min: 2 })
         .withMessage('Must be at least 2 chars long'),
     body('nickname')
-        .exists()
-        .withMessage('Nickname is required')
+        .optional()
         .trim()
         .matches(/^[a-zA-Z0-9-'_ ]+$/)
         .withMessage("Can only contain: a-z, A-Z, 0-9, _, - and '")
@@ -90,8 +89,7 @@ exports.createIndividualSchema = [
         .isIn(IndividualMaritalSatus)
         .withMessage('Invalid marital status'),
     body('profession')
-        .exists()
-        .withMessage('Profession is required')
+        .optional()
         .trim()
         .isLength({ min: 2 })
         .withMessage('Must be at least 2 chars long'),
@@ -110,8 +108,7 @@ exports.createIndividualSchema = [
         })
         .withMessage('Residence id does not match an existing location'),
     body('workplace')
-        .exists()
-        .withMessage('Workplace is required')
+        .optional()
         .trim()
         .isLength({ min: 2 })
         .withMessage('Must be at least 2 chars long'),
@@ -167,8 +164,7 @@ exports.createIndividualSchema = [
         .isLength({ min: 3 })
         .withMessage('Must be at least 3 chars long'),
     body('beard')
-        .exists()
-        .withMessage('Beard is required')
+        .optional()
         .trim()
         .isLength({ min: 3 })
         .withMessage('Must be at least 3 chars long'),
@@ -197,8 +193,7 @@ exports.createIndividualSchema = [
         .isLength({ min: 3 })
         .withMessage('Must be at least 3 chars long'),
     body('tattoos')
-        .exists()
-        .withMessage('Tattoos is required')
+        .optional()
         .trim()
         .isLength({ min: 3 })
         .withMessage('Must be at least 3 chars long'),
