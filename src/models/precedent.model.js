@@ -49,19 +49,22 @@ class PrecedentuModel {
         return newVal;
     }
 
-    create = async ({ individual_id, reference_num, detention_reason, destination, date = new Date(), state = 'A'}, user_id) => {
+    create = async ({ individual_id, reference_num, detention_reason, destination, date = new Date(), state = 'A'}, user_id, full) => {
         const sql = `INSERT INTO ${this.tableName}
         (ID_UTILIZADOR, ID_INDIVIDUO, NO_REFERENCIA, MOTIVO_DETENCAO, DESTINO, DATA, ESTADO) VALUES (?,?,?,?,?,?,?)`;
 
-        const result = await query(sql, [user_id, individual_id, reference_num, detention_reason, destination, date, state]);
+        let result = await query(sql, [user_id, individual_id, reference_num, detention_reason, destination, date, state]);
         let affectedRows = result ? result.affectedRows : 0;
         if(result){
             const newVal = await this.getVal(result.insertId);
             const resultLog = await logModel.logChange(user_id, this.tableName, result.insertId, null, newVal, 'Criar');
             affectedRows = resultLog ? affectedRows + resultLog : 0;
+            result.affectedRows = resultLog ? result.affectedRows + resultLog : 0;
         }
-
-        return affectedRows;
+        if(!full)
+            return affectedRows;
+        else
+            return result;
     }
 
     update = async (params, id, u_id) => {
@@ -93,6 +96,27 @@ class PrecedentuModel {
         }
 
         return affectedRows;
+    }
+
+    deleteFull = async (id, u_id, full) => {
+        let precedentList = await this.findMany( {'ID_INDIVIDUO': id} );
+        const sql = `DELETE FROM ${this.tableName}
+        WHERE ID_INDIVIDUO = ?`;
+        const result = await query(sql, [id]);
+        const affectedRows = result ? result.affectedRows : 0;
+        if(affectedRows){
+            for(let i = 0; i < precedentList.length; i++){
+                const currentPrecedent = precedentList[i];
+                const { ID, ...prevVal} = currentPrecedent;
+                const resultLog = await logModel.logChange(u_id, this.tableName, currentPrecedent.ID, prevVal, null, 'Eliminar');
+                result.affectedRows = resultLog ? result.affectedRows + resultLog : 0;
+            }
+        }
+
+        if(!full)
+            return affectedRows;
+        else
+            return result;
     }
 }
 

@@ -59,20 +59,23 @@ class FingerprintModel {
         return newVal;
     }
 
-    create = async ({ individual_id, r_thumb, r_index, r_middle, r_ring, r_little, l_thumb, l_index, l_middle, l_ring, l_little }, u_id) => {
+    create = async ({ individual_id, r_thumb, r_index, r_middle, r_ring, r_little, l_thumb, l_index, l_middle, l_ring, l_little }, u_id, full) => {
         const sql = `INSERT INTO ${this.tableName}
         (ID_INDIVIDUO, POLEGAR_DIREITO, INDICADOR_DIREITO, MEDIO_DIREITO, ANELAR_DIREITO, MINDINHO_DIREITO, 
          POLEGAR_ESQUERDO, INDICADOR_ESQUERDO, MEDIO_ESQUERDO, ANELAR_ESQUERDO, MINDINHO_ESQUERDO) VALUES (?,?,?,?,?,?,?,?,?,?,?)`;
 
-        const result = await query(sql, [individual_id, r_thumb, r_index, r_middle, r_ring, r_little, l_thumb, l_index, l_middle, l_ring, l_little]);
+        let result = await query(sql, [individual_id, r_thumb, r_index, r_middle, r_ring, r_little, l_thumb, l_index, l_middle, l_ring, l_little]);
         let affectedRows = result ? result.affectedRows : 0;
         if(result){
             const newVal = await this.getVal(result.insertId);
             const resultLog = await logModel.logChange(u_id, this.tableName, result.insertId, null, newVal, 'Criar');
             affectedRows = resultLog ? affectedRows + resultLog : 0;
+            result.affectedRows = resultLog ? result.affectedRows + resultLog : 0;
         }
-
-        return affectedRows;
+        if(!full)
+            return affectedRows;
+        else
+            return result;
     }
 
     update = async (params, individual_id, u_id) => {
@@ -92,18 +95,23 @@ class FingerprintModel {
         return result;
     }
 
-    delete = async (individual_id, u_id) => {
+    delete = async (individual_id, u_id, full) => {
+        
         let currentFingerprint = await this.findOne( {'ID_INDIVIDUO': individual_id} );
-        const { ID, ...prevVal} = currentFingerprint;
         const sql = `DELETE FROM ${this.tableName}
         WHERE ID_INDIVIDUO = ?`;
-        const result = await query(sql, [individual_id]);
+        let result = await query(sql, [individual_id]);
         const affectedRows = result ? result.affectedRows : 0;
         if(affectedRows){
+            const { ID, ...prevVal} = currentFingerprint;
             const resultLog = await logModel.logChange(u_id, this.tableName, currentFingerprint.ID, prevVal, null, 'Eliminar');
+            result.affectedRows = resultLog ? result.affectedRows + resultLog : 0;
         }
 
-        return affectedRows;
+        if(!full)
+            return affectedRows;
+        else
+            return result;
     }
 }
 

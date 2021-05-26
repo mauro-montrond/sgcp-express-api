@@ -61,6 +61,11 @@ class IndividualFullController {
 
     updateIndividualFull = async (req, res, next) => {
         this.checkValidation(req);
+        
+        if(!req.currentUser){
+            throw new HttpException(401, 'Unauthorized');
+        }
+        const { SENHA, ...userWithoutPassword } = req.currentUser;
         // do the update query and get the result
         // it can be partial edit
         // convert the re.body keys into the actual names of the tables columns, grouping each columns of each table
@@ -155,8 +160,6 @@ class IndividualFullController {
         if( Object.keys(req.body).includes('photoState') )
             photoUpdates["ESTADO"] = Object.values(req.body)[Object.keys(req.body).indexOf("photoState")]; 
 
-        console.log("photoUpdates keys: " + Object.keys(photoUpdates));
-        console.log("photoUpdates values: " + Object.values(photoUpdates));
         let precedentUpdates = {};
         
         if( Object.keys(req.body).includes('precedent_id') )
@@ -170,7 +173,8 @@ class IndividualFullController {
         if( Object.keys(req.body).includes('precedentState') )
             precedentUpdates["ESTADO"] = Object.values(req.body)[Object.keys(req.body).indexOf("precedentState")]; 
 
-        const result = await IndividualFullModel.updateFull(individualUpdates, fingerprintUpdates, photoUpdates, precedentUpdates, req.params.id);
+        const result = await IndividualFullModel.updateFull(individualUpdates, fingerprintUpdates, photoUpdates, precedentUpdates, 
+                                                            req.params.id, userWithoutPassword.ID);
 
         if (!result) {
             throw new HttpException(404, 'Something went wrong');
@@ -186,7 +190,13 @@ class IndividualFullController {
 
     deleteIndividualFull = async (req, res, next) => {
         this.checkValidation(req);
-        const result = await IndividualFullModel.deleteFull(req.params.id);
+        
+        if(!req.currentUser){
+            throw new HttpException(401, 'Unauthorized');
+        }
+        const { SENHA, ...userWithoutPassword } = req.currentUser;
+        
+        const result = await IndividualFullModel.deleteFull(req.params.id, userWithoutPassword.ID);
         if (!result) {
             throw new HttpException(404, 'Individual not found');
         }

@@ -57,7 +57,7 @@ class PhotoModel {
         return newVal;
     }
 
-    create = async ({ individual_id, l_photo, f_photo, r_photo, state='A'}, u_id) => {
+    create = async ({ individual_id, l_photo, f_photo, r_photo, state='A'}, u_id, full) => {
         let deactivation = 'OK';
         if(state == 'A') {
             const photos = await this.findMany({ 'ID_INDIVIDUO': individual_id, 'ESTADO': 'A' });
@@ -73,22 +73,25 @@ class PhotoModel {
         const sql = `INSERT INTO ${this.tableName}
         (ID_INDIVIDUO, FOTO_ESQUERDA, FOTO_FRONTAL, FOTO_DIREITA, ESTADO) VALUES (?,?,?,?,?)`;
 
-        const result = await query(sql, [individual_id, l_photo, f_photo, r_photo, state]);
+        let result = await query(sql, [individual_id, l_photo, f_photo, r_photo, state]);
         let affectedRows = result ? result.affectedRows : 0;
         if(result){
             const newVal = await this.getVal(result.insertId);
             const resultLog = await logModel.logChange(u_id, this.tableName, result.insertId, null, newVal, 'Criar');
             affectedRows = resultLog ? affectedRows + resultLog : 0;
+            result.affectedRows = resultLog ? result.affectedRows + resultLog : 0;
         }
-
-        return affectedRows;
+        if(!full)
+            return affectedRows;
+        else
+            return result;
     }
 
     update = async (params, id, u_id) => {
         let currentPhoto= await this.findOne( {'ID': id} );
         const { ID, ...prevVal} = currentPhoto;
         let deactivation = 'OK';
-        if(params.ESTADO == 'A') {
+        if(params.ESTADO == 'A' && currentPhoto.ESTADO != 'A') {
             const findphoto = await this.findOne({ 'ID': id});
             if(findphoto) {
                 const activePhotos = await this.findMany({ 'ID_INDIVIDUO': findphoto.ID_INDIVIDUO, 'ESTADO': 'A' });
@@ -128,6 +131,27 @@ class PhotoModel {
         }
 
         return affectedRows;
+    }
+
+    deleteFull = async (id, u_id, full) => {
+        let photoList = await this.findMany( {'ID_INDIVIDUO': id} );
+        const sql = `DELETE FROM ${this.tableName}
+        WHERE ID_INDIVIDUO = ?`;
+        let result = await query(sql, [id]);
+        const affectedRows = result ? result.affectedRows : 0;
+        if(affectedRows){
+            for(let i = 0; i < photoList.length; i++){
+                const currentPhoto = photoList[i];
+                const { ID, ...prevVal} = currentPhoto;
+                const resultLog = await logModel.logChange(u_id, this.tableName, currentPhoto.ID, prevVal, null, 'Eliminar');
+                result.affectedRows = resultLog ? result.affectedRows + resultLog : 0;
+            }
+        }
+
+        if(!full)
+            return affectedRows;
+        else
+            return result;
     }
 }
 
