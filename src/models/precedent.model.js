@@ -1,5 +1,6 @@
 const query = require('../db/db-connection');
 const { multipleColumnSet, multipleColumnGets } = require('../utils/common.utils');
+const logModel = require('./log.model');
 class PrecedentuModel {
     tableName = 'antecedente';
 
@@ -42,31 +43,54 @@ class PrecedentuModel {
         return result[0];
     }
 
+    getVal = async (id) => {
+        let nv = await this.findOne({'ID': id});
+        const { ID, ...newVal } = nv;
+        return newVal;
+    }
+
     create = async ({ individual_id, reference_num, detention_reason, destination, date = new Date(), state = 'A'}, user_id) => {
         const sql = `INSERT INTO ${this.tableName}
         (ID_UTILIZADOR, ID_INDIVIDUO, NO_REFERENCIA, MOTIVO_DETENCAO, DESTINO, DATA, ESTADO) VALUES (?,?,?,?,?,?,?)`;
 
         const result = await query(sql, [user_id, individual_id, reference_num, detention_reason, destination, date, state]);
-        const affectedRows = result ? result.affectedRows : 0;
+        let affectedRows = result ? result.affectedRows : 0;
+        if(result){
+            const newVal = await this.getVal(result.insertId);
+            const resultLog = await logModel.logChange(user_id, this.tableName, result.insertId, null, newVal, 'Criar');
+            affectedRows = resultLog ? affectedRows + resultLog : 0;
+        }
 
         return affectedRows;
     }
 
-    update = async (params, id) => {
+    update = async (params, id, u_id) => {
+        let currentPrecedent = await this.findOne( {'ID': id} );
+        const { ID, ...prevVal} = currentPrecedent;
         const { columnSet, values } = multipleColumnSet(params)
 
         const sql = `UPDATE ${this.tableName} SET ${columnSet} WHERE ID = ?`;
 
         const result = await query(sql, [...values, id]);
+        
+        if(result && result.changedRows){
+            const newVal = await this.getVal(currentPrecedent.ID);
+            const resultLog = await logModel.logChange(u_id, this.tableName, currentPrecedent.ID, prevVal, newVal, 'Editar');
+        }
 
         return result;
     }
 
-    delete = async (id) => {
+    delete = async (id, u_id) => {
+        let currentPrecedent= await this.findOne( {'ID': id} );
+        const { ID, ...prevVal} = currentPrecedent;
         const sql = `DELETE FROM ${this.tableName}
         WHERE ID = ?`;
         const result = await query(sql, [id]);
         const affectedRows = result ? result.affectedRows : 0;
+        if(affectedRows){
+            const resultLog = await logModel.logChange(u_id, this.tableName, currentPrecedent.ID, prevVal, null, 'Eliminar');
+        }
 
         return affectedRows;
     }

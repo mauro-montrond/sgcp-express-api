@@ -57,6 +57,11 @@ class PrecedentController {
     updatePrecedent = async (req, res, next) => {
         this.checkValidation(req);
 
+        if(!req.currentUser){
+            throw new HttpException(401, 'Unauthorized');
+        }
+        const { SENHA, ...userWithoutPassword } = req.currentUser;
+
         // do the update query and get the result
         // it can be partial edit
         // convert the re.body keys into the actual names of the table's colums
@@ -64,7 +69,7 @@ class PrecedentController {
         // remove the limits, they are not used in updating
         delete updates['date_limit'];
         
-        const result = await PrecedentModel.update(updates, req.params.id);
+        const result = await PrecedentModel.update(updates, req.params.id, userWithoutPassword.ID);
 
         if (!result) {
             throw new HttpException(404, 'Something went wrong');
@@ -80,7 +85,13 @@ class PrecedentController {
 
     deletePrecedent = async (req, res, next) => {
         this.checkValidation(req);
-        const result = await PrecedentModel.delete(req.params.id);
+
+        if(!req.currentUser){
+            throw new HttpException(401, 'Unauthorized');
+        }
+        const { SENHA, ...userWithoutPassword } = req.currentUser;
+
+        const result = await PrecedentModel.delete(req.params.id, userWithoutPassword.ID);
         if (!result) {
             throw new HttpException(404, 'Precedent not found');
         }
