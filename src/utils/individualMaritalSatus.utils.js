@@ -1,10 +1,7 @@
 module.exports = [
-    'Solteiro',
-    'Solteira',
-    'Casado',
-    'Casada',
-    'Divorciado',
-    'Divorciada',
-    'Viúvo',
-    'Viúva'
+    'S',
+    'C',
+    'UF',
+    'D',
+    'V'
 ]
