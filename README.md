@@ -10,6 +10,7 @@ This API uses a number of open source projects to work properly:
 * [bcryptjs]
 * [jsonwebtoken]
 * [express-validator]
+* [multer]
 * [dotenv]
 * [cors]
 
@@ -49,5 +50,6 @@ npm run dev
    [bcryptjs]: <https://github.com/dcodeIO/bcrypt.js#readme>
    [jsonwebtoken]: <https://github.com/auth0/node-jsonwebtoken#readme>
    [express-validator]: <https://express-validator.github.io/docs/>
+   [multer]: <https://www.npmjs.com/package/multer>
    [dotenv]: <https://github.com/motdotla/dotenv#readme>
    [cors]: <https://github.com/expressjs/cors#readme>
