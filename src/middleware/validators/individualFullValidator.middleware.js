@@ -463,6 +463,39 @@ exports.createIndividualFullSchema = [
         })
         .withMessage('Each fingerprint must be different'),
     ////////// photos //////////
+    body('photo')
+        // .custom( (value, {req, path}) => !!req.files[path])
+        .custom( (value, {req, path}) => {
+            // if (req.photoValidationError)
+            if (eval('req.' + path + 'ValidationError'))
+                return false;
+            return true;
+        })
+        .withMessage('not a image file!')
+        .custom( (value, {req, path}) => {
+            if (!!req.files[path]) {
+                if(req.files[path][0].mimetype !== "image/jpeg")
+                    return false;
+            }
+            return true;
+        })
+        .withMessage('not a jpeg file!'),
+    body('photo2')
+        .custom( (value, {req, path}) => {
+            if (eval('req.' + path + 'ValidationError'))
+                return false;
+            return true;
+        })
+        .withMessage('not a image file!')
+        .custom( (value, {req, path}) => {
+            if (!!req.files[path]) {
+                if(req.files[path][0].mimetype !== "image/jpeg")
+                    return false;
+            }
+            return true;
+        })
+        .withMessage('not a jpeg file!'),
+    //// old
     body('l_photo')
         .exists()
         .withMessage('Left photo is required')
