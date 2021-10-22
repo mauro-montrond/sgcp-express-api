@@ -16,7 +16,7 @@ const upload = multer({
         if(file.mimetype !== "image/jpeg" && file.mimetype !== "image/png") {
             valImg = false;
             // dynamically add a error for each file field
-            eval("req." + file.fieldname + "ValidationError = " + '"Only pictures files are allowed!";');
+            eval("req." + file.fieldname + "ValidationError = " + '"Only image files are allowed!";');
         }
         cb(null, valImg);
         // cb(null, file.mimetype === 'image/jpeg');
