@@ -7,37 +7,27 @@ const Action = require('../utils/menuActions.utils');
 const awaitHandlerFactory = require('../middleware/awaitHandlerFactory.middleware');
 // new
 const multer = require('multer');
+const fs = require('fs');
 const path = require('path');
-const fs = require('fs-extra');
 
 const storage = multer.diskStorage({
     destination: function(req, file, cb) {
         let photos =["l_photoFile", "f_photoFile", "r_photoFile"];
         let fingerprints =["r_thumbFile", "r_indexFile", "r_middleFile", "r_ringFile", "r_littleFile", 
                            "l_thumbFile", "l_indexFile", "l_middleFile", "l_ringFile", "l_littleFile"];
-        if(photos.includes(file.fieldname)){
-            if(req.body.doc_num){
-                let docNum = req.body.doc_num;
-                let uploadPath = `./uploads/individuals//${docNum}/photos`;
-                fs.mkdirsSync(uploadPath);
-                cb(null, uploadPath);
-            } else {
-                let uploadPath = "./uploads/individuals/temp/photos";
-                fs.mkdirsSync(uploadPath);
-                cb(null, uploadPath);
-            }
-        } else if(fingerprints.includes(file.fieldname)) {
-            if(req.body.doc_num){
-                let docNum = req.body.doc_num;
-                let uploadPath = `./uploads/individuals//${docNum}/fingerprints`;
-                fs.mkdirsSync(uploadPath);
-                cb(null, uploadPath);
-            } else {
-                let uploadPath = "./uploads/individuals/temp/fingerprints";
-                fs.mkdirsSync(uploadPath);
-                cb(null, uploadPath);
-            }
+        let uploadPath2;
+        if(req.body.doc_num) {
+            uploadPath2 = `./uploads/individuals//${req.body.doc_num}`;
+        } else {
+            uploadPath2 = `./uploads/temp`;
         }
+        if(photos.includes(file.fieldname)) {
+            uploadPath2 += `/photos`;
+        } else if(fingerprints.includes(file.fieldname)) {
+            uploadPath2 += `/fingerprints`;
+        }
+        fs.mkdirSync( uploadPath2, { recursive: true } );
+        cb(null, uploadPath2);
     },
 
     // By default, multer removes file extensions so let's add them back
@@ -48,7 +38,7 @@ const storage = multer.diskStorage({
 const upload = multer({
     // storage: multer.memoryStorage(),
     storage: storage,
-    limits: {fileSize: 1 * Math.pow(1024, 2 /* MBs*/)},
+    limits: {fileSize: 10 * Math.pow(1024, 2 /* MBs*/)},
     fileFilter(req, file, cb){
         //Validate the files as you wish, this is just an example
         let valImg = true;
