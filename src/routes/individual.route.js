@@ -7,9 +7,48 @@ const Action = require('../utils/menuActions.utils');
 const awaitHandlerFactory = require('../middleware/awaitHandlerFactory.middleware');
 // new
 const multer = require('multer');
+const path = require('path');
+const fs = require('fs-extra');
 
+const storage = multer.diskStorage({
+    destination: function(req, file, cb) {
+        let photos =["l_photoFile", "f_photoFile", "r_photoFile"];
+        let fingerprints =["r_thumbFile", "r_indexFile", "r_middleFile", "r_ringFile", "r_littleFile", 
+                           "l_thumbFile", "l_indexFile", "l_middleFile", "l_ringFile", "l_littleFile"];
+        if(photos.includes(file.fieldname)){
+            if(req.body.doc_num){
+                let docNum = req.body.doc_num;
+                let uploadPath = `./uploads/individuals//${docNum}/photos`;
+                fs.mkdirsSync(uploadPath);
+                cb(null, uploadPath);
+            } else {
+                let uploadPath = "./uploads/individuals/temp/photos";
+                fs.mkdirsSync(uploadPath);
+                cb(null, uploadPath);
+            }
+        } else if(fingerprints.includes(file.fieldname)) {
+            if(req.body.doc_num){
+                let docNum = req.body.doc_num;
+                let uploadPath = `./uploads/individuals//${docNum}/fingerprints`;
+                fs.mkdirsSync(uploadPath);
+                cb(null, uploadPath);
+            } else {
+                let uploadPath = "./uploads/individuals/temp/fingerprints";
+                fs.mkdirsSync(uploadPath);
+                cb(null, uploadPath);
+            }
+        }
+    },
+
+    // By default, multer removes file extensions so let's add them back
+    filename: function(req, file, cb) {
+        cb(null,  file.fieldname + '_' + Date.now() + path.extname(file.originalname));
+    }
+});
 const upload = multer({
-    limits: {fileSize: 10 * Math.pow(1024, 2 /* MBs*/)},
+    // storage: multer.memoryStorage(),
+    storage: storage,
+    limits: {fileSize: 1 * Math.pow(1024, 2 /* MBs*/)},
     fileFilter(req, file, cb){
         //Validate the files as you wish, this is just an example
         let valImg = true;
@@ -22,6 +61,22 @@ const upload = multer({
         // cb(null, file.mimetype === 'image/jpeg');
     },
 });
+
+const uploadFields = upload.fields([
+    { name: 'l_photoFile', maxCount: 1},
+    { name: 'f_photoFile', maxCount: 1},
+    { name: 'r_photoFile', maxCount: 1},
+    { name: 'r_thumbFile', maxCount: 1},
+    { name: 'r_indexFile', maxCount: 1},
+    { name: 'r_middleFile', maxCount: 1},
+    { name: 'r_ringFile', maxCount: 1},
+    { name: 'r_littleFile', maxCount: 1},
+    { name: 'l_thumbFile', maxCount: 1},
+    { name: 'l_indexFile', maxCount: 1},
+    { name: 'l_middleFile', maxCount: 1},
+    { name: 'l_ringFile', maxCount: 1},
+    { name: 'l_littleFile', maxCount: 1},
+]);
 // end new
 
 const { createIndividualSchema, updateIndividualSchema, getIndividualsSchema,  deleteIndividualSchema} = require('../middleware/validators/individualValidator.middleware');
@@ -33,12 +88,7 @@ router.get('/full/params', auth(Action.Individual.listIndividual.listIndividualB
 router.get('/id/:id', auth(Action.Individual.listIndividual.listIndividualByParams), awaitHandlerFactory(individualController.getIndividualById)); // localhost:3000/api/v1/individuals/id/1
 router.get('/doc_num/:doc_num', auth(Action.Individual.listIndividual.listIndividualByParams), awaitHandlerFactory(individualController.getIndividualByCode)); // localhost:3000/api/v1/individuals/doc_num/123456789 
 router.post('/', auth(Action.Individual.createIndividual),createIndividualSchema, awaitHandlerFactory(individualController.createIndividual)); // localhost:3000/api/v1/individuals
-router.post('/full', auth(Action.Individual.createIndividual),  
-            upload.fields([
-                { name: 'photo', maxCount: 1},
-                { name: 'photo2', maxCount: 1},
-            ]), 
-            createIndividualFullSchema, awaitHandlerFactory(individualFullController.createIndividualFull)); // localhost:3000/api/v1/individuals/full
+router.post('/full', auth(Action.Individual.createIndividual), uploadFields, createIndividualFullSchema, awaitHandlerFactory(individualFullController.createIndividualFull)); // localhost:3000/api/v1/individuals/full
 router.patch('/id/:id', auth(Action.Individual.updateIndividual), updateIndividualSchema, awaitHandlerFactory(individualController.updateIndividual)); // localhost:3000/api/v1/individuals/id/3 , using patch for partial update
 router.patch('/full/id/:id', auth(Action.Individual.updateIndividual), updateIndividualFullSchema, awaitHandlerFactory(individualFullController.updateIndividualFull)); // localhost:3000/api/v1/individuals/full/id/3 , using patch for partial update
 router.delete('/id/:id', auth(Action.Individual.deleteIndividual), deleteIndividualSchema, awaitHandlerFactory(individualController.deleteIndividual)); // localhost:3000/api/v1/individuals/id/3

@@ -597,9 +597,16 @@ class IndividualFullModel {
     createFull = async ({ individual_name, nickname, father, mother, nationality, birthplace, birthdate, apparent_age, marital_status, profession, 
                       residence_id, workplace, doc_num, doc_issuance_date, doc_issuance_place, height, hair, beard = null, nose, mouth, face, colour, 
                       tattoos = null, police_classification, individualState = 'A',
-                      r_thumb, r_index, r_middle, r_ring, r_little, l_thumb, l_index, l_middle, l_ring, l_little,
-                      l_photo, f_photo, r_photo, photoState = 'A',
-                      reference_num, detention_reason, destination, date = new Date(), precedentState = 'A'}, user_id) => {
+                      r_thumb = null, r_index = null, r_middle = null, r_ring = null, r_little = null, 
+					  l_thumb = null, l_index = null, l_middle = null, l_ring = null, l_little = null,
+                      l_photo = null, f_photo = null, r_photo = null, photoState = 'A',
+                      reference_num, detention_reason, destination, date = new Date(), precedentState = 'A'},  
+					  {
+						  l_photoFile, f_photoFile, r_photoFile,
+						  r_thumbFile, r_indexFile, r_middleFile, r_ringFile, r_littleFile,
+						  l_thumbFile, l_indexFile, l_middleFile, l_ringFile, l_littleFile,
+					  }, 
+					  user_id) => {
 
         let affectedRows = 0;
 		let name = individual_name;
@@ -614,12 +621,52 @@ class IndividualFullModel {
             affectedRows += affectedRows1;
             let individual_id = result1.insertId;
 
+			if(r_thumbFile){
+				r_thumb = r_thumbFile[0].path;
+			}
+			if(r_indexFile){
+				r_index = r_indexFile[0].path;
+			}
+			if(r_middleFile){
+				r_middle = r_middleFile[0].path;
+			}
+			if(r_ringFile){
+				r_ring = r_ringFile[0].path;
+			}
+			if(r_littleFile){
+				r_little = r_littleFile[0].path;
+			}
+			if(l_thumbFile){
+				l_thumb = l_thumbFile[0].path;
+			}
+			if(l_indexFile){
+				l_index = l_indexFile[0].path;
+			}
+			if(l_middleFile){
+				l_middle = l_middleFile[0].path;
+			}
+			if(l_ringFile){
+				l_ring = l_ringFile[0].path;
+			}
+			if(l_littleFile){
+				l_little = l_littleFile[0].path;
+			}
+
             const result2 = await fingerprintModel.create({individual_id, r_thumb, r_index, r_middle, r_ring, r_little, 
 														   l_thumb, l_index, l_middle, l_ring, l_little}, user_id, true);
 			const affectedRows2 = result2 ? result2.affectedRows : 0;
 
             if(affectedRows2 != 0){
                 affectedRows += affectedRows2;
+				if(l_photoFile){
+					l_photo = l_photoFile[0].path;
+				}
+				if(f_photoFile){
+					f_photo = f_photoFile[0].path;
+				}
+				if(r_photoFile){
+					r_photo = r_photoFile[0].path;
+				}
     
                 const result3 = await photoModel.create({individual_id, l_photo, f_photo, r_photo, photoState}, user_id, true);
                 const affectedRows3 = result3 ? result3.affectedRows : 0;

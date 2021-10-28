@@ -4,6 +4,10 @@ const { getNormalizedColumnsValues } = require('../utils/individualFullColumnNor
 const { validationResult } = require('express-validator');
 const dotenv = require('dotenv');
 dotenv.config();
+// new
+const fs = require('fs');
+// const path = require('path');
+// end new
 
 /******************************************************************************
  *                              Individual Full Controller
@@ -19,7 +23,7 @@ class IndividualFullController {
     };
 
     getIndividualFullById = async (req, res, next) => {
-        const individual = await IndividualFullModel.findOne({ ID: req.params.id });
+        const individual = await IndividualFullModel.findOne({ ID_INDIVIDUO: req.params.id });
         if (!individual) {
             throw new HttpException(404, 'Individual not found');
         }
@@ -50,7 +54,7 @@ class IndividualFullController {
             throw new HttpException(401, 'Unauthorized');
         }
         const { SENHA, ...userWithoutPassword } = req.currentUser;
-        const result = await IndividualFullModel.createFull(req.body, userWithoutPassword.ID);
+        const result = await IndividualFullModel.createFull(req.body, req.files, userWithoutPassword.ID);
 
         if (!result) {
             throw new HttpException(500, 'Something went wrong');
@@ -195,10 +199,22 @@ class IndividualFullController {
             throw new HttpException(401, 'Unauthorized');
         }
         const { SENHA, ...userWithoutPassword } = req.currentUser;
+        // store the document number of the individual to be removed
+        const {NUM_DOC} = await IndividualFullModel.findOne({ ID_INDIVIDUO: req.params.id });
         
         const result = await IndividualFullModel.deleteFull(req.params.id, userWithoutPassword.ID);
         if (!result) {
             throw new HttpException(404, 'Individual not found');
+        } else {
+            // after the individual has been deleted from database, delete his images directory
+            let indivFolder = `uploads/individuals/${NUM_DOC}`;
+            fs.rm(
+                indivFolder,
+                {recursive: true},
+                (err) => {
+                    return;
+                }
+            );
         }
         res.send('Individual has been deleted');
     };
@@ -206,6 +222,56 @@ class IndividualFullController {
     checkValidation = (req) => {
         const errors = validationResult(req)
         if (!errors.isEmpty()) {
+            let uploadPath = `./uploads/temp`
+            if(req.body.doc_num) {
+                uploadPath = `./uploads/individuals//${req.body.doc_num}`;
+            }
+            fs.rm(
+                uploadPath,
+                {recursive: true},
+                (err) => {
+                    return;
+                }
+            );
+            /*
+            if(req.files) {
+                var filesList = [];
+                var fileKeys = Object.keys(req.files);
+                fileKeys.forEach(key => {
+                    filesList.push(key);
+                });
+                filesList.forEach(file => {
+                    let folder = req.files[file][0].path;
+                    let start = folder.indexOf('individuals') + 12;
+                    let end = folder.length;
+                    if(folder.indexOf('photos') > 0){
+                        end = folder.indexOf('photos') - 1;
+                    } else if (folder.indexOf('fingerprints') > 0) {
+                        end = folder.indexOf('fingerprints') - 1;
+                    }
+                    if(end != folder.length){
+                        let indivFolder = folder.substring(start, end)
+                        let remove = `uploads/individuals/${indivFolder}`
+                        fs.rm(
+                            remove,
+                            {recursive: true},
+                            (err) => {
+                                return;
+                            }
+                        );
+                    }
+                    //
+                    // fs.unlink(
+                    //     req.files[file][0].path,
+                    //     (err) => {
+                    //         //console.error(err)
+                    //         return;
+                    //     }
+                    // );
+                    //
+                });
+            }
+            */
             throw new HttpException(400, 'Validation failed', errors);
         }
     }
