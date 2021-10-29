@@ -38,7 +38,7 @@ const storage = multer.diskStorage({
 const upload = multer({
     // storage: multer.memoryStorage(),
     storage: storage,
-    limits: {fileSize: 10 * Math.pow(1024, 2 /* MBs*/)},
+    limits: {fileSize: 2.8 * Math.pow(1024, 2 /* MBs*/)},
     fileFilter(req, file, cb){
         //Validate the files as you wish, this is just an example
         let valImg = true;

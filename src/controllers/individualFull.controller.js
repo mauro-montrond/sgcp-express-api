@@ -222,18 +222,6 @@ class IndividualFullController {
     checkValidation = (req) => {
         const errors = validationResult(req)
         if (!errors.isEmpty()) {
-            let uploadPath = `./uploads/temp`
-            if(req.body.doc_num) {
-                uploadPath = `./uploads/individuals//${req.body.doc_num}`;
-            }
-            fs.rm(
-                uploadPath,
-                {recursive: true},
-                (err) => {
-                    return;
-                }
-            );
-            /*
             if(req.files) {
                 var filesList = [];
                 var fileKeys = Object.keys(req.files);
@@ -241,37 +229,59 @@ class IndividualFullController {
                     filesList.push(key);
                 });
                 filesList.forEach(file => {
+                    fs.unlinkSync(
+                        req.files[file][0].path,
+                        (err) => {
+                            //console.error(err)
+                            return;
+                        }
+                    );
+                    let start = 0;
+                    let dir = "temp";
                     let folder = req.files[file][0].path;
-                    let start = folder.indexOf('individuals') + 12;
+                    if(folder.indexOf('individuals') > 0){
+                        start = folder.indexOf('individuals') + 12;
+                        dir = "individuals";
+                    } else{
+                        start = folder.indexOf('temp') + 5;
+                    }
                     let end = folder.length;
+                    let end2 = folder.length;
                     if(folder.indexOf('photos') > 0){
-                        end = folder.indexOf('photos') - 1;
+                        end = folder.indexOf('photos') + 7;
+                        end2 = folder.indexOf('photos') - 1;
                     } else if (folder.indexOf('fingerprints') > 0) {
-                        end = folder.indexOf('fingerprints') - 1;
+                        end = folder.indexOf('fingerprints') + 13;
+                        end2 = folder.indexOf('fingerprints') - 1;
                     }
                     if(end != folder.length){
-                        let indivFolder = folder.substring(start, end)
-                        let remove = `uploads/individuals/${indivFolder}`
-                        fs.rm(
-                            remove,
-                            {recursive: true},
-                            (err) => {
-                                return;
-                            }
-                        );
+                        let indivFolder = folder.substring(start, end);
+                        let indivFolder2 = folder.substring(start, end2);
+                        let remove = `uploads\\${dir}\\${indivFolder}`;
+                        let remove2 = `uploads\\${dir}\\${indivFolder2}`;
+                        let fileObjs = fs.readdirSync(remove);
+                        if(fileObjs.length == 0){
+                            fs.rmSync(
+                                remove,
+                                {recursive: true},
+                                (err) => {
+                                    return;
+                                }
+                            );
+                        }
+                        let fileObjs2 = fs.readdirSync(remove2);
+                        if(fileObjs2.length == 0){
+                            fs.rm(
+                                remove2,
+                                {recursive: true},
+                                (err) => {
+                                    return;
+                                }
+                            );
+                        }
                     }
-                    //
-                    // fs.unlink(
-                    //     req.files[file][0].path,
-                    //     (err) => {
-                    //         //console.error(err)
-                    //         return;
-                    //     }
-                    // );
-                    //
                 });
             }
-            */
             throw new HttpException(400, 'Validation failed', errors);
         }
     }
