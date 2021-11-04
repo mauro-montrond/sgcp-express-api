@@ -6,6 +6,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 // new
 const fs = require('fs');
+const path = require('path');
 // const path = require('path');
 // end new
 
@@ -53,8 +54,38 @@ class IndividualFullController {
         if(!req.currentUser){
             throw new HttpException(401, 'Unauthorized');
         }
+        // new
+        if(req.files){
+            let photos =["l_photoFile", "f_photoFile", "r_photoFile"];
+            let fingerprints =["r_thumbFile", "r_indexFile", "r_middleFile", "r_ringFile", "r_littleFile", 
+                               "l_thumbFile", "l_indexFile", "l_middleFile", "l_ringFile", "l_littleFile"];
+            var filesList = [];
+            var fileKeys = Object.keys(req.files);
+            fileKeys.forEach(key => {
+                filesList.push(key);
+            });
+            filesList.forEach( file => {
+                let uploadPath = `./uploads/individuals/${req.body.doc_num}`;
+                if(photos.includes(req.files[file][0].fieldname)) {
+                    uploadPath += `/photos/`;
+                } else if(fingerprints.includes(req.files[file][0].fieldname)) {
+                    uploadPath += `/fingerprints`;
+                }
+                fs.mkdirSync( uploadPath, { recursive: true } );
+                let fileName = req.files[file][0].fieldname + '_' + Date.now() + path.extname(req.files[file][0].originalname);
+                let fieldname = req.files[file][0].fieldname.substring(0, req.files[file][0].fieldname.indexOf("File"));
+                console.log("fieldname: " + fieldname);
+                // dynamically add each fileName to body
+                eval("req.body." + fieldname + " = '" + fileName +"';");
+                uploadPath += '/' + fileName;
+                fs.writeFileSync( uploadPath, req.files[file][0].buffer, function (err) {
+                    if (err) throw new HttpException(500, 'Something went wrong');
+                });
+            });
+        }
+        // end of new
         const { SENHA, ...userWithoutPassword } = req.currentUser;
-        const result = await IndividualFullModel.createFull(req.body, req.files, userWithoutPassword.ID);
+        const result = await IndividualFullModel.createFull(req.body, userWithoutPassword.ID);
 
         if (!result) {
             throw new HttpException(500, 'Something went wrong');
@@ -222,66 +253,6 @@ class IndividualFullController {
     checkValidation = (req) => {
         const errors = validationResult(req)
         if (!errors.isEmpty()) {
-            if(req.files) {
-                var filesList = [];
-                var fileKeys = Object.keys(req.files);
-                fileKeys.forEach(key => {
-                    filesList.push(key);
-                });
-                filesList.forEach(file => {
-                    fs.unlinkSync(
-                        req.files[file][0].path,
-                        (err) => {
-                            //console.error(err)
-                            return;
-                        }
-                    );
-                    let start = 0;
-                    let dir = "temp";
-                    let folder = req.files[file][0].path;
-                    if(folder.indexOf('individuals') > 0){
-                        start = folder.indexOf('individuals') + 12;
-                        dir = "individuals";
-                    } else{
-                        start = folder.indexOf('temp') + 5;
-                    }
-                    let end = folder.length;
-                    let end2 = folder.length;
-                    if(folder.indexOf('photos') > 0){
-                        end = folder.indexOf('photos') + 7;
-                        end2 = folder.indexOf('photos') - 1;
-                    } else if (folder.indexOf('fingerprints') > 0) {
-                        end = folder.indexOf('fingerprints') + 13;
-                        end2 = folder.indexOf('fingerprints') - 1;
-                    }
-                    if(end != folder.length){
-                        let indivFolder = folder.substring(start, end);
-                        let indivFolder2 = folder.substring(start, end2);
-                        let remove = `uploads\\${dir}\\${indivFolder}`;
-                        let remove2 = `uploads\\${dir}\\${indivFolder2}`;
-                        let fileObjs = fs.readdirSync(remove);
-                        if(fileObjs.length == 0){
-                            fs.rmSync(
-                                remove,
-                                {recursive: true},
-                                (err) => {
-                                    return;
-                                }
-                            );
-                        }
-                        let fileObjs2 = fs.readdirSync(remove2);
-                        if(fileObjs2.length == 0){
-                            fs.rm(
-                                remove2,
-                                {recursive: true},
-                                (err) => {
-                                    return;
-                                }
-                            );
-                        }
-                    }
-                });
-            }
             throw new HttpException(400, 'Validation failed', errors);
         }
     }
