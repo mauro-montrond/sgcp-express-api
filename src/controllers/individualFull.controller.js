@@ -72,15 +72,26 @@ class IndividualFullController {
                     uploadPath += `/fingerprints`;
                 }
                 fs.mkdirSync( uploadPath, { recursive: true } );
+                // fs.mkdir( uploadPath, { recursive: true }, (err) => {
+                //     if (err) throw err;
+                // });
                 let fileName = req.files[file][0].fieldname + '_' + Date.now() + path.extname(req.files[file][0].originalname);
                 let fieldname = req.files[file][0].fieldname.substring(0, req.files[file][0].fieldname.indexOf("File"));
-                console.log("fieldname: " + fieldname);
                 // dynamically add each fileName to body
                 eval("req.body." + fieldname + " = '" + fileName +"';");
                 uploadPath += '/' + fileName;
-                fs.writeFileSync( uploadPath, req.files[file][0].buffer, function (err) {
-                    if (err) throw new HttpException(500, 'Something went wrong');
+                let writer = fs.createWriteStream(uploadPath);
+                // write data
+                writer.write(req.files[file][0].buffer);
+                // the finish event is emitted when all data has been flushed from the stream
+                writer.on('finish', () => {
+                    // console.log('wrote all data to file');
                 });
+                // close the stream
+                writer.end();
+                // fs.writeFileSync( uploadPath, req.files[file][0].buffer, function (err) {
+                //     if (err) throw new HttpException(500, 'Something went wrong');
+                // });
             });
         }
         // end of new
