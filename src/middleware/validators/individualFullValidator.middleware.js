@@ -998,334 +998,334 @@ exports.updateIndividualFullSchema = [
         .isIn(IndividualStates)
         .withMessage('Invalid state type'),
     /// fingerprint ///
-    body('r_thumb')
-        .optional()
-        .notEmpty()
-        .withMessage("Right thumb must be filled")
-        .trim()
-        .isLength({ min: 6 })
-        .withMessage('Must be at least 6 chars long')
-        .isURL()
-        .withMessage('Must be a URL')
-        .custom(async (element, {req}) => {
-            const currentPrint = await FingerprintModel.findOne({'ID_INDIVIDUO': req.params.id});
-            if(currentPrint){
-                if(currentPrint.POLEGAR_DIREITO == element)
-                    return Promise.resolve();
-                else {
-                    const findFingerprint = await FingerprintModel.findFingerprint(element);
-                    if(findFingerprint)
-                        return Promise.reject();
-                    else
-                        return Promise.resolve();
-                }
+    body('r_thumbFile')
+        .custom( (value, {req, path}) => {
+            if(!req.files[path] && value) {
+                if(!eval('req.' + path + 'ValidationError'))
+                    return false;
             }
-            else
-                return Promise.resolve();
+            return true;
         })
-        .withMessage('Fingerprint already exists')
-        .custom((value, {req}) => {
-            if ( checkDuplicateFingerprint(req, value) > 1)
+        .withMessage('not a image input!')
+        .custom( (value, {req, path}) => {
+            if (eval('req.' + path + 'ValidationError'))
                 return false;
-            else
-                return true;
+            return true;
+        })
+        .withMessage('not a image file!')
+        .custom( (value, {req, path}) => {
+            if (!!req.files[path]) {
+                if(req.files[path][0].mimetype !== "image/jpeg")
+                    return false;
+            }
+            return true;
+        })
+        .withMessage('not a jpeg file!')
+        .custom((value, {req, path}) => {
+            if(!!req.files[path]) {
+                if ( checkDuplicateFingerprint(req, req.files[path][0].originalname) > 1)
+                    return false;
+                else
+                    return true;
+            }
+            return true;
         })
         .withMessage('Each fingerprint must be different'),
-    body('r_index')
-        .optional()
-        .notEmpty()
-        .withMessage("Right index finger must be filled")
-        .trim()
-        .isLength({ min: 6 })
-        .withMessage('Must be at least 6 chars long')
-        .isURL()
-        .withMessage('Must be a URL')
-        .custom(async (element, {req}) => {
-            const currentPrint = await FingerprintModel.findOne({'ID_INDIVIDUO': req.params.id});
-            if(currentPrint){
-                if(currentPrint.INDICADOR_DIREITO == element)
-                    return Promise.resolve();
-                else {
-                    const findFingerprint = await FingerprintModel.findFingerprint(element);
-                    if(findFingerprint)
-                        return Promise.reject();
-                    else
-                        return Promise.resolve();
-                }
+    body('r_indexFile')
+        .custom( (value, {req, path}) => {
+            if(!req.files[path] && value) {
+                if(!eval('req.' + path + 'ValidationError'))
+                    return false;
             }
-            else
-                return Promise.resolve();
+            return true;
         })
-        .withMessage('Fingerprint already exists')
-        .custom((value, {req}) => {
-            if ( checkDuplicateFingerprint(req, value) > 1)
+        .withMessage('not a image input!')
+        .custom( (value, {req, path}) => {
+            if (eval('req.' + path + 'ValidationError'))
                 return false;
-            else
-                return true;
+            return true;
+        })
+        .withMessage('not a image file!')
+        .custom( (value, {req, path}) => {
+            if (!!req.files[path]) {
+                if(req.files[path][0].mimetype !== "image/jpeg")
+                    return false;
+            }
+            return true;
+        })
+        .withMessage('not a jpeg file!')
+        .custom((value, {req, path}) => {
+            if(!!req.files[path]) {
+                if ( checkDuplicateFingerprint(req, req.files[path][0].originalname) > 1)
+                    return false;
+                else
+                    return true;
+            }
+            return true;
         })
         .withMessage('Each fingerprint must be different'),
-    body('r_middle')
-        .optional()
-        .notEmpty()
-        .withMessage("Right middle finger must be filled")
-        .trim()
-        .isLength({ min: 6 })
-        .withMessage('Must be at least 6 chars long')
-        .isURL()
-        .withMessage('Must be a URL')
-        .custom(async (element, {req}) => {
-            const currentPrint = await FingerprintModel.findOne({'ID_INDIVIDUO': req.params.id});
-            if(currentPrint){
-                if(currentPrint.MEDIO_DIREITO == element)
-                    return Promise.resolve();
-                else {
-                    const findFingerprint = await FingerprintModel.findFingerprint(element);
-                    if(findFingerprint)
-                        return Promise.reject();
-                    else
-                        return Promise.resolve();
-                }
+    body('r_middleFile')
+        .custom( (value, {req, path}) => {
+            if(!req.files[path] && value) {
+                if(!eval('req.' + path + 'ValidationError'))
+                    return false;
             }
-            else
-                return Promise.resolve();
+            return true;
         })
-        .withMessage('Fingerprint already exists')
-        .custom((value, {req}) => {
-            if ( checkDuplicateFingerprint(req, value) > 1)
+        .withMessage('not a image input!')
+        .custom( (value, {req, path}) => {
+            if (eval('req.' + path + 'ValidationError'))
                 return false;
-            else
-                return true;
+            return true;
+        })
+        .withMessage('not a image file!')
+        .custom( (value, {req, path}) => {
+            if (!!req.files[path]) {
+                if(req.files[path][0].mimetype !== "image/jpeg")
+                    return false;
+            }
+            return true;
+        })
+        .withMessage('not a jpeg file!')
+        .custom((value, {req, path}) => {
+            if(!!req.files[path]) {
+                if ( checkDuplicateFingerprint(req, req.files[path][0].originalname) > 1)
+                    return false;
+                else
+                    return true;
+            }
+            return true;
         })
         .withMessage('Each fingerprint must be different'),
-    body('r_ring')
-        .optional()
-        .notEmpty()
-        .withMessage("Right ring finger must be filled")
-        .trim()
-        .isLength({ min: 6 })
-        .withMessage('Must be at least 6 chars long')
-        .isURL()
-        .withMessage('Must be a URL')
-        .custom(async (element, {req}) => {
-            const currentPrint = await FingerprintModel.findOne({'ID_INDIVIDUO': req.params.id});
-            if(currentPrint){
-                if(currentPrint.ANELAR_DIREITO == element)
-                    return Promise.resolve();
-                else {
-                    const findFingerprint = await FingerprintModel.findFingerprint(element);
-                    if(findFingerprint)
-                        return Promise.reject();
-                    else
-                        return Promise.resolve();
-                }
+    body('r_ringFile')
+        .custom( (value, {req, path}) => {
+            if(!req.files[path] && value) {
+                if(!eval('req.' + path + 'ValidationError'))
+                    return false;
             }
-            else
-                return Promise.resolve();
+            return true;
         })
-        .withMessage('Fingerprint already exists')
-        .custom((value, {req}) => {
-            if ( checkDuplicateFingerprint(req, value) > 1)
+        .withMessage('not a image input!')
+        .custom( (value, {req, path}) => {
+            if (eval('req.' + path + 'ValidationError'))
                 return false;
-            else
-                return true;
+            return true;
+        })
+        .withMessage('not a image file!')
+        .custom( (value, {req, path}) => {
+            if (!!req.files[path]) {
+                if(req.files[path][0].mimetype !== "image/jpeg")
+                    return false;
+            }
+            return true;
+        })
+        .withMessage('not a jpeg file!')
+        .custom((value, {req, path}) => {
+            if(!!req.files[path]) {
+                if ( checkDuplicateFingerprint(req, req.files[path][0].originalname) > 1)
+                    return false;
+                else
+                    return true;
+            }
+            return true;
         })
         .withMessage('Each fingerprint must be different'),
-    body('r_little')
-        .optional()
-        .notEmpty()
-        .withMessage("Right little finger must be filled")
-        .trim()
-        .isLength({ min: 6 })
-        .withMessage('Must be at least 6 chars long')
-        .isURL()
-        .withMessage('Must be a URL')
-        .custom(async (element, {req}) => {
-            const currentPrint = await FingerprintModel.findOne({'ID_INDIVIDUO': req.params.id});
-            if(currentPrint){
-                if(currentPrint.MINDINHO_DIREITO == element)
-                    return Promise.resolve();
-                else {
-                    const findFingerprint = await FingerprintModel.findFingerprint(element);
-                    if(findFingerprint)
-                        return Promise.reject();
-                    else
-                        return Promise.resolve();
-                }
+    body('r_littleFile')
+        .custom( (value, {req, path}) => {
+            if(!req.files[path] && value) {
+                if(!eval('req.' + path + 'ValidationError'))
+                    return false;
             }
-            else
-                return Promise.resolve();
+            return true;
         })
-        .withMessage('Fingerprint already exists')
-        .custom((value, {req}) => {
-            if ( checkDuplicateFingerprint(req, value) > 1)
+        .withMessage('not a image input!')
+        .custom( (value, {req, path}) => {
+            if (eval('req.' + path + 'ValidationError'))
                 return false;
-            else
-                return true;
+            return true;
+        })
+        .withMessage('not a image file!')
+        .custom( (value, {req, path}) => {
+            if (!!req.files[path]) {
+                if(req.files[path][0].mimetype !== "image/jpeg")
+                    return false;
+            }
+            return true;
+        })
+        .withMessage('not a jpeg file!')
+        .custom((value, {req, path}) => {
+            if(!!req.files[path]) {
+                if ( checkDuplicateFingerprint(req, req.files[path][0].originalname) > 1)
+                    return false;
+                else
+                    return true;
+            }
+            return true;
         })
         .withMessage('Each fingerprint must be different'),
-    body('l_thumb')
-        .optional()
-        .notEmpty()
-        .withMessage("Left thumb must be filled")
-        .trim()
-        .isLength({ min: 6 })
-        .withMessage('Must be at least 6 chars long')
-        .isURL()
-        .withMessage('Must be a URL')
-        .custom(async (element, {req}) => {
-            const currentPrint = await FingerprintModel.findOne({'ID_INDIVIDUO': req.params.id});
-            if(currentPrint){
-                if(currentPrint.POLEGAR_ESQUERDO == element)
-                    return Promise.resolve();
-                else {
-                    const findFingerprint = await FingerprintModel.findFingerprint(element);
-                    if(findFingerprint)
-                        return Promise.reject();
-                    else
-                        return Promise.resolve();
-                }
+    body('l_thumbFile')
+        .custom( (value, {req, path}) => {
+            if(!req.files[path] && value) {
+                if(!eval('req.' + path + 'ValidationError'))
+                    return false;
             }
-            else
-                return Promise.resolve();
+            return true;
         })
-        .withMessage('Fingerprint already exists')
-        .custom((value, {req}) => {
-            if ( checkDuplicateFingerprint(req, value) > 1)
+        .withMessage('not a image input!')
+        .custom( (value, {req, path}) => {
+            if (eval('req.' + path + 'ValidationError'))
                 return false;
-            else
-                return true;
+            return true;
+        })
+        .withMessage('not a image file!')
+        .custom( (value, {req, path}) => {
+            if (!!req.files[path]) {
+                if(req.files[path][0].mimetype !== "image/jpeg")
+                    return false;
+            }
+            return true;
+        })
+        .withMessage('not a jpeg file!')
+        .custom((value, {req, path}) => {
+            if(!!req.files[path]) {
+                if ( checkDuplicateFingerprint(req, req.files[path][0].originalname) > 1)
+                    return false;
+                else
+                    return true;
+            }
+            return true;
         })
         .withMessage('Each fingerprint must be different'),
-    body('l_index')
-        .optional()
-        .notEmpty()
-        .withMessage("Left index finger must be filled")
-        .trim()
-        .isLength({ min: 6 })
-        .withMessage('Must be at least 6 chars long')
-        .isURL()
-        .withMessage('Must be a URL')
-        .custom(async (element, {req}) => {
-            const currentPrint = await FingerprintModel.findOne({'ID_INDIVIDUO': req.params.id});
-            if(currentPrint){
-                if(currentPrint.INDICADOR_ESQUERDO == element)
-                    return Promise.resolve();
-                else {
-                    const findFingerprint = await FingerprintModel.findFingerprint(element);
-                    if(findFingerprint)
-                        return Promise.reject();
-                    else
-                        return Promise.resolve();
-                }
+    body('l_indexFile')
+        .custom( (value, {req, path}) => {
+            if(!req.files[path] && value) {
+                if(!eval('req.' + path + 'ValidationError'))
+                    return false;
             }
-            else
-                return Promise.resolve();
+            return true;
         })
-        .withMessage('Fingerprint already exists')
-        .custom((value, {req}) => {
-            if ( checkDuplicateFingerprint(req, value) > 1)
+        .withMessage('not a image input!')
+        .custom( (value, {req, path}) => {
+            if (eval('req.' + path + 'ValidationError'))
                 return false;
-            else
-                return true;
+            return true;
+        })
+        .withMessage('not a image file!')
+        .custom( (value, {req, path}) => {
+            if (!!req.files[path]) {
+                if(req.files[path][0].mimetype !== "image/jpeg")
+                    return false;
+            }
+            return true;
+        })
+        .withMessage('not a jpeg file!')
+        .custom((value, {req, path}) => {
+            if(!!req.files[path]) {
+                if ( checkDuplicateFingerprint(req, req.files[path][0].originalname) > 1)
+                    return false;
+                else
+                    return true;
+            }
+            return true;
         })
         .withMessage('Each fingerprint must be different'),
-    body('l_middle')
-        .optional()
-        .notEmpty()
-        .withMessage("Left middle finger must be filled")
-        .trim()
-        .isLength({ min: 6 })
-        .withMessage('Must be at least 6 chars long')
-        .isURL()
-        .withMessage('Must be a URL')
-        .custom(async (element, {req}) => {
-            const currentPrint = await FingerprintModel.findOne({'ID_INDIVIDUO': req.params.id});
-            if(currentPrint){
-                if(currentPrint.MEDIO_ESQUERDO == element)
-                    return Promise.resolve();
-                else {
-                    const findFingerprint = await FingerprintModel.findFingerprint(element);
-                    if(findFingerprint)
-                        return Promise.reject();
-                    else
-                        return Promise.resolve();
-                }
+    body('l_middleFile')
+        .custom( (value, {req, path}) => {
+            if(!req.files[path] && value) {
+                if(!eval('req.' + path + 'ValidationError'))
+                    return false;
             }
-            else
-                return Promise.resolve();
+            return true;
         })
-        .withMessage('Fingerprint already exists')
-        .custom((value, {req}) => {
-            if ( checkDuplicateFingerprint(req, value) > 1)
+        .withMessage('not a image input!')
+        .custom( (value, {req, path}) => {
+            if (eval('req.' + path + 'ValidationError'))
                 return false;
-            else
-                return true;
+            return true;
+        })
+        .withMessage('not a image file!')
+        .custom( (value, {req, path}) => {
+            if (!!req.files[path]) {
+                if(req.files[path][0].mimetype !== "image/jpeg")
+                    return false;
+            }
+            return true;
+        })
+        .withMessage('not a jpeg file!')
+        .custom((value, {req, path}) => {
+            if(!!req.files[path]) {
+                if ( checkDuplicateFingerprint(req, req.files[path][0].originalname) > 1)
+                    return false;
+                else
+                    return true;
+            }
+            return true;
         })
         .withMessage('Each fingerprint must be different'),
-    body('l_ring')
-        .optional()
-        .notEmpty()
-        .withMessage("Left ring finger must be filled")
-        .trim()
-        .isLength({ min: 6 })
-        .withMessage('Must be at least 6 chars long')
-        .isURL()
-        .withMessage('Must be a URL')
-        .custom(async (element, {req}) => {
-            const currentPrint = await FingerprintModel.findOne({'ID_INDIVIDUO': req.params.id});
-            if(currentPrint){
-                if(currentPrint.ANELAR_ESQUERDO == element)
-                    return Promise.resolve();
-                else {
-                    const findFingerprint = await FingerprintModel.findFingerprint(element);
-                    if(findFingerprint)
-                        return Promise.reject();
-                    else
-                        return Promise.resolve();
-                }
+    body('l_ringFile')
+        .custom( (value, {req, path}) => {
+            if(!req.files[path] && value) {
+                if(!eval('req.' + path + 'ValidationError'))
+                    return false;
             }
-            else
-                return Promise.resolve();
+            return true;
         })
-        .withMessage('Fingerprint already exists')
-        .custom((value, {req}) => {
-            if ( checkDuplicateFingerprint(req, value) > 1)
+        .withMessage('not a image input!')
+        .custom( (value, {req, path}) => {
+            if (eval('req.' + path + 'ValidationError'))
                 return false;
-            else
-                return true;
+            return true;
+        })
+        .withMessage('not a image file!')
+        .custom( (value, {req, path}) => {
+            if (!!req.files[path]) {
+                if(req.files[path][0].mimetype !== "image/jpeg")
+                    return false;
+            }
+            return true;
+        })
+        .withMessage('not a jpeg file!')
+        .custom((value, {req, path}) => {
+            if(!!req.files[path]) {
+                if ( checkDuplicateFingerprint(req, req.files[path][0].originalname) > 1)
+                    return false;
+                else
+                    return true;
+            }
+            return true;
         })
         .withMessage('Each fingerprint must be different'),
-    body('l_little')
-        .optional()
-        .notEmpty()
-        .withMessage("Left little finger must be filled")
-        .trim()
-        .isLength({ min: 6 })
-        .withMessage('Must be at least 6 chars long')
-        .isURL()
-        .withMessage('Must be a URL')
-        .custom(async (element, {req}) => {
-            const currentPrint = await FingerprintModel.findOne({'ID_INDIVIDUO': req.params.id});
-            if(currentPrint){
-                if(currentPrint.MINDINHO_ESQUERDO == element)
-                    return Promise.resolve();
-                else {
-                    const findFingerprint = await FingerprintModel.findFingerprint(element);
-                    if(findFingerprint)
-                        return Promise.reject();
-                    else
-                        return Promise.resolve();
-                }
+    body('l_littleFile')
+        .custom( (value, {req, path}) => {
+            if(!req.files[path] && value) {
+                if(!eval('req.' + path + 'ValidationError'))
+                    return false;
             }
-            else
-                return Promise.resolve();
+            return true;
         })
-        .withMessage('Fingerprint already exists')
-        .custom((value, {req}) => {
-            if ( checkDuplicateFingerprint(req, value) > 1)
+        .withMessage('not a image input!')
+        .custom( (value, {req, path}) => {
+            if (eval('req.' + path + 'ValidationError'))
                 return false;
-            else
-                return true;
+            return true;
+        })
+        .withMessage('not a image file!')
+        .custom( (value, {req, path}) => {
+            if (!!req.files[path]) {
+                if(req.files[path][0].mimetype !== "image/jpeg")
+                    return false;
+            }
+            return true;
+        })
+        .withMessage('not a jpeg file!')
+        .custom((value, {req, path}) => {
+            if(!!req.files[path]) {
+                if ( checkDuplicateFingerprint(req, req.files[path][0].originalname) > 1)
+                    return false;
+                else
+                    return true;
+            }
+            return true;
         })
         .withMessage('Each fingerprint must be different'),
     /// photos ///
@@ -1362,141 +1362,132 @@ exports.updateIndividualFullSchema = [
                 return Promise.resolve();
         })
         .withMessage('The individual has no photos with that id'),
-    body('l_photo')
-        .optional()
-        .notEmpty()
-        .withMessage("Left photo must be filled")
-        .trim()
-        .isLength({ min: 6 })
-        .withMessage('Must be at least 6 chars long')
-        .isURL()
-        .withMessage('Must be a URL')
-        .custom((element, {req}) => {
-            if (!req.body.photo_id && element)
+    body('l_photoFile')
+        .custom((element, {req, path}) => {
+            if (!req.body.photo_id && req.files[path])
                 return false;
             else
                 return true;
         })
         .withMessage('No photo specified')
-        .custom(async (element, {req}) => {
-            if (req.body.photo_id){
-                const currentIndinviduo = await IndividualModel.findOne( {'ID': req.params.id} );
-                const currentPhoto = await PhotoModel.findOne({'ID': req.body.photo_id});
-                if(currentPhoto && currentIndinviduo && currentPhoto.ID_INDIVIDUO == currentIndinviduo.ID){
-                    if(currentPhoto.FOTO_ESQUERDA == element)
-                        return Promise.resolve();
-                    else {
-                        const findPhoto = await PhotoModel.findPhoto(element);
-                        if(findPhoto)
-                            return Promise.reject();
-                        else
-                            return Promise.resolve();
-                    }
-                }
-                else
-                    return Promise.resolve();
+        .custom( (value, {req, path}) => {
+            if(!req.files[path] && value) {
+                if(!eval('req.' + path + 'ValidationError'))
+                    return false;
             }
-            else
-                return Promise.resolve();
+            return true;
         })
-        .withMessage('Photo already exists')
-        .custom((value, {req}) => {
-            if ( value && ((req.body.f_photo && value == req.body.f_photo) || (req.body.r_photo && value == req.body.r_photo)) )
+        .withMessage('not a image input!')
+        .custom( (value, {req, path}) => {
+            if (eval('req.' + path + 'ValidationError'))
                 return false;
-            else
-                return true;
+            return true;
         })
-        .withMessage('Each photo must be different'),
-    body('f_photo')
-        .optional()
-        .notEmpty()
-        .withMessage("Frontal photo must be filled")
-        .trim()
-        .isLength({ min: 6 })
-        .withMessage('Must be at least 6 chars long')
-        .isURL()
-        .withMessage('Must be a URL')
-        .custom((element, {req}) => {
-            if (!req.body.photo_id && element)
+        .withMessage('not a image file!')
+        .custom( (value, {req, path}) => {
+            if (!!req.files[path]) {
+                if(req.files[path][0].mimetype !== "image/jpeg")
+                    return false;
+            }
+            return true;
+        })
+        .withMessage('not a jpeg file!')
+        .custom( (value, {req, path}) => {
+            if (!!req.files[path] && !!req.files["f_photoFile"]) {
+                if(req.files[path][0].originalname == req.files["f_photoFile"][0].originalname)
+                    return false;
+            }
+            if (!!req.files[path] && !!req.files["r_photoFile"]) {
+                if(req.files[path][0].originalname == req.files["r_photoFile"][0].originalname)
+                    return false;
+            }
+            return true;
+        })
+        .withMessage('each photo must be different!'),
+    body('f_photoFile')
+        .custom((element, {req, path}) => {
+            if (!req.body.photo_id && req.files[path])
                 return false;
             else
                 return true;
         })
         .withMessage('No photo specified')
-        .custom(async (element, {req}) => {
-            if (req.body.photo_id){
-                const currentIndinviduo = await IndividualModel.findOne( {'ID': req.params.id} );
-                const currentPhoto = await PhotoModel.findOne({'ID': req.body.photo_id});
-                if(currentPhoto && currentIndinviduo && currentPhoto.ID_INDIVIDUO == currentIndinviduo.ID){
-                    if(currentPhoto.FOTO_FRONTAL == element)
-                        return Promise.resolve();
-                    else {
-                        const findPhoto = await PhotoModel.findPhoto(element);
-                        if(findPhoto)
-                            return Promise.reject();
-                        else
-                            return Promise.resolve();
-                    }
-                }
-                else
-                    return Promise.resolve();
+        .custom( (value, {req, path}) => {
+            if(!req.files[path] && value) {
+                if(!eval('req.' + path + 'ValidationError'))
+                    return false;
             }
-            else
-                return Promise.resolve();
+            return true;
         })
-        .withMessage('Photo already exists')
-        .custom((value, {req}) => {
-            if ( value && ((req.body.l_photo && value == req.body.l_photo) || (req.body.r_photo && value == req.body.r_photo)) )
+        .withMessage('not a image input!')
+        .custom( (value, {req, path}) => {
+            if (eval('req.' + path + 'ValidationError'))
                 return false;
-            else
-                return true;
+            return true;
         })
-        .withMessage('Each photo must be different'),
-    body('r_photo')
-        .optional()
-        .notEmpty()
-        .withMessage("Right photo must be filled")
-        .trim()
-        .isLength({ min: 6 })
-        .withMessage('Must be at least 6 chars long')
-        .isURL()
-        .withMessage('Must be a URL')
-        .custom((element, {req}) => {
-            if (!req.body.photo_id && element)
+        .withMessage('not a image file!')
+        .custom( (value, {req, path}) => {
+            if (!!req.files[path]) {
+                if(req.files[path][0].mimetype !== "image/jpeg")
+                    return false;
+            }
+            return true;
+        })
+        .withMessage('not a jpeg file!')
+        .custom( (value, {req, path}) => {
+            if (!!req.files[path] && !!req.files["l_photoFile"]) {
+                if(req.files[path][0].originalname == req.files["l_photoFile"][0].originalname)
+                    return false;
+            }
+            if (!!req.files[path] && !!req.files["r_photoFile"]) {
+                if(req.files[path][0].originalname == req.files["r_photoFile"][0].originalname)
+                    return false;
+            }
+            return true;
+        })
+        .withMessage('each photo must be different!'),
+    body('r_photoFile')
+        .custom((element, {req, path}) => {
+            if (!req.body.photo_id && req.files[path])
                 return false;
             else
                 return true;
         })
         .withMessage('No photo specified')
-        .custom(async (element, {req}) => {
-            if (req.body.photo_id){
-                const currentIndinviduo = await IndividualModel.findOne( {'ID': req.params.id} );
-                const currentPhoto = await PhotoModel.findOne({'ID': req.body.photo_id});
-                if(currentPhoto && currentIndinviduo && currentPhoto.ID_INDIVIDUO == currentIndinviduo.ID){
-                    if(currentPhoto.FOTO_DIREITA == element)
-                        return Promise.resolve();
-                    else {
-                        const findPhoto = await PhotoModel.findPhoto(element);
-                        if(findPhoto)
-                            return Promise.reject();
-                        else
-                            return Promise.resolve();
-                    }
-                }
-                else
-                    return Promise.resolve();
+        .custom( (value, {req, path}) => {
+            if(!req.files[path] && value) {
+                if(!eval('req.' + path + 'ValidationError'))
+                    return false;
             }
-            else
-                return Promise.resolve();
+            return true;
         })
-        .withMessage('Photo already exists')
-        .custom((value, {req}) => {
-            if ( value && ((req.body.l_photo && value == req.body.l_photo) || (req.body.f_photo && value == req.body.f_photo)) )
+        .withMessage('not a image input!')
+        .custom( (value, {req, path}) => {
+            if (eval('req.' + path + 'ValidationError'))
                 return false;
-            else
-                return true;
+            return true;
         })
-        .withMessage('Each photo must be different'),
+        .withMessage('not a image file!')
+        .custom( (value, {req, path}) => {
+            if (!!req.files[path]) {
+                if(req.files[path][0].mimetype !== "image/jpeg")
+                    return false;
+            }
+            return true;
+        })
+        .withMessage('not a jpeg file!')
+        .custom( (value, {req, path}) => {
+            if (!!req.files[path] && !!req.files["l_photoFile"]) {
+                if(req.files[path][0].originalname == req.files["l_photoFile"][0].originalname)
+                    return false;
+            }
+            if (!!req.files[path] && !!req.files["f_photoFile"]) {
+                if(req.files[path][0].originalname == req.files["f_photoFile"][0].originalname)
+                    return false;
+            }
+            return true;
+        })
+        .withMessage('each photo must be different!'),
     body('photoState')
         .optional()
         .notEmpty()
@@ -1641,21 +1632,34 @@ exports.updateIndividualFullSchema = [
                 return Promise.reject();
         })
         .withMessage('The Individual you want to update does not exist!')
-        .custom(value => {
-            // convert object keys into colum names
-            var updatesList = getNormalizedColumns(Object.keys(value));
-            //Set the allowed field for updating and see if the ones sent match
-            const allowUpdates = ['NOME_INDIVIDUO', 'ALCUNHA', 'PAI', 'MAE', 'NACIONALIDADE', 'LOCAL_NASCIMENTO', 'DATA_NASCIMENTO', 'IDADE_APARENTE', 
-                                  'ESTADO_CIVIL', 'PROFISSAO', 'ID_RESIDENCIA', 'LOCAL_TRABALHO', 'NUM_DOC', 'DATA_EMISSAO_DOC', 'LOCAL_EMISSAO_DOC', 
-                                  'ALTURA', 'CABELO', 'BARBA', 'NARIZ', 'BOCA', 'ROSTO', 'COR', 'TATUAGENS', 'CLASSIFICACAO_POLICIAL', 'ESTADO_INDIVIDUO',
-                                  // fingerprints
-                                  'POLEGAR_DIREITO', 'INDICADOR_DIREITO', 'MEDIO_DIREITO', 'ANELAR_DIREITO', 'MINDINHO_DIREITO', 
-                                  'POLEGAR_ESQUERDO', 'INDICADOR_ESQUERDO', 'MEDIO_ESQUERDO', 'ANELAR_ESQUERDO', 'MINDINHO_ESQUERDO',
-                                  // photos
-                                  'ID_FOTOS', 'FOTO_ESQUERDA', 'FOTO_FRONTAL', 'FOTO_DIREITA', 'ESTADO_FOTOS',
-                                  // precedent
-                                  'ID_ANTECEDENTE', 'NO_REFERENCIA', 'MOTIVO_DETENCAO', 'DESTINO', 'DATA', 'ESTADO_ANTECEDENTE'];
-            return updatesList.every(parameter => allowUpdates.includes(parameter));
+        .custom((value, {req}) => {
+            if(req.body.r_photo || req.body.f_photo|| req.body.l_photo /*||
+               req.body.r_thumb || req.body.r_index|| req.body.r_middle || req.body.r_ring || req.body.r_little ||
+               req.body.l_thumb || req.body.l_index|| req.body.l_middle || req.body.l_ring || req.body.l_little*/) {
+                   return false;
+            } else {
+                // get  a list of all the parameters from body
+                var prepList = Object.keys(value);
+                // add the files to the list
+                Object.keys(req.files).forEach(file => {
+                    prepList.push(file);
+                });
+                //convert the elements on the list into column names
+                var updatesList = getNormalizedColumns(prepList);
+                //Set the allowed field for updating and see if the ones sent match
+                const allowUpdates = ['NOME_INDIVIDUO', 'ALCUNHA', 'PAI', 'MAE', 'NACIONALIDADE', 'LOCAL_NASCIMENTO', 'DATA_NASCIMENTO', 'IDADE_APARENTE', 
+                                      'ESTADO_CIVIL', 'PROFISSAO', 'ID_RESIDENCIA', 'LOCAL_TRABALHO', 'NUM_DOC', 'DATA_EMISSAO_DOC', 'LOCAL_EMISSAO_DOC', 
+                                      'ALTURA', 'CABELO', 'BARBA', 'NARIZ', 'BOCA', 'ROSTO', 'COR', 'TATUAGENS', 'CLASSIFICACAO_POLICIAL', 'ESTADO_INDIVIDUO',
+                                      // fingerprints
+                                      'POLEGAR_DIREITO', 'INDICADOR_DIREITO', 'MEDIO_DIREITO', 'ANELAR_DIREITO', 'MINDINHO_DIREITO', 
+                                      'POLEGAR_ESQUERDO', 'INDICADOR_ESQUERDO', 'MEDIO_ESQUERDO', 'ANELAR_ESQUERDO', 'MINDINHO_ESQUERDO',
+                                      // photos
+                                      'ID_FOTOS', 'FOTO_ESQUERDA', 'FOTO_FRONTAL', 'FOTO_DIREITA', 'ESTADO_FOTOS',
+                                      // precedent
+                                      'ID_ANTECEDENTE', 'NO_REFERENCIA', 'MOTIVO_DETENCAO', 'DESTINO', 'DATA', 'ESTADO_ANTECEDENTE'];
+                return updatesList.every(parameter => allowUpdates.includes(parameter));
+
+            }
         })
         .withMessage('Invalid updates!')
 ];

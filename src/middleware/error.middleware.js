@@ -4,22 +4,9 @@ function errorMiddleware(error, req, res, next) {
     let { status = 500, message, data } = error;
 
     console.log(`[Error] ${error}`);
-
     if (error instanceof multer.MulterError) {
         status = 400;
-        let uploadPath = `./uploads/temp`
-        if(req.body.doc_num) {
-            uploadPath = `./uploads/individuals//${req.body.doc_num}`;
-        }
-        fs.rm(
-            uploadPath,
-            {recursive: true},
-            (err) => {
-                return;
-            }
-        );
     }
-
     // If status code is 500 - change the message to Intrnal server error
     message = status === 500 || !message ? 'Internal server error' : message;
 

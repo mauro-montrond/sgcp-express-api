@@ -4,6 +4,10 @@ const individualModel = require('./individual.model');
 const fingerprintModel = require('./fingerprint.model');
 const photoModel = require('./photo.model');
 const precedentModel = require('./precedent.model');
+// new
+const fs = require('fs');
+const path = require('path');
+// end new
 class IndividualFullModel {
     tableName = 'individuo_antecedentes_utilizador';
 
@@ -162,9 +166,7 @@ class IndividualFullModel {
 					let precedentRegister = this.addPrecedentRegister(item, 'individualRegister');
 					precedent['CADASTRANTE_ANTECEDENTE'] = precedentRegister;
 					individual.ANTECEDENTES.push(precedent);
-                    console.log("1");
 					sortedList[index].INDIVIDUOS.push(individual);
-                    console.log("2");
 				}
 				else{
 					let index2 = this.getIndexByAtr(sortedList[index].INDIVIDUOS, 'ID_INDIVIDUO', item.ID_INDIVIDUO);
@@ -595,13 +597,14 @@ class IndividualFullModel {
     }
 
     createFull = async ({ individual_name, nickname, father, mother, nationality, birthplace, birthdate, apparent_age, marital_status, profession, 
-                      residence_id, workplace, doc_num, doc_issuance_date, doc_issuance_place, height, hair, beard = null, nose, mouth, face, colour, 
-                      tattoos = null, police_classification, individualState = 'A',
-                      r_thumb = null, r_index = null, r_middle = null, r_ring = null, r_little = null, 
-					  l_thumb = null, l_index = null, l_middle = null, l_ring = null, l_little = null,
-                      l_photo = null, f_photo = null, r_photo = null, photoState = 'A',
-                      reference_num, detention_reason, destination, date = new Date(), precedentState = 'A'},
-					  user_id) => {
+                      	  residence_id, workplace, doc_num, doc_issuance_date, doc_issuance_place, height, hair = null, beard = null, nose = null, 
+					  	  mouth = null, face = null, colour = null, tattoos = null, police_classification, individualState = 'A',
+                      	  r_thumb = null, r_index = null, r_middle = null, r_ring = null, r_little = null, 
+					  	  l_thumb = null, l_index = null, l_middle = null, l_ring = null, l_little = null,
+                      	  l_photo = null, f_photo = null, r_photo = null, photoState = 'A',
+                      	  reference_num, detention_reason, destination, date = new Date(), precedentState = 'A'},
+						  files,
+					  	  user_id) => {
 
         let affectedRows = 0;
 		let name = individual_name;
@@ -615,6 +618,47 @@ class IndividualFullModel {
         if(affectedRows1 != 0){
             affectedRows += affectedRows1;
             let individual_id = result1.insertId;
+			// new
+			if(files){
+				let photos =["l_photoFile", "f_photoFile", "r_photoFile"];
+				let fingerprints =["r_thumbFile", "r_indexFile", "r_middleFile", "r_ringFile", "r_littleFile", 
+								   "l_thumbFile", "l_indexFile", "l_middleFile", "l_ringFile", "l_littleFile"];
+				var filesList = [];
+				var fileKeys = Object.keys(files);
+				fileKeys.forEach(key => {
+					filesList.push(key);
+				});
+				filesList.forEach( file => {
+					let uploadPath = `./uploads/individuals/${individual_id}`;
+					if(photos.includes(files[file][0].fieldname)) {
+						uploadPath += `/photos/`;
+					} else if(fingerprints.includes(files[file][0].fieldname)) {
+						uploadPath += `/fingerprints`;
+					}
+					fs.mkdirSync( uploadPath, { recursive: true } );
+					// fs.mkdir( uploadPath, { recursive: true }, (err) => {
+					//     if (err) throw err;
+					// });
+					let fileName = files[file][0].fieldname + '_' + Date.now() + path.extname(files[file][0].originalname);
+					let fieldname = files[file][0].fieldname.substring(0, files[file][0].fieldname.indexOf("File"));
+					// dynamically add each fileName to body
+					eval(fieldname + " = '" + fileName +"';");
+					uploadPath += '/' + fileName;
+					let writer = fs.createWriteStream(uploadPath);
+					// write data
+					writer.write(files[file][0].buffer);
+					// the finish event is emitted when all data has been flushed from the stream
+					writer.on('finish', () => {
+						// console.log('wrote all data to file');
+					});
+					// close the stream
+					writer.end();
+					// fs.writeFileSync( uploadPath, req.files[file][0].buffer, function (err) {
+					//     if (err) throw new HttpException(500, 'Something went wrong');
+					// });
+				});
+			}
+			// end of new
 
             const result2 = await fingerprintModel.create({individual_id, r_thumb, r_index, r_middle, r_ring, r_little, 
 														   l_thumb, l_index, l_middle, l_ring, l_little}, user_id, true);
@@ -642,7 +686,7 @@ class IndividualFullModel {
         return affectedRows;
     }
 
-    updateFull = async (individualUpdates, fingerprintUpdates, photoUpdates, precedentUpdates, individual_id, user_id) => {
+    updateFull = async (individualUpdates, fingerprintUpdates, photoUpdates, precedentUpdates, files, individual_id, user_id) => {
 
         let result = {
             fieldCount : 0,
@@ -653,6 +697,11 @@ class IndividualFullModel {
             warningStatus: 0,
             changedRows: 0
         };
+		var filesList = [];
+		var fileKeys = Object.keys(files);
+		fileKeys.forEach(key => {
+			filesList.push(key);
+		});
 
         if(Object.keys(individualUpdates).length){
             const result1 = await individualModel.update(individualUpdates, individual_id, user_id);
@@ -666,13 +715,66 @@ class IndividualFullModel {
             result.affectedRows += result2.affectedRows;
             result.changedRows += result2.changedRows;
             result.warningStatus += result2.warningStatus;
+			var fingerprintConversion = {
+				"POLEGAR_DIREITO": "r_thumbFile",
+				"INDICADOR_DIREITO": "r_indexFile",
+				"MEDIO_DIREITO": "r_middleFile",
+				"ANELAR_DIREITO": "r_ringFile",
+				"MINDINHO_DIREITO": "r_littleFile",
+				"POLEGAR_ESQUERDO": "r_thumbFile",
+				"INDICADOR_ESQUERDO": "r_indexFile",
+				"MEDIO_ESQUERDO": "r_middleFile",
+				"ANELAR_ESQUERDO": "r_ringFile",
+				"MINDINHO_ESQUERDO": "r_littleFile",
+			};
+			var fingerprintFilesList = [];
+			var fingerprintFileKeys = Object.keys(fingerprintUpdates);
+			fingerprintFileKeys.forEach(key => {
+				fingerprintFilesList.push(key);
+			});
+			fingerprintFilesList.forEach( file => {
+				let uploadPath = `./uploads/individuals/${individual_id}/fingerprints`;
+                if(!fs.existsSync(uploadPath)){
+                    fs.mkdirSync( uploadPath, { recursive: true } );
+                }
+				let fileName = fingerprintUpdates[file];
+				uploadPath += '/' + fileName;
+				let writer = fs.createWriteStream(uploadPath);
+				// write data
+				writer.write(files[fingerprintConversion[file]][0].buffer);
+				writer.end();
+			});
+
         }
 
         if(Object.keys(photoUpdates).length){
             const result3 = await photoModel.update(photoUpdates, Object.values(photoUpdates)[Object.keys(photoUpdates).indexOf("ID")], user_id);
             result.affectedRows += result3.affectedRows;
             result.changedRows += result3.changedRows;
-            result.warningStatus += result3.warningStatus;                                                  
+            result.warningStatus += result3.warningStatus;
+			var photoConversion = {
+				"FOTO_ESQUERDA": "l_photoFile",
+				"FOTO_FRONTAL": "f_photoFile",
+				"FOTO_DIREITA": "r_photoFile",
+			}; 
+			var photoFilesList = [];
+			var photoFileKeys = Object.keys(photoUpdates);
+			photoFileKeys.forEach(key => {
+				if( Object.keys(photoConversion).includes(key))
+					photoFilesList.push(key);
+			});
+			photoFilesList.forEach( file => {
+				let uploadPath = `./uploads/individuals/${individual_id}/photos`;
+                if(!fs.existsSync(uploadPath)){
+                    fs.mkdirSync( uploadPath, { recursive: true } );
+                }
+				let fileName = photoUpdates[file];
+				uploadPath += '/' + fileName;
+				let writer = fs.createWriteStream(uploadPath);
+				// write data
+				writer.write(files[photoConversion[file]][0].buffer);
+				writer.end();
+			});                                                 
         }
 
         if(Object.keys(precedentUpdates).length){
@@ -701,6 +803,16 @@ class IndividualFullModel {
         const result4 = await individualModel.delete(id, user_id, true);
         const affectedRows4 = result4 ? result4.affectedRows : 0;
         affectedRows += affectedRows4;
+		// after the individual has been deleted from database, delete his images directory
+		let indivFolder = `uploads/individuals/${id}`;
+		fs.rm(
+			indivFolder,
+			{recursive: true},
+			(err) => {
+				return;
+			}
+		);
+
 
         return affectedRows;
     }

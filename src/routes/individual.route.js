@@ -55,7 +55,7 @@ router.get('/doc_num/:doc_num', auth(Action.Individual.listIndividual.listIndivi
 router.post('/', auth(Action.Individual.createIndividual),createIndividualSchema, awaitHandlerFactory(individualController.createIndividual)); // localhost:3000/api/v1/individuals
 router.post('/full', auth(Action.Individual.createIndividual), uploadFields, createIndividualFullSchema, awaitHandlerFactory(individualFullController.createIndividualFull)); // localhost:3000/api/v1/individuals/full
 router.patch('/id/:id', auth(Action.Individual.updateIndividual), updateIndividualSchema, awaitHandlerFactory(individualController.updateIndividual)); // localhost:3000/api/v1/individuals/id/3 , using patch for partial update
-router.patch('/full/id/:id', auth(Action.Individual.updateIndividual), updateIndividualFullSchema, awaitHandlerFactory(individualFullController.updateIndividualFull)); // localhost:3000/api/v1/individuals/full/id/3 , using patch for partial update
+router.patch('/full/id/:id', auth(Action.Individual.updateIndividual), uploadFields, updateIndividualFullSchema, awaitHandlerFactory(individualFullController.updateIndividualFull)); // localhost:3000/api/v1/individuals/full/id/3 , using patch for partial update
 router.delete('/id/:id', auth(Action.Individual.deleteIndividual), deleteIndividualSchema, awaitHandlerFactory(individualController.deleteIndividual)); // localhost:3000/api/v1/individuals/id/3
 router.delete('/full/id/:id', auth(Action.Individual.deleteIndividual), deleteIndividualFullSchema, awaitHandlerFactory(individualFullController.deleteIndividualFull)); // localhost:3000/api/v1/individuals/full/id/3
 
