@@ -711,6 +711,7 @@ class IndividualFullModel {
         }
 
         if(Object.keys(fingerprintUpdates).length){
+			var prevPrints = await fingerprintModel.findOne({ ID_INDIVIDUO: individual_id });
             const result2 = await fingerprintModel.update(fingerprintUpdates, individual_id, user_id);
             result.affectedRows += result2.affectedRows;
             result.changedRows += result2.changedRows;
@@ -744,10 +745,29 @@ class IndividualFullModel {
 				writer.write(files[fingerprintConversion[file]][0].buffer);
 				writer.end();
 			});
+			if(prevPrints){
+				// get the keys of the previous prints values
+				var prevPrintList = Object.keys(prevPrints);
+				prevPrintList.forEach( prevPrint => {
+					// check if the key is a print and if it is not null (meaning we had a previous print stored)
+					if( Object.keys(fingerprintConversion).includes(prevPrint) && prevPrints[prevPrint]){
+						// get the path of the previous stored print
+						let uploadPath = `./uploads/individuals/${individual_id}/fingerprints/${prevPrints[prevPrint]}`;
+						// if we still have that print
+						if(fs.existsSync(uploadPath)){
+							// remove it
+							fs.unlink(uploadPath, (err) => {
+								if(err) throw err;
+							});
+						}
+					}
+				});
+			}
 
         }
 
         if(Object.keys(photoUpdates).length){
+			var prevPhotos = await photoModel.findOne( {ID: Object.values(photoUpdates)[Object.keys(photoUpdates).indexOf("ID")]} );
             const result3 = await photoModel.update(photoUpdates, Object.values(photoUpdates)[Object.keys(photoUpdates).indexOf("ID")], user_id);
             result.affectedRows += result3.affectedRows;
             result.changedRows += result3.changedRows;
@@ -774,7 +794,25 @@ class IndividualFullModel {
 				// write data
 				writer.write(files[photoConversion[file]][0].buffer);
 				writer.end();
-			});                                                 
+			});
+			if(prevPhotos){
+				// get the keys of the previous photos values
+				var prevPhotosList = Object.keys(prevPhotos);
+				prevPhotosList.forEach( prevPhoto => {
+					// check if the key is a photo and if it is not null (meaning we had a previous photo stored)
+					if( Object.keys(photoConversion).includes(prevPhoto) && prevPhotos[prevPhoto]){
+						// get the path of the previous stored photo
+						let uploadPath = `./uploads/individuals/${individual_id}/photos/${prevPhotos[prevPhoto]}`;
+						// if we still have that photo
+						if(fs.existsSync(uploadPath)){
+							// remove it
+							fs.unlink(uploadPath, (err) => {
+								if(err) throw err;
+							});
+						}
+					}
+				});
+			}                                                 
         }
 
         if(Object.keys(precedentUpdates).length){
