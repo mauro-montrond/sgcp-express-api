@@ -618,56 +618,15 @@ class IndividualFullModel {
         if(affectedRows1 != 0){
             affectedRows += affectedRows1;
             let individual_id = result1.insertId;
-			// new
-			if(files){
-				let photos =["l_photoFile", "f_photoFile", "r_photoFile"];
-				let fingerprints =["r_thumbFile", "r_indexFile", "r_middleFile", "r_ringFile", "r_littleFile", 
-								   "l_thumbFile", "l_indexFile", "l_middleFile", "l_ringFile", "l_littleFile"];
-				var filesList = [];
-				var fileKeys = Object.keys(files);
-				fileKeys.forEach(key => {
-					filesList.push(key);
-				});
-				filesList.forEach( file => {
-					let uploadPath = `./uploads/individuals/${individual_id}`;
-					if(photos.includes(files[file][0].fieldname)) {
-						uploadPath += `/photos/`;
-					} else if(fingerprints.includes(files[file][0].fieldname)) {
-						uploadPath += `/fingerprints`;
-					}
-					fs.mkdirSync( uploadPath, { recursive: true } );
-					// fs.mkdir( uploadPath, { recursive: true }, (err) => {
-					//     if (err) throw err;
-					// });
-					let fileName = files[file][0].fieldname + '_' + Date.now() + path.extname(files[file][0].originalname);
-					let fieldname = files[file][0].fieldname.substring(0, files[file][0].fieldname.indexOf("File"));
-					// dynamically add each fileName to body
-					eval(fieldname + " = '" + fileName +"';");
-					uploadPath += '/' + fileName;
-					let writer = fs.createWriteStream(uploadPath);
-					// write data
-					writer.write(files[file][0].buffer);
-					// the finish event is emitted when all data has been flushed from the stream
-					writer.on('finish', () => {
-						// console.log('wrote all data to file');
-					});
-					// close the stream
-					writer.end();
-					// fs.writeFileSync( uploadPath, req.files[file][0].buffer, function (err) {
-					//     if (err) throw new HttpException(500, 'Something went wrong');
-					// });
-				});
-			}
-			// end of new
 
             const result2 = await fingerprintModel.create({individual_id, r_thumb, r_index, r_middle, r_ring, r_little, 
-														   l_thumb, l_index, l_middle, l_ring, l_little}, user_id, true);
+														   l_thumb, l_index, l_middle, l_ring, l_little}, files, user_id, true);
 			const affectedRows2 = result2 ? result2.affectedRows : 0;
 
             if(affectedRows2 != 0){
                 affectedRows += affectedRows2;
     
-                const result3 = await photoModel.create({individual_id, l_photo, f_photo, r_photo, photoState}, user_id, true);
+                const result3 = await photoModel.create({individual_id, l_photo, f_photo, r_photo, photoState}, files, user_id, true);
                 const affectedRows3 = result3 ? result3.affectedRows : 0;
 
                 if(affectedRows3 != 0){
@@ -711,108 +670,17 @@ class IndividualFullModel {
         }
 
         if(Object.keys(fingerprintUpdates).length){
-			var prevPrints = await fingerprintModel.findOne({ ID_INDIVIDUO: individual_id });
-            const result2 = await fingerprintModel.update(fingerprintUpdates, individual_id, user_id);
+            const result2 = await fingerprintModel.update(fingerprintUpdates, files, individual_id, user_id);
             result.affectedRows += result2.affectedRows;
             result.changedRows += result2.changedRows;
             result.warningStatus += result2.warningStatus;
-			var fingerprintConversion = {
-				"POLEGAR_DIREITO": "r_thumbFile",
-				"INDICADOR_DIREITO": "r_indexFile",
-				"MEDIO_DIREITO": "r_middleFile",
-				"ANELAR_DIREITO": "r_ringFile",
-				"MINDINHO_DIREITO": "r_littleFile",
-				"POLEGAR_ESQUERDO": "r_thumbFile",
-				"INDICADOR_ESQUERDO": "r_indexFile",
-				"MEDIO_ESQUERDO": "r_middleFile",
-				"ANELAR_ESQUERDO": "r_ringFile",
-				"MINDINHO_ESQUERDO": "r_littleFile",
-			};
-			var fingerprintFilesList = [];
-			var fingerprintFileKeys = Object.keys(fingerprintUpdates);
-			fingerprintFileKeys.forEach(key => {
-				fingerprintFilesList.push(key);
-			});
-			fingerprintFilesList.forEach( file => {
-				let uploadPath = `./uploads/individuals/${individual_id}/fingerprints`;
-                if(!fs.existsSync(uploadPath)){
-                    fs.mkdirSync( uploadPath, { recursive: true } );
-                }
-				let fileName = fingerprintUpdates[file];
-				uploadPath += '/' + fileName;
-				let writer = fs.createWriteStream(uploadPath);
-				// write data
-				writer.write(files[fingerprintConversion[file]][0].buffer);
-				writer.end();
-			});
-			if(prevPrints){
-				// get the keys of the previous prints values
-				var prevPrintList = Object.keys(prevPrints);
-				prevPrintList.forEach( prevPrint => {
-					// check if the key is a print and if it is not null (meaning we had a previous print stored)
-					if( Object.keys(fingerprintConversion).includes(prevPrint) && prevPrints[prevPrint]){
-						// get the path of the previous stored print
-						let uploadPath = `./uploads/individuals/${individual_id}/fingerprints/${prevPrints[prevPrint]}`;
-						// if we still have that print
-						if(fs.existsSync(uploadPath)){
-							// remove it
-							fs.unlink(uploadPath, (err) => {
-								if(err) throw err;
-							});
-						}
-					}
-				});
-			}
-
         }
 
         if(Object.keys(photoUpdates).length){
-			var prevPhotos = await photoModel.findOne( {ID: Object.values(photoUpdates)[Object.keys(photoUpdates).indexOf("ID")]} );
-            const result3 = await photoModel.update(photoUpdates, Object.values(photoUpdates)[Object.keys(photoUpdates).indexOf("ID")], user_id);
+            const result3 = await photoModel.update(photoUpdates, files, Object.values(photoUpdates)[Object.keys(photoUpdates).indexOf("ID")], user_id);
             result.affectedRows += result3.affectedRows;
             result.changedRows += result3.changedRows;
-            result.warningStatus += result3.warningStatus;
-			var photoConversion = {
-				"FOTO_ESQUERDA": "l_photoFile",
-				"FOTO_FRONTAL": "f_photoFile",
-				"FOTO_DIREITA": "r_photoFile",
-			}; 
-			var photoFilesList = [];
-			var photoFileKeys = Object.keys(photoUpdates);
-			photoFileKeys.forEach(key => {
-				if( Object.keys(photoConversion).includes(key))
-					photoFilesList.push(key);
-			});
-			photoFilesList.forEach( file => {
-				let uploadPath = `./uploads/individuals/${individual_id}/photos`;
-                if(!fs.existsSync(uploadPath)){
-                    fs.mkdirSync( uploadPath, { recursive: true } );
-                }
-				let fileName = photoUpdates[file];
-				uploadPath += '/' + fileName;
-				let writer = fs.createWriteStream(uploadPath);
-				// write data
-				writer.write(files[photoConversion[file]][0].buffer);
-				writer.end();
-			});
-			if(prevPhotos){
-				// get the keys of the previous photos values
-				var prevPhotosList = Object.keys(prevPhotos);
-				prevPhotosList.forEach( prevPhoto => {
-					// check if the key is a photo and if it is not null (meaning we had a previous photo stored)
-					if( Object.keys(photoConversion).includes(prevPhoto) && prevPhotos[prevPhoto]){
-						// get the path of the previous stored photo
-						let uploadPath = `./uploads/individuals/${individual_id}/photos/${prevPhotos[prevPhoto]}`;
-						// if we still have that photo
-						if(fs.existsSync(uploadPath)){
-							// remove it
-							fs.unlink(uploadPath, (err) => {
-								if(err) throw err;
-							});
-						}
-					}
-				});
-			}                                                 
+            result.warningStatus += result3.warningStatus;                                              
         }
 
         if(Object.keys(precedentUpdates).length){

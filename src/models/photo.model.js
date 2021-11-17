@@ -1,6 +1,9 @@
 const query = require('../db/db-connection');
 const { multipleColumnSet, multipleColumnGets } = require('../utils/common.utils');
 const logModel = require('./log.model');
+// new
+const fs = require('fs');
+const path = require('path');
 class PhotoModel {
     tableName = 'fotos';
 
@@ -57,7 +60,7 @@ class PhotoModel {
         return newVal;
     }
 
-    create = async ({ individual_id, l_photo, f_photo, r_photo, state='A'}, u_id, full) => {
+    create = async ({ individual_id, l_photo = null, f_photo = null, r_photo = null, state='A'}, files, u_id, full) => {
         let deactivation = 'OK';
         if(state == 'A') {
             const photos = await this.findMany({ 'ID_INDIVIDUO': individual_id, 'ESTADO': 'A' });
@@ -70,6 +73,41 @@ class PhotoModel {
         }
         if( deactivation != 'OK' )
             return deactivation;
+        if(files){
+            let photos =["l_photoFile", "f_photoFile", "r_photoFile"];
+            var filesList = [];
+            var fileKeys = Object.keys(files);
+            fileKeys.forEach(key => {
+                filesList.push(key);
+            });
+            filesList.forEach( file => {
+                let uploadPath = `./uploads/individuals/${individual_id}`;
+                if(photos.includes(files[file][0].fieldname)) {
+                    uploadPath += `/photos/`;
+                    fs.mkdirSync( uploadPath, { recursive: true } );
+                    // fs.mkdir( uploadPath, { recursive: true }, (err) => {
+                    //     if (err) throw err;
+                    // });
+                    let fileName = files[file][0].fieldname + '_' + Date.now() + path.extname(files[file][0].originalname);
+                    let fieldname = files[file][0].fieldname.substring(0, files[file][0].fieldname.indexOf("File"));
+                    // dynamically add each fileName to body
+                    eval(fieldname + " = '" + fileName +"';");
+                    uploadPath += '/' + fileName;
+                    let writer = fs.createWriteStream(uploadPath);
+                    // write data
+                    writer.write(files[file][0].buffer);
+                    // the finish event is emitted when all data has been flushed from the stream
+                    writer.on('finish', () => {
+                        // console.log('wrote all data to file');
+                    });
+                    // close the stream
+                    writer.end();
+                    // fs.writeFileSync( uploadPath, req.files[file][0].buffer, function (err) {
+                    //     if (err) throw new HttpException(500, 'Something went wrong');
+                    // });
+                }
+            });
+        }
         const sql = `INSERT INTO ${this.tableName}
         (ID_INDIVIDUO, FOTO_ESQUERDA, FOTO_FRONTAL, FOTO_DIREITA, ESTADO) VALUES (?,?,?,?,?)`;
 
@@ -87,8 +125,9 @@ class PhotoModel {
             return result;
     }
 
-    update = async (params, id, u_id) => {
+    update = async (params, files, id, u_id) => {
         let currentPhoto= await this.findOne( {'ID': id} );
+        let individual_id = currentPhoto.ID_INDIVIDUO;
         const { ID, ...prevVal} = currentPhoto;
         let deactivation = 'OK';
         if(params.ESTADO == 'A' && currentPhoto.ESTADO != 'A') {
@@ -114,6 +153,47 @@ class PhotoModel {
         if(result && result.changedRows){
             const newVal = await this.getVal(currentPhoto.ID);
             const resultLog = await logModel.logChange(u_id, this.tableName, currentPhoto.ID, prevVal, newVal, 'Editar');
+			var photoConversion = {
+				"FOTO_ESQUERDA": "l_photoFile",
+				"FOTO_FRONTAL": "f_photoFile",
+				"FOTO_DIREITA": "r_photoFile",
+			}; 
+			var photoFilesList = [];
+			var photoFileKeys = Object.keys(params);
+			photoFileKeys.forEach(key => {
+				if( Object.keys(photoConversion).includes(key))
+					photoFilesList.push(key);
+			});
+			photoFilesList.forEach( file => {
+				let uploadPath = `./uploads/individuals/${individual_id}/photos`;
+                if(!fs.existsSync(uploadPath)){
+                    fs.mkdirSync( uploadPath, { recursive: true } );
+                }
+				let fileName = params[file];
+				uploadPath += '/' + fileName;
+				let writer = fs.createWriteStream(uploadPath);
+				// write data
+				writer.write(files[photoConversion[file]][0].buffer);
+				writer.end();
+			});
+			if(currentPhoto){
+				// get the keys of the previous photos values
+				var prevPhotosList = Object.keys(currentPhoto);
+				prevPhotosList.forEach( prevPhoto => {
+					// check if the key is a photo and if it is not null (meaning we had a previous photo stored)
+					if( Object.keys(photoConversion).includes(prevPhoto) && currentPhoto[prevPhoto]){
+						// get the path of the previous stored photo
+						let uploadPath = `./uploads/individuals/${individual_id}/photos/${currentPhoto[prevPhoto]}`;
+						// if we still have that photo
+						if(fs.existsSync(uploadPath)){
+							// remove it
+							fs.unlink(uploadPath, (err) => {
+								if(err) throw err;
+							});
+						}
+					}
+				});
+			}
         }
 
         return result;
