@@ -3,7 +3,7 @@ const IndividualStates = require('../../utils/individualStates.utils.js');
 const IndividualMaritalSatus = require('../../utils/individualMaritalSatus.utils.js');
 const { getNormalizedColumns } = require('../../utils/individualColumnNormalizer.utils.js');
 const IndividualModel  = require('../../models/individual.model');
-const UserModel  = require('../../models/user.model');
+// const UserModel  = require('../../models/user.model');
 const GeografiaModel  = require('../../models/geografia.model');
 const PrecedentModel  = require('../../models/precedent.model');
 const FingerprintModel  = require('../../models/fingerprint.model');
@@ -75,8 +75,7 @@ exports.createIndividualSchema = [
         })
         .withMessage('Birthdate must be before today'),
     body('apparent_age')
-        .exists()
-        .withMessage('Aparent age is required')
+        .optional()
         .trim()
         .isNumeric()
         .withMessage("Aparent age must be a number"),
@@ -158,8 +157,7 @@ exports.createIndividualSchema = [
         .isNumeric()
         .withMessage("Height must be a number"),
     body('hair')
-        .exists()
-        .withMessage('Hair is required')
+        .optional()
         .trim()
         .isLength({ min: 3 })
         .withMessage('Must be at least 3 chars long'),
@@ -169,26 +167,22 @@ exports.createIndividualSchema = [
         .isLength({ min: 3 })
         .withMessage('Must be at least 3 chars long'),
     body('nose')
-        .exists()
-        .withMessage('Nose is required')
+        .optional()
         .trim()
         .isLength({ min: 3 })
         .withMessage('Must be at least 3 chars long'),
     body('mouth')
-        .exists()
-        .withMessage('Mouth is required')
+        .optional()
         .trim()
         .isLength({ min: 3 })
         .withMessage('Must be at least 3 chars long'),
     body('face')
-        .exists()
-        .withMessage('Face is required')
+        .optional()
         .trim()
         .isLength({ min: 3 })
         .withMessage('Must be at least 3 chars long'),
     body('colour')
-        .exists()
-        .withMessage('Colour is required')
+        .optional()
         .trim()
         .isLength({ min: 3 })
         .withMessage('Must be at least 3 chars long'),

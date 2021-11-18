@@ -5,6 +5,7 @@ const { validationResult } = require('express-validator');
 const dotenv = require('dotenv');
 const IndividualModel = require('../models/individual.model');
 dotenv.config();
+const path = require('path');
 
 /******************************************************************************
  *                              Fingerprint Controller
@@ -60,7 +61,7 @@ class FingerprintController {
         }
         const { SENHA, ...userWithoutPassword } = req.currentUser;
 
-        const result = await FingerprintModel.create(req.body, userWithoutPassword.ID);
+        const result = await FingerprintModel.create(req.body, req.files, userWithoutPassword.ID);
 
         if (!result) {
             throw new HttpException(500, 'Something went wrong');
@@ -77,12 +78,26 @@ class FingerprintController {
         }
         const { SENHA, ...userWithoutPassword } = req.currentUser;
 
+        if(req.files){
+            var filesList = [];
+            var fileKeys = Object.keys(req.files);
+            fileKeys.forEach(key => {
+                filesList.push(key);
+            });
+            filesList.forEach( file => {
+                let fileName = req.files[file][0].fieldname + '_' + Date.now() + path.extname(req.files[file][0].originalname);
+                let fieldname = req.files[file][0].fieldname.substring(0, req.files[file][0].fieldname.indexOf("File"));
+                // dynamically add each fileName to body
+                eval("req.body." + fieldname + " = '" + fileName +"';");
+            });
+        }
+
         // do the update query and get the result
         // it can be partial edit
         // convert the re.body keys into the actual names of the table's colums
         let updates = getNormalizedColumnsValues(req.body);
         
-        const result = await FingerprintModel.update(updates, req.params.individual_id, userWithoutPassword.ID);
+        const result = await FingerprintModel.update(updates, req.files, req.params.individual_id, userWithoutPassword.ID);
 
         if (!result) {
             throw new HttpException(404, 'Something went wrong');

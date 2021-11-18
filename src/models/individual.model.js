@@ -48,8 +48,9 @@ class IndividualModel {
         return newVal;
     }
 
-    create = async ({ name, nickname, father, mother, nationality, birthplace, birthdate, apparent_age, marital_status, profession, 
-                      residence_id, workplace, doc_num, doc_issuance_date, doc_issuance_place, height, hair, beard, nose, mouth, face, colour, tattoos, 
+    create = async ({ name, nickname, father, mother, nationality, birthplace, birthdate, apparent_age = null, marital_status, profession = null, 
+                      residence_id, workplace = null, doc_num, doc_issuance_date, doc_issuance_place, height, 
+                      hair = null, beard = null, nose = null, mouth = null, face = null, colour = null, tattoos = null, 
                       police_classification, state = 'A'}, user_id, full) => {
         const sql = `INSERT INTO ${this.tableName}
         (ID_UTILIZADOR, NOME, ALCUNHA, PAI, MAE, NACIONALIDADE, LOCAL_NASCIMENTO, DATA_NASCIMENTO, IDADE_APARENTE, ESTADO_CIVIL, PROFISSAO, ID_RESIDENCIA, 

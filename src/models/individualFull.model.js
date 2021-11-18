@@ -6,7 +6,7 @@ const photoModel = require('./photo.model');
 const precedentModel = require('./precedent.model');
 // new
 const fs = require('fs');
-const path = require('path');
+// const path = require('path');
 // end new
 class IndividualFullModel {
     tableName = 'individuo_antecedentes_utilizador';
@@ -596,9 +596,10 @@ class IndividualFullModel {
         return result[0];
     }
 
-    createFull = async ({ individual_name, nickname, father, mother, nationality, birthplace, birthdate, apparent_age, marital_status, profession, 
-                      	  residence_id, workplace, doc_num, doc_issuance_date, doc_issuance_place, height, hair = null, beard = null, nose = null, 
-					  	  mouth = null, face = null, colour = null, tattoos = null, police_classification, individualState = 'A',
+    createFull = async ({ individual_name, nickname, father, mother, nationality, birthplace, birthdate, apparent_age = null, marital_status, 
+						  profession = null, residence_id, workplace = null, doc_num, doc_issuance_date, doc_issuance_place, height, 
+						  hair = null, beard = null, nose = null, mouth = null, face = null, colour = null, tattoos = null, 
+						  police_classification, individualState = 'A',
                       	  r_thumb = null, r_index = null, r_middle = null, r_ring = null, r_little = null, 
 					  	  l_thumb = null, l_index = null, l_middle = null, l_ring = null, l_little = null,
                       	  l_photo = null, f_photo = null, r_photo = null, photoState = 'A',

@@ -13,31 +13,61 @@ exports.getNormalizedColumns = (columnsList) => {
                 case "r_thumb":
                     normalizedColumns.push("POLEGAR_DIREITO");
                     break;
+                case "r_thumbFile":
+                    normalizedColumns.push("POLEGAR_DIREITO");
+                    break;
                 case "r_index":
+                    normalizedColumns.push("INDICADOR_DIREITO");
+                    break;
+                case "r_indexFile":
                     normalizedColumns.push("INDICADOR_DIREITO");
                     break;
                 case "r_middle":
                     normalizedColumns.push("MEDIO_DIREITO");
                     break;
+                case "r_middleFile":
+                    normalizedColumns.push("MEDIO_DIREITO");
+                    break;
                 case "r_ring":
+                    normalizedColumns.push("ANELAR_DIREITO");
+                    break;
+                case "r_ringFile":
                     normalizedColumns.push("ANELAR_DIREITO");
                     break;
                 case "r_little":
                     normalizedColumns.push("MINDINHO_DIREITO");
                     break;
+                case "r_littleFile":
+                    normalizedColumns.push("MINDINHO_DIREITO");
+                    break;
                 case "l_thumb":
+                    normalizedColumns.push("POLEGAR_ESQUERDO");
+                    break;
+                case "l_thumbFile":
                     normalizedColumns.push("POLEGAR_ESQUERDO");
                     break;
                 case "l_index":
                     normalizedColumns.push("INDICADOR_ESQUERDO");
                     break;
+                case "l_indexFile":
+                    normalizedColumns.push("INDICADOR_ESQUERDO");
+                    break;
                 case "l_middle":
+                    normalizedColumns.push("MEDIO_ESQUERDO");
+                    break;
+                case "l_middleFile":
                     normalizedColumns.push("MEDIO_ESQUERDO");
                     break;
                 case "l_ring":
                     normalizedColumns.push("ANELAR_ESQUERDO");
                     break;
+                case "l_ringFile":
+                    normalizedColumns.push("ANELAR_ESQUERDO");
+                    break;
                 case "l_little":
+                    normalizedColumns.push("MINDINHO_ESQUERDO");
+                    break;
+                case "l_littleFile":
                     normalizedColumns.push("MINDINHO_ESQUERDO");
                     break;
                 case "created_at":

@@ -1,7 +1,6 @@
 const query = require('../db/db-connection');
 const { multipleColumnSet, multipleColumnGets } = require('../utils/common.utils');
 const logModel = require('./log.model');
-// new
 const fs = require('fs');
 const path = require('path');
 class FingerprintModel {
@@ -189,6 +188,15 @@ class FingerprintModel {
             const { ID, ...prevVal} = currentFingerprint;
             const resultLog = await logModel.logChange(u_id, this.tableName, currentFingerprint.ID, prevVal, null, 'Eliminar');
             result.affectedRows = resultLog ? result.affectedRows + resultLog : 0;
+            // after the individual has been deleted from database, delete his images directory
+            let printFolder = `uploads/individuals/${individual_id}/fingerprints`;
+            fs.rm(
+                printFolder,
+                {recursive: true},
+                (err) => {
+                    return;
+                }
+            );
         }
 
         if(!full)

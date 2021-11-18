@@ -5,7 +5,7 @@ const { validationResult } = require('express-validator');
 const dotenv = require('dotenv');
 dotenv.config();
 // new
-const fs = require('fs');
+// const fs = require('fs');
 const path = require('path');
 // end new
 

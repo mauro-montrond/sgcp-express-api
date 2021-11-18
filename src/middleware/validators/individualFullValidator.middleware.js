@@ -5,10 +5,10 @@ const PrecedentStates = require('../../utils/precedentStates.utils.js');
 const IndividualMaritalSatus = require('../../utils/individualMaritalSatus.utils.js');
 const { getNormalizedColumns } = require('../../utils/individualFullColumnNormalizer.utils.js');
 const IndividualModel  = require('../../models/individual.model');
-const UserModel  = require('../../models/user.model');
+// const UserModel  = require('../../models/user.model');
 const GeografiaModel  = require('../../models/geografia.model');
 const PrecedentModel  = require('../../models/precedent.model');
-const FingerprintModel  = require('../../models/fingerprint.model');
+// const FingerprintModel  = require('../../models/fingerprint.model');
 const PhotoModel  = require('../../models/photo.model');
 
 exports.createIndividualFullSchema = [
@@ -76,8 +76,7 @@ exports.createIndividualFullSchema = [
         })
         .withMessage('Birthdate must be before today'),
     body('apparent_age')
-        .exists()
-        .withMessage('Aparent age is required')
+        .optional()
         .trim()
         .isNumeric()
         .withMessage("Aparent age must be a number"),
@@ -159,8 +158,7 @@ exports.createIndividualFullSchema = [
         .isNumeric()
         .withMessage("Height must be a number"),
     body('hair')
-        .exists()
-        .withMessage('Hair is required')
+        .optional()
         .trim()
         .isLength({ min: 3 })
         .withMessage('Must be at least 3 chars long'),
@@ -170,26 +168,22 @@ exports.createIndividualFullSchema = [
         .isLength({ min: 3 })
         .withMessage('Must be at least 3 chars long'),
     body('nose')
-        .exists()
-        .withMessage('Nose is required')
+        .optional()
         .trim()
         .isLength({ min: 3 })
         .withMessage('Must be at least 3 chars long'),
     body('mouth')
-        .exists()
-        .withMessage('Mouth is required')
+        .optional()
         .trim()
         .isLength({ min: 3 })
         .withMessage('Must be at least 3 chars long'),
     body('face')
-        .exists()
-        .withMessage('Face is required')
+        .optional()
         .trim()
         .isLength({ min: 3 })
         .withMessage('Must be at least 3 chars long'),
     body('colour')
-        .exists()
-        .withMessage('Colour is required')
+        .optional()
         .trim()
         .isLength({ min: 3 })
         .withMessage('Must be at least 3 chars long'),
@@ -231,12 +225,12 @@ exports.createIndividualFullSchema = [
         .withMessage('not a image file!')
         .custom( (value, {req, path}) => {
             if (!!req.files[path]) {
-                if(req.files[path][0].mimetype !== "image/jpeg")
+                if(req.files[path][0].mimetype !== "image/jpeg" && req.files[path][0].mimetype !== "image/png")
                     return false;
             }
             return true;
         })
-        .withMessage('not a jpeg file!')
+        .withMessage('not a jpeg nor png file!')
         .custom((value, {req, path}) => {
             if(!!req.files[path]) {
                 if ( checkDuplicateFingerprint(req, req.files[path][0].originalname) > 1)
@@ -266,12 +260,12 @@ exports.createIndividualFullSchema = [
         .withMessage('not a image file!')
         .custom( (value, {req, path}) => {
             if (!!req.files[path]) {
-                if(req.files[path][0].mimetype !== "image/jpeg")
+                if(req.files[path][0].mimetype !== "image/jpeg" && req.files[path][0].mimetype !== "image/png")
                     return false;
             }
             return true;
         })
-        .withMessage('not a jpeg file!')
+        .withMessage('not a jpeg nor png file!')
         .custom((value, {req, path}) => {
             if(!!req.files[path]) {
                 if ( checkDuplicateFingerprint(req, req.files[path][0].originalname) > 1)
@@ -301,12 +295,12 @@ exports.createIndividualFullSchema = [
         .withMessage('not a image file!')
         .custom( (value, {req, path}) => {
             if (!!req.files[path]) {
-                if(req.files[path][0].mimetype !== "image/jpeg")
+                if(req.files[path][0].mimetype !== "image/jpeg" && req.files[path][0].mimetype !== "image/png")
                     return false;
             }
             return true;
         })
-        .withMessage('not a jpeg file!')
+        .withMessage('not a jpeg nor png file!')
         .custom((value, {req, path}) => {
             if(!!req.files[path]) {
                 if ( checkDuplicateFingerprint(req, req.files[path][0].originalname) > 1)
@@ -336,12 +330,12 @@ exports.createIndividualFullSchema = [
         .withMessage('not a image file!')
         .custom( (value, {req, path}) => {
             if (!!req.files[path]) {
-                if(req.files[path][0].mimetype !== "image/jpeg")
+                if(req.files[path][0].mimetype !== "image/jpeg" && req.files[path][0].mimetype !== "image/png")
                     return false;
             }
             return true;
         })
-        .withMessage('not a jpeg file!')
+        .withMessage('not a jpeg nor png file!')
         .custom((value, {req, path}) => {
             if(!!req.files[path]) {
                 if ( checkDuplicateFingerprint(req, req.files[path][0].originalname) > 1)
@@ -371,12 +365,12 @@ exports.createIndividualFullSchema = [
         .withMessage('not a image file!')
         .custom( (value, {req, path}) => {
             if (!!req.files[path]) {
-                if(req.files[path][0].mimetype !== "image/jpeg")
+                if(req.files[path][0].mimetype !== "image/jpeg" && req.files[path][0].mimetype !== "image/png")
                     return false;
             }
             return true;
         })
-        .withMessage('not a jpeg file!')
+        .withMessage('not a jpeg nor png file!')
         .custom((value, {req, path}) => {
             if(!!req.files[path]) {
                 if ( checkDuplicateFingerprint(req, req.files[path][0].originalname) > 1)
@@ -406,12 +400,12 @@ exports.createIndividualFullSchema = [
         .withMessage('not a image file!')
         .custom( (value, {req, path}) => {
             if (!!req.files[path]) {
-                if(req.files[path][0].mimetype !== "image/jpeg")
+                if(req.files[path][0].mimetype !== "image/jpeg" && req.files[path][0].mimetype !== "image/png")
                     return false;
             }
             return true;
         })
-        .withMessage('not a jpeg file!')
+        .withMessage('not a jpeg nor png file!')
         .custom((value, {req, path}) => {
             if(!!req.files[path]) {
                 if ( checkDuplicateFingerprint(req, req.files[path][0].originalname) > 1)
@@ -441,12 +435,12 @@ exports.createIndividualFullSchema = [
         .withMessage('not a image file!')
         .custom( (value, {req, path}) => {
             if (!!req.files[path]) {
-                if(req.files[path][0].mimetype !== "image/jpeg")
+                if(req.files[path][0].mimetype !== "image/jpeg" && req.files[path][0].mimetype !== "image/png")
                     return false;
             }
             return true;
         })
-        .withMessage('not a jpeg file!')
+        .withMessage('not a jpeg nor png file!')
         .custom((value, {req, path}) => {
             if(!!req.files[path]) {
                 if ( checkDuplicateFingerprint(req, req.files[path][0].originalname) > 1)
@@ -476,12 +470,12 @@ exports.createIndividualFullSchema = [
         .withMessage('not a image file!')
         .custom( (value, {req, path}) => {
             if (!!req.files[path]) {
-                if(req.files[path][0].mimetype !== "image/jpeg")
+                if(req.files[path][0].mimetype !== "image/jpeg" && req.files[path][0].mimetype !== "image/png")
                     return false;
             }
             return true;
         })
-        .withMessage('not a jpeg file!')
+        .withMessage('not a jpeg nor png file!')
         .custom((value, {req, path}) => {
             if(!!req.files[path]) {
                 if ( checkDuplicateFingerprint(req, req.files[path][0].originalname) > 1)
@@ -511,12 +505,12 @@ exports.createIndividualFullSchema = [
         .withMessage('not a image file!')
         .custom( (value, {req, path}) => {
             if (!!req.files[path]) {
-                if(req.files[path][0].mimetype !== "image/jpeg")
+                if(req.files[path][0].mimetype !== "image/jpeg" && req.files[path][0].mimetype !== "image/png")
                     return false;
             }
             return true;
         })
-        .withMessage('not a jpeg file!')
+        .withMessage('not a jpeg nor png file!')
         .custom((value, {req, path}) => {
             if(!!req.files[path]) {
                 if ( checkDuplicateFingerprint(req, req.files[path][0].originalname) > 1)
@@ -546,12 +540,12 @@ exports.createIndividualFullSchema = [
         .withMessage('not a image file!')
         .custom( (value, {req, path}) => {
             if (!!req.files[path]) {
-                if(req.files[path][0].mimetype !== "image/jpeg")
+                if(req.files[path][0].mimetype !== "image/jpeg" && req.files[path][0].mimetype !== "image/png")
                     return false;
             }
             return true;
         })
-        .withMessage('not a jpeg file!')
+        .withMessage('not a jpeg nor png file!')
         .custom((value, {req, path}) => {
             if(!!req.files[path]) {
                 if ( checkDuplicateFingerprint(req, req.files[path][0].originalname) > 1)
@@ -1015,12 +1009,12 @@ exports.updateIndividualFullSchema = [
         .withMessage('not a image file!')
         .custom( (value, {req, path}) => {
             if (!!req.files[path]) {
-                if(req.files[path][0].mimetype !== "image/jpeg")
+                if(req.files[path][0].mimetype !== "image/jpeg" && req.files[path][0].mimetype !== "image/png")
                     return false;
             }
             return true;
         })
-        .withMessage('not a jpeg file!')
+        .withMessage('not a jpeg nor png file!')
         .custom((value, {req, path}) => {
             if(!!req.files[path]) {
                 if ( checkDuplicateFingerprint(req, req.files[path][0].originalname) > 1)
@@ -1048,12 +1042,12 @@ exports.updateIndividualFullSchema = [
         .withMessage('not a image file!')
         .custom( (value, {req, path}) => {
             if (!!req.files[path]) {
-                if(req.files[path][0].mimetype !== "image/jpeg")
+                if(req.files[path][0].mimetype !== "image/jpeg" && req.files[path][0].mimetype !== "image/png")
                     return false;
             }
             return true;
         })
-        .withMessage('not a jpeg file!')
+        .withMessage('not a jpeg nor png file!')
         .custom((value, {req, path}) => {
             if(!!req.files[path]) {
                 if ( checkDuplicateFingerprint(req, req.files[path][0].originalname) > 1)
@@ -1081,12 +1075,12 @@ exports.updateIndividualFullSchema = [
         .withMessage('not a image file!')
         .custom( (value, {req, path}) => {
             if (!!req.files[path]) {
-                if(req.files[path][0].mimetype !== "image/jpeg")
+                if(req.files[path][0].mimetype !== "image/jpeg" && req.files[path][0].mimetype !== "image/png")
                     return false;
             }
             return true;
         })
-        .withMessage('not a jpeg file!')
+        .withMessage('not a jpeg nor png file!')
         .custom((value, {req, path}) => {
             if(!!req.files[path]) {
                 if ( checkDuplicateFingerprint(req, req.files[path][0].originalname) > 1)
@@ -1114,12 +1108,12 @@ exports.updateIndividualFullSchema = [
         .withMessage('not a image file!')
         .custom( (value, {req, path}) => {
             if (!!req.files[path]) {
-                if(req.files[path][0].mimetype !== "image/jpeg")
+                if(req.files[path][0].mimetype !== "image/jpeg" && req.files[path][0].mimetype !== "image/png")
                     return false;
             }
             return true;
         })
-        .withMessage('not a jpeg file!')
+        .withMessage('not a jpeg nor png file!')
         .custom((value, {req, path}) => {
             if(!!req.files[path]) {
                 if ( checkDuplicateFingerprint(req, req.files[path][0].originalname) > 1)
@@ -1147,12 +1141,12 @@ exports.updateIndividualFullSchema = [
         .withMessage('not a image file!')
         .custom( (value, {req, path}) => {
             if (!!req.files[path]) {
-                if(req.files[path][0].mimetype !== "image/jpeg")
+                if(req.files[path][0].mimetype !== "image/jpeg" && req.files[path][0].mimetype !== "image/png")
                     return false;
             }
             return true;
         })
-        .withMessage('not a jpeg file!')
+        .withMessage('not a jpeg nor png file!')
         .custom((value, {req, path}) => {
             if(!!req.files[path]) {
                 if ( checkDuplicateFingerprint(req, req.files[path][0].originalname) > 1)
@@ -1180,12 +1174,12 @@ exports.updateIndividualFullSchema = [
         .withMessage('not a image file!')
         .custom( (value, {req, path}) => {
             if (!!req.files[path]) {
-                if(req.files[path][0].mimetype !== "image/jpeg")
+                if(req.files[path][0].mimetype !== "image/jpeg" && req.files[path][0].mimetype !== "image/png")
                     return false;
             }
             return true;
         })
-        .withMessage('not a jpeg file!')
+        .withMessage('not a jpeg nor png file!')
         .custom((value, {req, path}) => {
             if(!!req.files[path]) {
                 if ( checkDuplicateFingerprint(req, req.files[path][0].originalname) > 1)
@@ -1213,12 +1207,12 @@ exports.updateIndividualFullSchema = [
         .withMessage('not a image file!')
         .custom( (value, {req, path}) => {
             if (!!req.files[path]) {
-                if(req.files[path][0].mimetype !== "image/jpeg")
+                if(req.files[path][0].mimetype !== "image/jpeg" && req.files[path][0].mimetype !== "image/png")
                     return false;
             }
             return true;
         })
-        .withMessage('not a jpeg file!')
+        .withMessage('not a jpeg nor png file!')
         .custom((value, {req, path}) => {
             if(!!req.files[path]) {
                 if ( checkDuplicateFingerprint(req, req.files[path][0].originalname) > 1)
@@ -1246,12 +1240,12 @@ exports.updateIndividualFullSchema = [
         .withMessage('not a image file!')
         .custom( (value, {req, path}) => {
             if (!!req.files[path]) {
-                if(req.files[path][0].mimetype !== "image/jpeg")
+                if(req.files[path][0].mimetype !== "image/jpeg" && req.files[path][0].mimetype !== "image/png")
                     return false;
             }
             return true;
         })
-        .withMessage('not a jpeg file!')
+        .withMessage('not a jpeg nor png file!')
         .custom((value, {req, path}) => {
             if(!!req.files[path]) {
                 if ( checkDuplicateFingerprint(req, req.files[path][0].originalname) > 1)
@@ -1279,12 +1273,12 @@ exports.updateIndividualFullSchema = [
         .withMessage('not a image file!')
         .custom( (value, {req, path}) => {
             if (!!req.files[path]) {
-                if(req.files[path][0].mimetype !== "image/jpeg")
+                if(req.files[path][0].mimetype !== "image/jpeg" && req.files[path][0].mimetype !== "image/png")
                     return false;
             }
             return true;
         })
-        .withMessage('not a jpeg file!')
+        .withMessage('not a jpeg nor png file!')
         .custom((value, {req, path}) => {
             if(!!req.files[path]) {
                 if ( checkDuplicateFingerprint(req, req.files[path][0].originalname) > 1)
@@ -1312,12 +1306,12 @@ exports.updateIndividualFullSchema = [
         .withMessage('not a image file!')
         .custom( (value, {req, path}) => {
             if (!!req.files[path]) {
-                if(req.files[path][0].mimetype !== "image/jpeg")
+                if(req.files[path][0].mimetype !== "image/jpeg" && req.files[path][0].mimetype !== "image/png")
                     return false;
             }
             return true;
         })
-        .withMessage('not a jpeg file!')
+        .withMessage('not a jpeg nor png file!')
         .custom((value, {req, path}) => {
             if(!!req.files[path]) {
                 if ( checkDuplicateFingerprint(req, req.files[path][0].originalname) > 1)
@@ -1620,8 +1614,8 @@ exports.updateIndividualFullSchema = [
         .withMessage('No precedent specified'),
 
     body()
-        .custom(value => {
-            return !!Object.keys(value).length;
+        .custom((value, {req}) => {
+            return !!(Object.keys(value).length + Object.keys(req.files).length);
         })
         .withMessage('Please provide required field to update')
         .custom(async (value, {req}) => {
@@ -1633,9 +1627,9 @@ exports.updateIndividualFullSchema = [
         })
         .withMessage('The Individual you want to update does not exist!')
         .custom((value, {req}) => {
-            if(req.body.r_photo || req.body.f_photo|| req.body.l_photo /*||
+            if(req.body.r_photo || req.body.f_photo|| req.body.l_photo ||
                req.body.r_thumb || req.body.r_index|| req.body.r_middle || req.body.r_ring || req.body.r_little ||
-               req.body.l_thumb || req.body.l_index|| req.body.l_middle || req.body.l_ring || req.body.l_little*/) {
+               req.body.l_thumb || req.body.l_index|| req.body.l_middle || req.body.l_ring || req.body.l_little) {
                    return false;
             } else {
                 // get  a list of all the parameters from body
@@ -2132,90 +2126,70 @@ exports.getIndividualsFullSchema = [
         .withMessage("Right thumb must be filled")
         .trim()
         .isLength({ min: 6 })
-        .withMessage('Must be at least 6 chars long')
-        .isURL()
-        .withMessage('Must be a URL'),
+        .withMessage('Must be at least 6 chars long'),
     body('r_index')
         .optional()
         .notEmpty()
         .withMessage("Right index finger must be filled")
         .trim()
         .isLength({ min: 6 })
-        .withMessage('Must be at least 6 chars long')
-        .isURL()
-        .withMessage('Must be a URL'),
+        .withMessage('Must be at least 6 chars long'),
     body('r_middle')
         .optional()
         .notEmpty()
         .withMessage("Right middle finger must be filled")
         .trim()
         .isLength({ min: 6 })
-        .withMessage('Must be at least 6 chars long')
-        .isURL()
-        .withMessage('Must be a URL'),
+        .withMessage('Must be at least 6 chars long'),
     body('r_ring')
         .optional()
         .notEmpty()
         .withMessage("Right ring finger must be filled")
         .trim()
         .isLength({ min: 6 })
-        .withMessage('Must be at least 6 chars long')
-        .isURL()
-        .withMessage('Must be a URL'),
+        .withMessage('Must be at least 6 chars long'),
     body('r_little')
         .optional()
         .notEmpty()
         .withMessage("Right little finger must be filled")
         .trim()
         .isLength({ min: 6 })
-        .withMessage('Must be at least 6 chars long')
-        .isURL()
-        .withMessage('Must be a URL'),
+        .withMessage('Must be at least 6 chars long'),
     body('l_thumb')
         .optional()
         .notEmpty()
         .withMessage("Left thumb must be filled")
         .trim()
         .isLength({ min: 6 })
-        .withMessage('Must be at least 6 chars long')
-        .isURL()
-        .withMessage('Must be a URL'),
+        .withMessage('Must be at least 6 chars long'),
     body('l_index')
         .optional()
         .notEmpty()
         .withMessage("Left index finger must be filled")
         .trim()
         .isLength({ min: 6 })
-        .withMessage('Must be at least 6 chars long')
-        .isURL()
-        .withMessage('Must be a URL'),
+        .withMessage('Must be at least 6 chars long'),
     body('l_middle')
         .optional()
         .notEmpty()
         .withMessage("Left middle finger must be filled")
         .trim()
         .isLength({ min: 6 })
-        .withMessage('Must be at least 6 chars long')
-        .isURL()
-        .withMessage('Must be a URL'),
+        .withMessage('Must be at least 6 chars long'),
     body('l_ring')
         .optional()
         .notEmpty()
         .withMessage("Left ring finger must be filled")
         .trim()
         .isLength({ min: 6 })
-        .withMessage('Must be at least 6 chars long')
-        .isURL()
-        .withMessage('Must be a URL'),
+        .withMessage('Must be at least 6 chars long'),
     body('l_little')
         .optional()
         .notEmpty()
         .withMessage("Left little finger must be filled")
         .trim()
         .isLength({ min: 6 })
-        .withMessage('Must be at least 6 chars long')
-        .isURL()
-        .withMessage('Must be a URL'),
+        .withMessage('Must be at least 6 chars long'),
     body('fingerprint_created_at')
         .optional()
         .notEmpty()
@@ -2265,27 +2239,21 @@ exports.getIndividualsFullSchema = [
         .withMessage("Left photo must be filled")
         .trim()
         .isLength({ min: 6 })
-        .withMessage('Must be at least 6 chars long')
-        .isURL()
-        .withMessage('Must be a URL'),
+        .withMessage('Must be at least 6 chars long'),
     body('f_photo')
         .optional()
         .notEmpty()
         .withMessage("Frontal photo must be filled")
         .trim()
         .isLength({ min: 6 })
-        .withMessage('Must be at least 6 chars long')
-        .isURL()
-        .withMessage('Must be a URL'),
+        .withMessage('Must be at least 6 chars long'),
     body('r_photo')
         .optional()
         .notEmpty()
         .withMessage("Right photo must be filled")
         .trim()
         .isLength({ min: 6 })
-        .withMessage('Must be at least 6 chars long')
-        .isURL()
-        .withMessage('Must be a URL'),
+        .withMessage('Must be at least 6 chars long'),
     body('photoState')
         .optional()
         .notEmpty()
@@ -2570,10 +2538,8 @@ exports.deleteIndividualFullSchema = [
 checkDuplicateFingerprint = (req, fingerprint) => {
     let found = 0;
     if (fingerprint){
-        if(req.files["r_thumbFile"] && req.files["r_thumbFile"][0].originalname == fingerprint){
-            console.log(req.files["r_thumbFile"][0].originalname + " == " + fingerprint);
+        if(req.files["r_thumbFile"] && req.files["r_thumbFile"][0].originalname == fingerprint)
             found += 1;
-        }
         if(req.body["r_indexFile"] && req.files["r_indexFile"][0].originalname == fingerprint)
             found += 1;
         if(req.body["r_middleFile"] && req.files["r_middleFile"][0].originalname == fingerprint)

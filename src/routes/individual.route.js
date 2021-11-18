@@ -7,8 +7,8 @@ const Action = require('../utils/menuActions.utils');
 const awaitHandlerFactory = require('../middleware/awaitHandlerFactory.middleware');
 // new
 const multer = require('multer');
-const fs = require('fs');
-const path = require('path');
+// const fs = require('fs');
+// const path = require('path');
 
 const upload = multer({
     storage: multer.memoryStorage(),
