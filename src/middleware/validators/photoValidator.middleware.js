@@ -23,11 +23,13 @@ exports.createPhotoSchema = [
         })
         .withMessage('No individuals exist')
         .custom(async element => {
-            const findIndividual = await IndividualModel.findOne( {'ID': element} );
-            if(findIndividual)
-                return Promise.resolve();
-            else
-                return Promise.reject();
+            if(element) {
+                const findIndividual = await IndividualModel.findOne( {'ID': element} );
+                if(findIndividual)
+                    return Promise.resolve();
+                else
+                    return Promise.reject();
+            } else return Promise.resolve();
         })
         .withMessage('Individual does not exist')
         .custom(async element => {
@@ -38,81 +40,111 @@ exports.createPhotoSchema = [
                 return Promise.resolve();
         })
         .withMessage('That individual is not in a valid state'),
-    body('l_photo')
-        .exists()
-        .withMessage('Left photo is required')
-        .notEmpty()
-        .withMessage("Left photo must be filled")
-        .trim()
-        .isLength({ min: 6 })
-        .withMessage('Must be at least 6 chars long')
-        .isURL()
-        .withMessage('Must be a URL')
-        .custom(async element => {
-            const findPhoto = await PhotoModel.findPhoto(element);
-            if(findPhoto)
-                return Promise.reject();
-            else
-                return Promise.resolve();
+    body('l_photoFile')
+        .custom( (value, {req, path}) => {
+            if(!req.files[path] && value) {
+                if(!eval('req.' + path + 'ValidationError'))
+                    return false;
+            }
+            return true;
         })
-        .withMessage('Photo already exists')
-        .custom((value, {req}) => {
-            if ( value && ((req.body.f_photo && value == req.body.f_photo) || (req.body.r_photo && value == req.body.r_photo)) )
+        .withMessage('not a image input!')
+        .custom( (value, {req, path}) => {
+            if (eval('req.' + path + 'ValidationError'))
                 return false;
-            else
-                return true;
+            return true;
         })
-        .withMessage('Each photo must be different'),
-    body('f_photo')
-        .exists()
-        .withMessage('Frontal photo is required')
-        .notEmpty()
-        .withMessage("Frontal photo must be filled")
-        .trim()
-        .isLength({ min: 6 })
-        .withMessage('Must be at least 6 chars long')
-        .isURL()
-        .withMessage('Must be a URL')
-        .custom(async element => {
-            const findPhoto = await PhotoModel.findPhoto(element);
-            if(findPhoto)
-                return Promise.reject();
-            else
-                return Promise.resolve();
+        .withMessage('not a image file!')
+        .custom( (value, {req, path}) => {
+            if (!!req.files[path]) {
+                if(req.files[path][0].mimetype !== "image/jpeg" && req.files[path][0].mimetype !== "image/png")
+                    return false;
+            }
+            return true;
         })
-        .withMessage('Photo already exists')
-        .custom((value, {req}) => {
-            if ( value && ((req.body.l_photo && value == req.body.l_photo) || (req.body.r_photo && value == req.body.r_photo)) )
+        .withMessage('not a jpeg nor png file!')
+        .custom( (value, {req, path}) => {
+            if (!!req.files[path] && !!req.files["f_photoFile"]) {
+                if(req.files[path][0].originalname == req.files["f_photoFile"][0].originalname)
+                    return false;
+            }
+            if (!!req.files[path] && !!req.files["r_photoFile"]) {
+                if(req.files[path][0].originalname == req.files["r_photoFile"][0].originalname)
+                    return false;
+            }
+            return true;
+        })
+        .withMessage('each photo must be different!'),
+    body('f_photoFile')
+        .custom( (value, {req, path}) => {
+            if(!req.files[path] && value) {
+                if(!eval('req.' + path + 'ValidationError'))
+                    return false;
+            }
+            return true;
+        })
+        .withMessage('not a image input!')
+        .custom( (value, {req, path}) => {
+            if (eval('req.' + path + 'ValidationError'))
                 return false;
-            else
-                return true;
+            return true;
         })
-        .withMessage('Each photo must be different'),
-    body('r_photo')
-        .exists()
-        .withMessage('Right photo is required')
-        .notEmpty()
-        .withMessage("Right photo must be filled")
-        .trim()
-        .isLength({ min: 6 })
-        .withMessage('Must be at least 6 chars long')
-        .isURL()
-        .withMessage('Must be a URL')
-        .custom(async element => {
-            const findPhoto = await PhotoModel.findPhoto(element);
-            if(findPhoto)
-                return Promise.reject();
-            else
-                return Promise.resolve();
+        .withMessage('not a image file!')
+        .custom( (value, {req, path}) => {
+            if (!!req.files[path]) {
+                if(req.files[path][0].mimetype !== "image/jpeg" && req.files[path][0].mimetype !== "image/png")
+                    return false;
+            }
+            return true;
         })
-        .withMessage('Photo already exists')
-        .custom((value, {req}) => {
-            if ( value && ((req.body.l_photo && value == req.body.l_photo) || (req.body.f_photo && value == req.body.f_photo)) )
+        .withMessage('not a jpeg nor png file!')
+        .custom( (value, {req, path}) => {
+            if (!!req.files[path] && !!req.files["l_photoFile"]) {
+                if(req.files[path][0].originalname == req.files["l_photoFile"][0].originalname)
+                    return false;
+            }
+            if (!!req.files[path] && !!req.files["r_photoFile"]) {
+                if(req.files[path][0].originalname == req.files["r_photoFile"][0].originalname)
+                    return false;
+            }
+            return true;
+        })
+        .withMessage('each photo must be different!'),
+    body('r_photoFile')
+        .custom( (value, {req, path}) => {
+            if(!req.files[path] && value) {
+                if(!eval('req.' + path + 'ValidationError'))
+                    return false;
+            }
+            return true;
+        })
+        .withMessage('not a image input!')
+        .custom( (value, {req, path}) => {
+            if (eval('req.' + path + 'ValidationError'))
                 return false;
-            else
-                return true;
+            return true;
         })
-        .withMessage('Each photo must be different'),
+        .withMessage('not a image file!')
+        .custom( (value, {req, path}) => {
+            if (!!req.files[path]) {
+                if(req.files[path][0].mimetype !== "image/jpeg" && req.files[path][0].mimetype !== "image/png")
+                    return false;
+            }
+            return true;
+        })
+        .withMessage('not a jpeg nor png file!')
+        .custom( (value, {req, path}) => {
+            if (!!req.files[path] && !!req.files["l_photoFile"]) {
+                if(req.files[path][0].originalname == req.files["l_photoFile"][0].originalname)
+                    return false;
+            }
+            if (!!req.files[path] && !!req.files["f_photoFile"]) {
+                if(req.files[path][0].originalname == req.files["f_photoFile"][0].originalname)
+                    return false;
+            }
+            return true;
+        })
+        .withMessage('each photo must be different!'),
     body('state')
         .optional()
         .notEmpty()
@@ -121,116 +153,137 @@ exports.createPhotoSchema = [
         .isIn(PhotoStates)
         .withMessage('Invalid state type'),
     body()
-        .custom(value => {
-            //convert object keys into column names
-            var creatList = getNormalizedColumns(Object.keys(value));
-            //Set the allowed field for creation and see if the ones sent match
-            const allowCreation = ['ID_INDIVIDUO', 'FOTO_ESQUERDA', 'FOTO_FRONTAL', 'FOTO_DIREITA', 'ESTADO'];
-            return creatList.every(parameter => allowCreation.includes(parameter));
+        .custom(async (value, {req}) => {
+            const findIndividual = await IndividualModel.findOne( {'ID': req.body.individual_id} );
+            if(findIndividual){
+                const findPhoto = await PhotoModel.findOne({'ID_INDIVIDUO': req.body.individual_id});
+                if(findPhoto){
+                    if(!!(Object.keys(value).length + Object.keys(req.files).length))
+                        return Promise.reject();
+                } else return Promise.resolve();
+            } else return Promise.resolve();
+        })
+        .withMessage('Please provide at least one photo')
+        .custom((value, {req}) => {
+            if(req.body.r_photo || req.body.f_photo|| req.body.l_photo) {
+                   return false;
+            } else {
+                //convert object keys into column names
+                var creatList = getNormalizedColumns(Object.keys(value));
+                //Set the allowed field for creation and see if the ones sent match
+                const allowCreation = ['ID_INDIVIDUO', 'FOTO_ESQUERDA', 'FOTO_FRONTAL', 'FOTO_DIREITA', 'ESTADO'];
+                return creatList.every(parameter => allowCreation.includes(parameter));
+            }
         })
         .withMessage('Invalid extra fields!')
 ];
 
 exports.updatePhotoSchema = [
-    body('l_photo')
-        .optional()
-        .notEmpty()
-        .withMessage("Left photo must be filled")
-        .trim()
-        .isLength({ min: 6 })
-        .withMessage('Must be at least 6 chars long')
-        .isURL()
-        .withMessage('Must be a URL')
-        .custom(async (element, {req}) => {
-            const currentPhoto = await PhotoModel.findOne({'ID': req.params.id});
-            if(currentPhoto){
-                if(currentPhoto.FOTO_ESQUERDA == element)
-                    return Promise.resolve();
-                else {
-                    const findPhoto = await PhotoModel.findPhoto(element);
-                    if(findPhoto)
-                        return Promise.reject();
-                    else
-                        return Promise.resolve();
-                }
+    body('l_photoFile')
+        .custom( (value, {req, path}) => {
+            if(!req.files[path] && value) {
+                if(!eval('req.' + path + 'ValidationError'))
+                    return false;
             }
-            else
-                return Promise.resolve();
+            return true;
         })
-        .withMessage('Photo already exists')
-        .custom((value, {req}) => {
-            if ( value && ((req.body.f_photo && value == req.body.f_photo) || (req.body.r_photo && value == req.body.r_photo)) )
+        .withMessage('not a image input!')
+        .custom( (value, {req, path}) => {
+            if (eval('req.' + path + 'ValidationError'))
                 return false;
-            else
-                return true;
+            return true;
         })
-        .withMessage('Each photo must be different'),
-    body('f_photo')
-        .optional()
-        .notEmpty()
-        .withMessage("Frontal photo must be filled")
-        .trim()
-        .isLength({ min: 6 })
-        .withMessage('Must be at least 6 chars long')
-        .isURL()
-        .withMessage('Must be a URL')
-        .custom(async (element, {req}) => {
-            const currentPhoto = await PhotoModel.findOne({'ID': req.params.id});
-            if(currentPhoto){
-                if(currentPhoto.FOTO_FRONTAL == element)
-                    return Promise.resolve();
-                else {
-                    const findPhoto = await PhotoModel.findPhoto(element);
-                    if(findPhoto)
-                        return Promise.reject();
-                    else
-                        return Promise.resolve();
-                }
+        .withMessage('not a image file!')
+        .custom( (value, {req, path}) => {
+            if (!!req.files[path]) {
+                if(req.files[path][0].mimetype !== "image/jpeg" && req.files[path][0].mimetype !== "image/png")
+                    return false;
             }
-            else
-                return Promise.resolve();
+            return true;
         })
-        .withMessage('Photo already exists')
-        .custom((value, {req}) => {
-            if ( value && ((req.body.l_photo && value == req.body.l_photo) || (req.body.r_photo && value == req.body.r_photo)) )
-                return false;
-            else
-                return true;
-        })
-        .withMessage('Each photo must be different'),
-    body('r_photo')
-        .optional()
-        .notEmpty()
-        .withMessage("Right photo must be filled")
-        .trim()
-        .isLength({ min: 6 })
-        .withMessage('Must be at least 6 chars long')
-        .isURL()
-        .withMessage('Must be a URL')
-        .custom(async (element, {req}) => {
-            const currentPhoto = await PhotoModel.findOne({'ID': req.params.id});
-            if(currentPhoto){
-                if(currentPhoto.FOTO_DIREITA == element)
-                    return Promise.resolve();
-                else {
-                    const findPhoto = await PhotoModel.findPhoto(element);
-                    if(findPhoto)
-                        return Promise.reject();
-                    else
-                        return Promise.resolve();
-                }
+        .withMessage('not a jpeg nor png file!')
+        .custom( (value, {req, path}) => {
+            if (!!req.files[path] && !!req.files["f_photoFile"]) {
+                if(req.files[path][0].originalname == req.files["f_photoFile"][0].originalname)
+                    return false;
             }
-            else
-                return Promise.resolve();
+            if (!!req.files[path] && !!req.files["r_photoFile"]) {
+                if(req.files[path][0].originalname == req.files["r_photoFile"][0].originalname)
+                    return false;
+            }
+            return true;
         })
-        .withMessage('Photo already exists')
-        .custom((value, {req}) => {
-            if ( value && ((req.body.l_photo && value == req.body.l_photo) || (req.body.f_photo && value == req.body.f_photo)) )
+        .withMessage('each photo must be different!'),
+    body('f_photoFile')
+        .custom( (value, {req, path}) => {
+            if(!req.files[path] && value) {
+                if(!eval('req.' + path + 'ValidationError'))
+                    return false;
+            }
+            return true;
+        })
+        .withMessage('not a image input!')
+        .custom( (value, {req, path}) => {
+            if (eval('req.' + path + 'ValidationError'))
                 return false;
-            else
-                return true;
+            return true;
         })
-        .withMessage('Each photo must be different'),
+        .withMessage('not a image file!')
+        .custom( (value, {req, path}) => {
+            if (!!req.files[path]) {
+                if(req.files[path][0].mimetype !== "image/jpeg" && req.files[path][0].mimetype !== "image/png")
+                    return false;
+            }
+            return true;
+        })
+        .withMessage('not a jpeg nor png file!')
+        .custom( (value, {req, path}) => {
+            if (!!req.files[path] && !!req.files["l_photoFile"]) {
+                if(req.files[path][0].originalname == req.files["l_photoFile"][0].originalname)
+                    return false;
+            }
+            if (!!req.files[path] && !!req.files["r_photoFile"]) {
+                if(req.files[path][0].originalname == req.files["r_photoFile"][0].originalname)
+                    return false;
+            }
+            return true;
+        })
+        .withMessage('each photo must be different!'),
+    body('r_photoFile')
+        .custom( (value, {req, path}) => {
+            if(!req.files[path] && value) {
+                if(!eval('req.' + path + 'ValidationError'))
+                    return false;
+            }
+            return true;
+        })
+        .withMessage('not a image input!')
+        .custom( (value, {req, path}) => {
+            if (eval('req.' + path + 'ValidationError'))
+                return false;
+            return true;
+        })
+        .withMessage('not a image file!')
+        .custom( (value, {req, path}) => {
+            if (!!req.files[path]) {
+                if(req.files[path][0].mimetype !== "image/jpeg" && req.files[path][0].mimetype !== "image/png")
+                    return false;
+            }
+            return true;
+        })
+        .withMessage('not a jpeg nor png file!')
+        .custom( (value, {req, path}) => {
+            if (!!req.files[path] && !!req.files["l_photoFile"]) {
+                if(req.files[path][0].originalname == req.files["l_photoFile"][0].originalname)
+                    return false;
+            }
+            if (!!req.files[path] && !!req.files["f_photoFile"]) {
+                if(req.files[path][0].originalname == req.files["f_photoFile"][0].originalname)
+                    return false;
+            }
+            return true;
+        })
+        .withMessage('each photo must be different!'),
     body('state')
         .optional()
         .notEmpty()
@@ -239,24 +292,36 @@ exports.updatePhotoSchema = [
         .isIn(PhotoStates)
         .withMessage('Invalid state type'),
     body()
-        .custom(value => {
-            return !!Object.keys(value).length;
+        .custom((value, {req}) => {
+            return !!(Object.keys(value).length + Object.keys(req.files).length);
         })
         .withMessage('Please provide required field to update')
         .custom(async () => {
-            const findIndividuals = await PhotoModel.find();
-            if(findIndividuals.length)
+            const findPhotos = await PhotoModel.find();
+            if(findPhotos.length)
                 return Promise.resolve();
             else
                 return Promise.reject();
         })
-        .withMessage('No individuals exist')
-        .custom(value => {
-            // convert object keys into colum names
-            var updatesList = getNormalizedColumns(Object.keys(value));
-            //Set the allowed field for updating and see if the ones sent match
-            const allowUpdates = ['FOTO_ESQUERDA', 'FOTO_FRONTAL', 'FOTO_DIREITA', 'ESTADO'];
-            return updatesList.every(parameter => allowUpdates.includes(parameter));
+        .withMessage('No photos exist')
+        .custom(async (value, {req}) => {
+            const findPhotos = await PhotoModel.findOne({'ID': req.params.id});
+            if(findPhotos)
+                return Promise.resolve();
+            else
+                return Promise.reject();
+        })
+        .withMessage('Photos not found')
+        .custom((value, {req}) => {
+            if(req.body.r_photo || req.body.f_photo|| req.body.l_photo) {
+                   return false;
+            } else {
+                // convert object keys into colum names
+                var updatesList = getNormalizedColumns(Object.keys(value));
+                //Set the allowed field for updating and see if the ones sent match
+                const allowUpdates = ['FOTO_ESQUERDA', 'FOTO_FRONTAL', 'FOTO_DIREITA', 'ESTADO'];
+                return updatesList.every(parameter => allowUpdates.includes(parameter));
+            }
         })
         .withMessage('Invalid updates!')
 ];

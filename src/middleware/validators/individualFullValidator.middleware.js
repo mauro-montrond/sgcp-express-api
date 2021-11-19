@@ -576,12 +576,12 @@ exports.createIndividualFullSchema = [
         .withMessage('not a image file!')
         .custom( (value, {req, path}) => {
             if (!!req.files[path]) {
-                if(req.files[path][0].mimetype !== "image/jpeg")
+                if(req.files[path][0].mimetype !== "image/jpeg" && req.files[path][0].mimetype !== "image/png")
                     return false;
             }
             return true;
         })
-        .withMessage('not a jpeg file!')
+        .withMessage('not a jpeg nor png file!')
         .custom( (value, {req, path}) => {
             if (!!req.files[path] && !!req.files["f_photoFile"]) {
                 if(req.files[path][0].originalname == req.files["f_photoFile"][0].originalname)
@@ -613,12 +613,12 @@ exports.createIndividualFullSchema = [
         .withMessage('not a image file!')
         .custom( (value, {req, path}) => {
             if (!!req.files[path]) {
-                if(req.files[path][0].mimetype !== "image/jpeg")
+                if(req.files[path][0].mimetype !== "image/jpeg" && req.files[path][0].mimetype !== "image/png")
                     return false;
             }
             return true;
         })
-        .withMessage('not a jpeg file!')
+        .withMessage('not a jpeg nor png file!')
         .custom( (value, {req, path}) => {
             if (!!req.files[path] && !!req.files["l_photoFile"]) {
                 if(req.files[path][0].originalname == req.files["l_photoFile"][0].originalname)
@@ -650,12 +650,12 @@ exports.createIndividualFullSchema = [
         .withMessage('not a image file!')
         .custom( (value, {req, path}) => {
             if (!!req.files[path]) {
-                if(req.files[path][0].mimetype !== "image/jpeg")
+                if(req.files[path][0].mimetype !== "image/jpeg" && req.files[path][0].mimetype !== "image/png")
                     return false;
             }
             return true;
         })
-        .withMessage('not a jpeg file!')
+        .withMessage('not a jpeg nor png file!')
         .custom( (value, {req, path}) => {
             if (!!req.files[path] && !!req.files["l_photoFile"]) {
                 if(req.files[path][0].originalname == req.files["l_photoFile"][0].originalname)
@@ -1380,12 +1380,12 @@ exports.updateIndividualFullSchema = [
         .withMessage('not a image file!')
         .custom( (value, {req, path}) => {
             if (!!req.files[path]) {
-                if(req.files[path][0].mimetype !== "image/jpeg")
+                if(req.files[path][0].mimetype !== "image/jpeg" && req.files[path][0].mimetype !== "image/png")
                     return false;
             }
             return true;
         })
-        .withMessage('not a jpeg file!')
+        .withMessage('not a jpeg nor png file!')
         .custom( (value, {req, path}) => {
             if (!!req.files[path] && !!req.files["f_photoFile"]) {
                 if(req.files[path][0].originalname == req.files["f_photoFile"][0].originalname)
@@ -1422,12 +1422,12 @@ exports.updateIndividualFullSchema = [
         .withMessage('not a image file!')
         .custom( (value, {req, path}) => {
             if (!!req.files[path]) {
-                if(req.files[path][0].mimetype !== "image/jpeg")
+                if(req.files[path][0].mimetype !== "image/jpeg" && req.files[path][0].mimetype !== "image/png")
                     return false;
             }
             return true;
         })
-        .withMessage('not a jpeg file!')
+        .withMessage('not a jpeg nor png file!')
         .custom( (value, {req, path}) => {
             if (!!req.files[path] && !!req.files["l_photoFile"]) {
                 if(req.files[path][0].originalname == req.files["l_photoFile"][0].originalname)
@@ -1464,12 +1464,12 @@ exports.updateIndividualFullSchema = [
         .withMessage('not a image file!')
         .custom( (value, {req, path}) => {
             if (!!req.files[path]) {
-                if(req.files[path][0].mimetype !== "image/jpeg")
+                if(req.files[path][0].mimetype !== "image/jpeg" && req.files[path][0].mimetype !== "image/png")
                     return false;
             }
             return true;
         })
-        .withMessage('not a jpeg file!')
+        .withMessage('not a jpeg nor png file!')
         .custom( (value, {req, path}) => {
             if (!!req.files[path] && !!req.files["l_photoFile"]) {
                 if(req.files[path][0].originalname == req.files["l_photoFile"][0].originalname)

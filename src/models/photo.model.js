@@ -1,7 +1,6 @@
 const query = require('../db/db-connection');
 const { multipleColumnSet, multipleColumnGets } = require('../utils/common.utils');
 const logModel = require('./log.model');
-// new
 const fs = require('fs');
 const path = require('path');
 class PhotoModel {
@@ -62,6 +61,7 @@ class PhotoModel {
 
     create = async ({ individual_id, l_photo = null, f_photo = null, r_photo = null, state='A'}, files, u_id, full) => {
         let deactivation = 'OK';
+        // console.log(individual_id);
         if(state == 'A') {
             const photos = await this.findMany({ 'ID_INDIVIDUO': individual_id, 'ESTADO': 'A' });
             for( let photo of photos ){
@@ -85,9 +85,6 @@ class PhotoModel {
                 if(photos.includes(files[file][0].fieldname)) {
                     uploadPath += `/photos/`;
                     fs.mkdirSync( uploadPath, { recursive: true } );
-                    // fs.mkdir( uploadPath, { recursive: true }, (err) => {
-                    //     if (err) throw err;
-                    // });
                     let fileName = files[file][0].fieldname + '_' + Date.now() + path.extname(files[file][0].originalname);
                     let fieldname = files[file][0].fieldname.substring(0, files[file][0].fieldname.indexOf("File"));
                     // dynamically add each fileName to body
@@ -102,9 +99,6 @@ class PhotoModel {
                     });
                     // close the stream
                     writer.end();
-                    // fs.writeFileSync( uploadPath, req.files[file][0].buffer, function (err) {
-                    //     if (err) throw new HttpException(500, 'Something went wrong');
-                    // });
                 }
             });
         }
@@ -208,6 +202,24 @@ class PhotoModel {
         const affectedRows = result ? result.affectedRows : 0;
         if(affectedRows){
             const resultLog = await logModel.logChange(u_id, this.tableName, currentPhoto.ID, prevVal, null, 'Eliminar');
+            // check if we had any photos and add their path to an array
+            let photosList = [];
+            if(currentPhoto.FOTO_ESQUERDA)
+                photosList.push(`./uploads/individuals/${currentPhoto.ID_INDIVIDUO}/photos/${currentPhoto.FOTO_ESQUERDA}`);
+            if(currentPhoto.FOTO_FRONTAL)
+                photosList.push(`./uploads/individuals/${currentPhoto.ID_INDIVIDUO}/photos/${currentPhoto.FOTO_FRONTAL}`);
+            if(currentPhoto.FOTO_DIREITA)
+                photosList.push(`./uploads/individuals/${currentPhoto.ID_INDIVIDUO}/photos/${currentPhoto.FOTO_DIREITA}`);
+            // after the photos has been deleted from database, delete respective images from directory using the paths in the array
+            photosList.forEach(photo => {
+                // if we still have that photo
+                if(fs.existsSync(photo)){
+                    // remove it
+                    fs.unlink(photo, (err) => {
+                        if(err) throw err;
+                    });
+                }
+            });
         }
 
         return affectedRows;
@@ -226,6 +238,15 @@ class PhotoModel {
                 const resultLog = await logModel.logChange(u_id, this.tableName, currentPhoto.ID, prevVal, null, 'Eliminar');
                 result.affectedRows = resultLog ? result.affectedRows + resultLog : 0;
             }
+            // after the photos has been deleted from database, delete respective images directory
+            let photosFolder = `uploads/individuals/${id}/photos`;
+            fs.rm(
+                photosFolder,
+                {recursive: true},
+                (err) => {
+                    return;
+                }
+            );
         }
 
         if(!full)

@@ -13,10 +13,19 @@ exports.getNormalizedColumns = (columnsList) => {
                 case "l_photo":
                     normalizedColumns.push("FOTO_ESQUERDA");
                     break;
+                case "l_photoFile":
+                    normalizedColumns.push("FOTO_ESQUERDA");
+                    break;
                 case "f_photo":
                     normalizedColumns.push("FOTO_FRONTAL");
                     break;
+                case "f_photoFile":
+                    normalizedColumns.push("FOTO_FRONTAL");
+                    break;
                 case "r_photo":
+                    normalizedColumns.push("FOTO_DIREITA");
+                    break;
+                case "r_photoFile":
                     normalizedColumns.push("FOTO_DIREITA");
                     break;
                 case "state":

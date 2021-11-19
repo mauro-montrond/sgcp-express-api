@@ -76,9 +76,6 @@ class FingerprintModel {
                 if(fingerprints.includes(files[file][0].fieldname)) {
                     uploadPath += `/fingerprints`;
                     fs.mkdirSync( uploadPath, { recursive: true } );
-                    // fs.mkdir( uploadPath, { recursive: true }, (err) => {
-                    //     if (err) throw err;
-                    // });
                     let fileName = files[file][0].fieldname + '_' + Date.now() + path.extname(files[file][0].originalname);
                     let fieldname = files[file][0].fieldname.substring(0, files[file][0].fieldname.indexOf("File"));
                     // dynamically add each fileName to body
@@ -188,7 +185,7 @@ class FingerprintModel {
             const { ID, ...prevVal} = currentFingerprint;
             const resultLog = await logModel.logChange(u_id, this.tableName, currentFingerprint.ID, prevVal, null, 'Eliminar');
             result.affectedRows = resultLog ? result.affectedRows + resultLog : 0;
-            // after the individual has been deleted from database, delete his images directory
+            // after the fingerprints has been deleted from database, delete respective images directory
             let printFolder = `uploads/individuals/${individual_id}/fingerprints`;
             fs.rm(
                 printFolder,
