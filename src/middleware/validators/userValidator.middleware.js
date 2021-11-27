@@ -394,7 +394,7 @@ exports.getUsersSchema = [
     body()
         .custom(value => {
             var searchList = getNormalizedColumns(Object.keys(value));
-            const allowSearch = ['ID', 'UTILIZADOR', 'ID_PERFIL', 'NOME', 'EMAIL', 'ESTADO', 'DATA_REGISTO', 'created_at_limit', 'created_at_range'];
+            const allowSearch = ['ID', 'UTILIZADOR', 'ID_PERFIL', 'NOME', 'EMAIL', 'AVATAR', 'ESTADO', 'DATA_REGISTO', 'created_at_limit', 'created_at_range'];
             return searchList.every(parameter => allowSearch.includes(parameter));
         })
         .withMessage('Invalid extra parameters!')
