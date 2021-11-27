@@ -50,7 +50,30 @@ exports.createUserSchema = [
             else
                 return Promise.resolve();
         })
-        .withMessage('Email already exists'),     
+        .withMessage('Email already exists'),
+    body('profilePhotoFile')
+        .custom( (value, {req, path}) => {
+            if(!req.files[path] && value) {
+                if(!eval('req.' + path + 'ValidationError'))
+                    return false;
+            }
+            return true;
+        })
+        .withMessage('not a image input!')
+        .custom( (value, {req, path}) => {
+            if (eval('req.' + path + 'ValidationError'))
+                return false;
+            return true;
+        })
+        .withMessage('not a image file!')
+        .custom( (value, {req, path}) => {
+            if (!!req.files[path]) {
+                if(req.files[path][0].mimetype !== "image/jpeg" && req.files[path][0].mimetype !== "image/png")
+                    return false;
+            }
+            return true;
+        })
+        .withMessage('not a jpeg nor png file!'),   
     body('profile_id')
         .notEmpty()
         .withMessage("Profile id must be filled")
@@ -109,7 +132,7 @@ exports.createUserSchema = [
             //convert object keys into column names
             var creatList = getNormalizedColumns(Object.keys(value));
             //Set the allowed field for creation and see if the ones sent match
-            const allowCreation = ['UTILIZADOR', 'ID_PERFIL', 'NOME', 'EMAIL', 'SENHA', 'ESTADO', 'confirm_password'];
+            const allowCreation = ['UTILIZADOR', 'ID_PERFIL', 'NOME', 'EMAIL', 'AVATAR', 'SENHA', 'ESTADO', 'confirm_password'];
             return creatList.every(parameter => allowCreation.includes(parameter));
         })
         .withMessage('Invalid extra fields!')
@@ -172,7 +195,30 @@ exports.updateUserSchema = [
             else
                 return Promise.resolve();
         })
-        .withMessage('Email already exists'),     
+        .withMessage('Email already exists'),
+    body('profilePhotoFile')
+        .custom( (value, {req, path}) => {
+            if(!req.files[path] && value) {
+                if(!eval('req.' + path + 'ValidationError'))
+                    return false;
+            }
+            return true;
+        })
+        .withMessage('not a image input!')
+        .custom( (value, {req, path}) => {
+            if (eval('req.' + path + 'ValidationError'))
+                return false;
+            return true;
+        })
+        .withMessage('not a image file!')
+        .custom( (value, {req, path}) => {
+            if (!!req.files[path]) {
+                if(req.files[path][0].mimetype !== "image/jpeg" && req.files[path][0].mimetype !== "image/png")
+                    return false;
+            }
+            return true;
+        })
+        .withMessage('not a jpeg nor png file!'),      
     body('profile_id')
         .notEmpty()
         .withMessage("Profile id must be filled")
@@ -250,7 +296,7 @@ exports.updateUserSchema = [
         .withMessage('The user you want to update does not exist!')
         .custom(value => {
             var updatesList = getNormalizedColumns(Object.keys(value));
-            const allowUpdates = ['UTILIZADOR', 'ID_PERFIL', 'NOME', 'EMAIL', 'SENHA', 'ESTADO', 'confirm_password'];
+            const allowUpdates = ['UTILIZADOR', 'ID_PERFIL', 'NOME', 'EMAIL', 'AVATAR', 'SENHA', 'ESTADO', 'confirm_password'];
             return updatesList.every(parameter => allowUpdates.includes(parameter));
         })
         .withMessage('Invalid updates!')
@@ -290,6 +336,11 @@ exports.getUsersSchema = [
         .isEmail()
         .withMessage('Must be a valid email')
         .normalizeEmail()
+        .trim(),  
+    body('profilePhotoFile')
+        .notEmpty()
+        .withMessage("Profile photo must be filled")
+        .optional()
         .trim(),     
     body('profile_id')
         .notEmpty()

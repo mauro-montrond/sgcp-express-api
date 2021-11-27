@@ -7,6 +7,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 const { getNormalizedColumnsValues } = require('../utils/userColumnNormalizer.utils');
 const getUserProfiles  = require('../models/profile.model');
+const path = require('path');
 
 /******************************************************************************
  *                              User Controller
@@ -81,7 +82,7 @@ class UserController {
 
         await this.hashPassword(req);
 
-        const result = await UserModel.create(req.body, userWithoutPassword.ID);
+        const result = await UserModel.create(req.body, req.files, userWithoutPassword.ID);
 
         if (!result) {
             throw new HttpException(500, 'Something went wrong');
@@ -100,13 +101,17 @@ class UserController {
 
         await this.hashPassword(req);
 
-        //const { confirm_password, ...restOfUpdates } = req.body;
+        if(req.files["profilePhotoFile"]) {
+            let fileName = req.files["profilePhotoFile"][0].fieldname + '_' + Date.now() + path.extname(req.files["profilePhotoFile"][0].originalname);
+            let fieldname = "profilePhotoFile";
+            eval("req.body." + fieldname + " = '" + fileName +"';");
+        }
         const { confirm_password, ...restOfUpdates } = req.body;
         const updates = getNormalizedColumnsValues(restOfUpdates);
 
         // do the update query and get the result
         // it can be partial edit
-        const result = await UserModel.update(updates, req.params.username, userWithoutPassword.ID);
+        const result = await UserModel.update(updates, req.files, req.params.username, userWithoutPassword.ID);
 
         if (!result) {
             throw new HttpException(404, 'Something went wrong');

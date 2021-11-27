@@ -16,6 +16,9 @@ exports.getNormalizedColumns = (columnsList) => {
                 case "email":
                     normalizedColumns.push("EMAIL");
                     break;
+                case "profilePhotoFile":
+                    normalizedColumns.push("AVATAR");
+                    break;
                 case "profile_id":
                     normalizedColumns.push("ID_PERFIL");
                     break;
@@ -47,6 +50,8 @@ exports.getNormalizedColumnsValues = (columnsValuesList) => {
         normalizedColumnsValues["NOME"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("name")];
     if( Object.keys(columnsValuesList).includes('email') )
         normalizedColumnsValues["EMAIL"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("email")];
+    if( Object.keys(columnsValuesList).includes('profilePhotoFile') )
+        normalizedColumnsValues["AVATAR"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("profilePhotoFile")];
     if( Object.keys(columnsValuesList).includes('profile_id') )
         normalizedColumnsValues["ID_PERFIL"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("profile_id")];
     if( Object.keys(columnsValuesList).includes('password') )
