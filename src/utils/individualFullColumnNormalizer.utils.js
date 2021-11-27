@@ -112,6 +112,9 @@ exports.getNormalizedColumns = (columnsList) => {
                 case "individual_register_email":
                     normalizedColumns.push("EMAIL_CADASTRANTE_INDIVIDUO");
                     break;
+                case "individual_register_avatar":
+                    normalizedColumns.push("AVATAR_CADASTRANTE_INDIVIDUO");
+                    break;
                 case "individual_register_profile":
                     normalizedColumns.push("PERFIL_CADASTRANTE_INDIVIDUO");
                     break;
@@ -246,6 +249,9 @@ exports.getNormalizedColumns = (columnsList) => {
                     break;
                 case "precedent_register_email":
                     normalizedColumns.push("EMAIL_CADASTRANTE_ANTECEDENTE");
+                    break;
+                case "precedent_register_avatar":
+                    normalizedColumns.push("AVATAR_CADASTRANTE_ANTECEDENTE");
                     break;
                 case "precedent_register_profile":
                     normalizedColumns.push("PERFIL_CADASTRANTE_INDIVIDUO");
@@ -446,6 +452,8 @@ exports.getNormalizedColumnsValues = (columnsValuesList) => {
         normalizedColumnsValues["NOME_CADASTRANTE_INDIVIDUO"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("individual_register_name")];
     if( Object.keys(columnsValuesList).includes('individual_register_email') )
         normalizedColumnsValues["EMAIL_CADASTRANTE_INDIVIDUO"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("individual_register_email")];
+    if( Object.keys(columnsValuesList).includes('individual_register_avatar') )
+        normalizedColumnsValues["AVATAR_CADASTRANTE_INDIVIDUO"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("individual_register_avatar")];
     if( Object.keys(columnsValuesList).includes('individual_register_profile') )
         normalizedColumnsValues["PERFIL_CADASTRANTE_INDIVIDUO"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("individual_register_profile")];
     if( Object.keys(columnsValuesList).includes('individual_register_state') )
@@ -622,6 +630,8 @@ exports.getNormalizedColumnsValues = (columnsValuesList) => {
         normalizedColumnsValues["NOME_CADASTRANTE_ANTECEDENTE"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("precedent_register_name")];
     if( Object.keys(columnsValuesList).includes('precedent_register_email') )
         normalizedColumnsValues["EMAIL_CADASTRANTE_ANTECEDENTE"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("precedent_register_email")];
+    if( Object.keys(columnsValuesList).includes('precedent_register_avatar') )
+        normalizedColumnsValues["AVATAR_CADASTRANTE_ANTECEDENTE"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("precedent_register_avatar")];
     if( Object.keys(columnsValuesList).includes('precedent_register_profile') )
         normalizedColumnsValues["PERFIL_CADASTRANTE_ANTECEDENTE"] = Object.values(columnsValuesList)[Object.keys(columnsValuesList).indexOf("precedent_register_profile")];
     if( Object.keys(columnsValuesList).includes('precedent_register_state') )

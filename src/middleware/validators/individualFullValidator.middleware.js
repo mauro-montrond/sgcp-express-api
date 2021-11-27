@@ -2059,6 +2059,11 @@ exports.getIndividualsFullSchema = [
         .withMessage('Must be a valid email')
         .normalizeEmail()
         .trim(), 
+    body('individual_register_avatar')
+        .notEmpty()
+        .withMessage("Individual register's avatar must be filled")
+        .optional()
+        .trim(), 
     body('individual_register_profile')
         .optional()
         .notEmpty()
@@ -2420,6 +2425,11 @@ exports.getIndividualsFullSchema = [
         .withMessage('Must be a valid email')
         .normalizeEmail()
         .trim(), 
+    body('precedent_register_avatar')
+        .notEmpty()
+        .withMessage("Precedent register's avatar must be filled")
+        .optional()
+        .trim(), 
     body('precedent_register_profile')
         .optional()
         .notEmpty()
@@ -2504,15 +2514,16 @@ exports.getIndividualsFullSchema = [
                                  'ID_FOTOS', 'FOTO_ESQUERDA', 'FOTO_FRONTAL', 'FOTO_DIREITA', 'ESTADO_FOTOS', 'DATA_REGISTO_FOTOS', 
                                  'photo_created_at_limit', 'photo_created_at_range',
                                  // individual register
-                                 'ID_CADASTRANTE_INDIVIDUO', `NOME_CADASTRANTE_INDIVIDUO`, 'EMAIL_CADASTRANTE_INDIVIDUO', 'PERFIL_CADASTRANTE_INDIVIDUO', 
-                                 'ESTADO_CADASTRANTE_INDIVIDUO', 'DATA_REGISTO_CADASTRANTE_INDIVIDUO', 'individual_register_created_at_limit', 
-                                 'individual_register_created_at_range',
+                                 'ID_CADASTRANTE_INDIVIDUO', `NOME_CADASTRANTE_INDIVIDUO`, 'EMAIL_CADASTRANTE_INDIVIDUO', 'AVATAR_CADASTRANTE_INDIVIDUO', 
+                                 'PERFIL_CADASTRANTE_INDIVIDUO', 'ESTADO_CADASTRANTE_INDIVIDUO', 'DATA_REGISTO_CADASTRANTE_INDIVIDUO', 
+                                 'individual_register_created_at_limit', 'individual_register_created_at_range',
                                  // precedent
                                  'ID_ANTECEDENTE', 'NO_REFERENCIA', 'MOTIVO_DETENCAO', 'DESTINO', 'DATA', 'ESTADO_ANTECEDENTE', 'DATA_REGISTO_ANTECEDENTE',
                                  'date_limit', 'date_range', 'precedent_created_at_limit', 'precedent_created_at_range',
                                 // precedent register
-                                'ID_CADASTRANTE_ANTECEDENTE', `NOME_CADASTRANTE_ANTECEDENTE`, 'EMAIL_CADASTRANTE_ANTECEDENTE', 'PERFIL_CADASTRANTE_ANTECEDENTE',
-                                'ESTADO_CADASTRANTE_ANTECEDENTE', 'DATA_REGISTO_CADASTRANTE_ANTECEDENTE', 'precedent_register_created_at_limit', 'precedent_register_created_at_range', 'sorter'];
+                                'ID_CADASTRANTE_ANTECEDENTE', `NOME_CADASTRANTE_ANTECEDENTE`, 'EMAIL_CADASTRANTE_ANTECEDENTE','AVATAR_CADASTRANTE_ANTECEDENTE', 
+                                'PERFIL_CADASTRANTE_ANTECEDENTE', 'ESTADO_CADASTRANTE_ANTECEDENTE', 'DATA_REGISTO_CADASTRANTE_ANTECEDENTE', 
+                                'precedent_register_created_at_limit', 'precedent_register_created_at_range', 'sorter'];
             
             searchList.forEach(item => {
                 if(!allowSearch.includes(item))
