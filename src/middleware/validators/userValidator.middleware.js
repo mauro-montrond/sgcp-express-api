@@ -282,8 +282,8 @@ exports.updateUserSchema = [
         .custom((value, { req }) => value === req.body.password)
         .withMessage('confirm_password field must have the same value as the password field'),
     body()
-        .custom(value => {
-            return !!Object.keys(value).length;
+        .custom((value, {req}) => {
+            return !!(Object.keys(value).length + Object.keys(req.files).length);
         })
         .withMessage('Please provide required fields to update')
         .custom(async (value, {req}) => {
