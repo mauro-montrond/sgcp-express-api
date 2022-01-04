@@ -2489,7 +2489,7 @@ exports.getIndividualsFullSchema = [
         .notEmpty()
         .withMessage("Sorter must be filled")
         .trim()
-        .isIn(['ID_INDIVIDUO', 'ID_CADASTRANTE_INDIVIDUO', 'ID_CADASTRANTE_ANTECEDENTEO'])
+        .isIn(['ID_INDIVIDUO', 'ID_CADASTRANTE_INDIVIDUO', 'ID_CADASTRANTE_ANTECEDENTE'])
         .withMessage('Invalid sorter'),
 
 

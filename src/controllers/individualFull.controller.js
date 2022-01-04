@@ -39,7 +39,7 @@ class IndividualFullController {
         const individuals = await IndividualFullModel.findMany(individualList, sorter);
         //const individuals = await IndividualFullModel.findMany(individualList, 'ID_INDIVIDUO');
         //const individuals = await IndividualFullModel.findMany(individualList, 'ID_CADASTRANTE_INDIVIDUO');
-        //const individuals = await IndividualFullModel.findMany(individualList, 'ID_CADASTRANTE_ANTECEDENTEO');
+        //const individuals = await IndividualFullModel.findMany(individualList, 'ID_CADASTRANTE_ANTECEDENTE');
         if (!individuals.length) {
             throw new HttpException(404, 'Individuals not found');
         }
