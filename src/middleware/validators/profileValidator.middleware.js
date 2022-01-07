@@ -13,10 +13,8 @@ exports.createProfileSchema = [
         .notEmpty()
         .withMessage("Code must be filled")
         .trim()
-        .isLength({ min: 3 })
-        .withMessage('Must be at least 3 chars long')
-        .isLength({ max: 10 })
-        .withMessage('Code can contain max 10 characters')
+        .isLength({ min: 3, max: 20 })
+        .withMessage('Must be 3-20 chars long')
         .matches(/^[a-zA-Z0-9-_ ]+$/)
         .withMessage("Can only contain: letters a-z, A-Z, 0-9, - and _")
         .custom(async element => {
@@ -33,8 +31,8 @@ exports.createProfileSchema = [
         .notEmpty()
         .withMessage("Description must be filled")
         .trim()
-        .isLength({ min: 5 })
-        .withMessage('Must be at least 5 chars long'),
+        .isLength({ min: 5, max: 200 })
+        .withMessage('Must be 5-200 chars long'),
     body('state')
         .optional()
         .notEmpty()
@@ -60,10 +58,8 @@ exports.updateProfileSchema = [
         .notEmpty()
         .withMessage("Code must be filled")
         .trim()
-        .isLength({ min: 3 })
-        .withMessage('Must be at least 3 chars long')
-        .isLength({ max: 10 })
-        .withMessage('Code can contain max 10 characters')
+        .isLength({ min: 3, max: 20 })
+        .withMessage('Must be 3-20 chars long')
         .matches(/^[a-zA-Z0-9-_ ]+$/)
         .withMessage("Can only contain: letters a-z, A-Z, 0-9, - and _")
         .custom(async (element, {req}) => {
@@ -86,8 +82,8 @@ exports.updateProfileSchema = [
         .notEmpty()
         .withMessage("Description must be filled")
         .trim()
-        .isLength({ min: 5 })
-        .withMessage('Must be at least 5 chars long'),
+        .isLength({ min: 5, max: 200 })
+        .withMessage('Must be 5-200 chars long'),
     body('state')
         .optional()
         .notEmpty()

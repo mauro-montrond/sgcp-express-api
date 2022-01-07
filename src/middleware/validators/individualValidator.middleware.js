@@ -17,43 +17,43 @@ exports.createIndividualSchema = [
         .trim()
         .matches(/^[a-zA-Z-' ]+$/)
         .withMessage("Can only contain: a-z, A-Z, - and '")
-        .isLength({ min: 2 })
-        .withMessage('Must be at least 2 chars long'),
+        .isLength({ min: 2, max: 45 })
+        .withMessage('Must be 2-45 chars long'),
     body('nickname')
         .optional()
         .trim()
         .matches(/^[a-zA-Z0-9-'_ ]+$/)
         .withMessage("Can only contain: a-z, A-Z, 0-9, _, - and '")
-        .isLength({ min: 1 })
-        .withMessage('Must be at least 1 char long'),
+        .isLength({ min: 1, max: 45 })
+        .withMessage('Must be 1-45 chars long'),
     body('father')
         .exists()
         .withMessage('Father is required')
         .trim()
         .matches(/^[a-zA-Z-' ]+$/)
         .withMessage("Can only contain: a-z, A-Z, - and '")
-        .isLength({ min: 2 })
-        .withMessage('Must be at least 2 chars long'),
+        .isLength({ min: 2, max: 45 })
+        .withMessage('Must be 2-45 chars long'),
     body('mother')
         .exists()
         .withMessage('Mother is required')
         .trim()
         .matches(/^[a-zA-Z-' ]+$/)
         .withMessage("Can only contain: a-z, A-Z, - and '")
-        .isLength({ min: 2 })
-        .withMessage('Must be at least 2 chars long'),
+        .isLength({ min: 2, max: 45 })
+        .withMessage('Must be 2-45 chars long'),
     body('nationality')
         .exists()
         .withMessage('Nationality is required')
         .trim()
-        .isLength({ min: 2 })
-        .withMessage('Must be at least 2 chars long'),
+        .isLength({ min: 2, max: 300 })
+        .withMessage('Must be 2-300 chars long'),
     body('birthplace')
         .exists()
         .withMessage('Birthplace is required')
         .trim()
-        .isLength({ min: 2 })
-        .withMessage('Must be at least 2 chars long'),
+        .isLength({ min: 2, max: 300 })
+        .withMessage('Must be 2-300 chars long'),
     body('birthdate')
         .exists()
         .withMessage('Birthdate is required')
@@ -90,14 +90,14 @@ exports.createIndividualSchema = [
     body('profession')
         .optional()
         .trim()
-        .isLength({ min: 2 })
-        .withMessage('Must be at least 2 chars long'),
+        .isLength({ min: 2, max: 50 })
+        .withMessage('Must be 2-50 chars long'),
     body('residence_id')
         .exists()
         .withMessage('Residence id is required')
         .trim()
-        .isLength({ min: 3 })
-        .withMessage('Must be at least 3 chars long')
+        .isLength({ min: 3, max: 50 })
+        .withMessage('Must be 3-50 chars long')
         .custom(async element => {
             const findCode = await GeografiaModel.findOne( {'ID': element} );
             if(findCode)
@@ -109,14 +109,14 @@ exports.createIndividualSchema = [
     body('workplace')
         .optional()
         .trim()
-        .isLength({ min: 2 })
-        .withMessage('Must be at least 2 chars long'),
+        .isLength({ min: 2, max: 50 })
+        .withMessage('Must be 2-50 chars long'),
     body('doc_num')
         .exists()
         .withMessage('Document number is required')
         .trim()
-        .isLength({ min: 3 })
-        .withMessage('Must be at least 3 chars long')
+        .isLength({ min: 3, max: 50 })
+        .withMessage('Must be 3-50 chars long')
         .matches(/^[a-zA-Z0-9-_ ]+$/)
         .withMessage("Can only contain: a-z, A-Z, 0-9, - and _")
         .custom(async element => {
@@ -148,8 +148,8 @@ exports.createIndividualSchema = [
         .exists()
         .withMessage('Document issuance place is required')
         .trim()
-        .isLength({ min: 3 })
-        .withMessage('Must be at least 3 chars long'),
+        .isLength({ min: 3, max: 300 })
+        .withMessage('Must be 3-300 chars long'),
     body('height')
         .exists()
         .withMessage('Height is required')
@@ -159,44 +159,44 @@ exports.createIndividualSchema = [
     body('hair')
         .optional()
         .trim()
-        .isLength({ min: 3 })
-        .withMessage('Must be at least 3 chars long'),
+        .isLength({ min: 3, max: 100 })
+        .withMessage('Must be 3-100 chars long'),
     body('beard')
         .optional()
         .trim()
-        .isLength({ min: 3 })
-        .withMessage('Must be at least 3 chars long'),
+        .isLength({ min: 3, max: 100 })
+        .withMessage('Must be 3-100 chars long'),
     body('nose')
         .optional()
         .trim()
-        .isLength({ min: 3 })
-        .withMessage('Must be at least 3 chars long'),
+        .isLength({ min: 3, max: 100 })
+        .withMessage('Must be 3-100 chars long'),
     body('mouth')
         .optional()
         .trim()
-        .isLength({ min: 3 })
-        .withMessage('Must be at least 3 chars long'),
+        .isLength({ min: 3, max: 100 })
+        .withMessage('Must be 3-100 chars long'),
     body('face')
         .optional()
         .trim()
-        .isLength({ min: 3 })
-        .withMessage('Must be at least 3 chars long'),
+        .isLength({ min: 3, max: 100 })
+        .withMessage('Must be 3-100 chars long'),
     body('colour')
         .optional()
         .trim()
-        .isLength({ min: 3 })
-        .withMessage('Must be at least 3 chars long'),
+        .isLength({ min: 3, max: 100 })
+        .withMessage('Must be 3-100 chars long'),
     body('tattoos')
         .optional()
         .trim()
-        .isLength({ min: 3 })
-        .withMessage('Must be at least 3 chars long'),
+        .isLength({ min: 3, max: 300 })
+        .withMessage('Must be 3-300 chars long'),
     body('police_classification')
         .exists()
         .withMessage('Police classification is required')
         .trim()
-        .isLength({ min: 3 })
-        .withMessage('Must be at least 3 chars long'),
+        .isLength({ min: 3, max: 100 })
+        .withMessage('Must be 3-100 chars long'),
     body('state')
         .optional()
         .notEmpty()
@@ -225,8 +225,8 @@ exports.updateIndividualSchema = [
         .trim()
         .matches(/^[a-zA-Z-' ]+$/)
         .withMessage("Can only contain: a-z, A-Z, - and '")
-        .isLength({ min: 2 })
-        .withMessage('Must be at least 2 chars long'),
+        .isLength({ min: 2, max: 45 })
+        .withMessage('Must be 2-45 chars long'),
     body('nickname')
         .optional()
         .notEmpty()
@@ -234,8 +234,8 @@ exports.updateIndividualSchema = [
         .trim()
         .matches(/^[a-zA-Z0-9-'_ ]+$/)
         .withMessage("Can only contain: a-z, A-Z, 0-9, _, - and '")
-        .isLength({ min: 1 })
-        .withMessage('Must be at least 1 char long'),
+        .isLength({ min: 1, max: 45 })
+        .withMessage('Must be 1-45 chars long'),
     body('father')
         .optional()
         .notEmpty()
@@ -243,8 +243,8 @@ exports.updateIndividualSchema = [
         .trim()
         .matches(/^[a-zA-Z-' ]+$/)
         .withMessage("Can only contain: a-z, A-Z, - and '")
-        .isLength({ min: 2 })
-        .withMessage('Must be at least 2 chars long'),
+        .isLength({ min: 2, max: 45 })
+        .withMessage('Must be 2-45 chars long'),
     body('mother')
         .optional()
         .notEmpty()
@@ -252,22 +252,22 @@ exports.updateIndividualSchema = [
         .trim()
         .matches(/^[a-zA-Z-' ]+$/)
         .withMessage("Can only contain: a-z, A-Z, - and '")
-        .isLength({ min: 2 })
-        .withMessage('Must be at least 2 chars long'),
+        .isLength({ min: 2, max: 45 })
+        .withMessage('Must be 2-45 chars long'),
     body('nationality')
         .optional()
         .notEmpty()
         .withMessage("Nationality must be filled")
         .trim()
-        .isLength({ min: 2 })
-        .withMessage('Must be at least 2 chars long'),
+        .isLength({ min: 2, max: 300 })
+        .withMessage('Must be 2-300 chars long'),
     body('birthplace')
         .optional()
         .notEmpty()
         .withMessage("Birthplace must be filled")
         .trim()
-        .isLength({ min: 2 })
-        .withMessage('Must be at least 2 chars long'),
+        .isLength({ min: 2, max: 300 })
+        .withMessage('Must be 2-300 chars long'),
     body('birthdate')
         .optional()
         .notEmpty()
@@ -306,15 +306,15 @@ exports.updateIndividualSchema = [
         .notEmpty()
         .withMessage("Profession must be filled")
         .trim()
-        .isLength({ min: 2 })
-        .withMessage('Must be at least 2 chars long'),
+        .isLength({ min: 2, max: 50 })
+        .withMessage('Must be 2-50 chars long'),
     body('residence_id')
         .optional()
         .notEmpty()
         .withMessage("Residence id must be filled")
         .trim()
-        .isLength({ min: 3 })
-        .withMessage('Must be at least 3 chars long')
+        .isLength({ min: 3, max: 50 })
+        .withMessage('Must be 3-50 chars long')
         .custom(async element => {
             const findCode = await GeografiaModel.findOne( {'ID': element} );
             if(findCode)
@@ -328,15 +328,15 @@ exports.updateIndividualSchema = [
         .notEmpty()
         .withMessage("Workplace must be filled")
         .trim()
-        .isLength({ min: 2 })
-        .withMessage('Must be at least 2 chars long'),
+        .isLength({ min: 2, max: 50 })
+        .withMessage('Must be 2-50 chars long'),
     body('doc_num')
         .optional()
         .notEmpty()
         .withMessage("Document number must be filled")
         .trim()
-        .isLength({ min: 3 })
-        .withMessage('Must be at least 3 chars long')
+        .isLength({ min: 3, max: 50 })
+        .withMessage('Must be 3-50 chars long')
         .matches(/^[a-zA-Z0-9-_ ]+$/)
         .withMessage("Can only contain: a-z, A-Z, 0-9, - and _")
         .custom(async (element, {req}) => {
@@ -377,8 +377,8 @@ exports.updateIndividualSchema = [
         .notEmpty()
         .withMessage("Document issuance place must be filled")
         .trim()
-        .isLength({ min: 3 })
-        .withMessage('Must be at least 3 chars long'),
+        .isLength({ min: 3, max: 300 })
+        .withMessage('Must be 3-300 chars long'),
     body('height')
         .optional()
         .notEmpty()
@@ -391,57 +391,57 @@ exports.updateIndividualSchema = [
         .notEmpty()
         .withMessage("Hair must be filled")
         .trim()
-        .isLength({ min: 3 })
-        .withMessage('Must be at least 3 chars long'),
+        .isLength({ min: 3, max: 100 })
+        .withMessage('Must be 3-100 chars long'),
     body('beard')
         .optional()
         .notEmpty()
         .withMessage("Beard must be filled")
         .trim()
-        .isLength({ min: 3 })
-        .withMessage('Must be at least 3 chars long'),
+        .isLength({ min: 3, max: 100 })
+        .withMessage('Must be 3-100 chars long'),
     body('nose')
         .optional()
         .notEmpty()
         .withMessage("Nose must be filled")
         .trim()
-        .isLength({ min: 3 })
-        .withMessage('Must be at least 3 chars long'),
+        .isLength({ min: 3, max: 100 })
+        .withMessage('Must be 3-100 chars long'),
     body('mouth')
         .optional()
         .notEmpty()
         .withMessage("Mouth must be filled")
         .trim()
-        .isLength({ min: 3 })
-        .withMessage('Must be at least 3 chars long'),
+        .isLength({ min: 3, max: 100 })
+        .withMessage('Must be 3-100 chars long'),
     body('face')
         .optional()
         .notEmpty()
         .withMessage("Face must be filled")
         .trim()
-        .isLength({ min: 3 })
-        .withMessage('Must be at least 3 chars long'),
+        .isLength({ min: 3, max: 100 })
+        .withMessage('Must be 3-100 chars long'),
     body('colour')
         .optional()
         .notEmpty()
         .withMessage("Colour must be filled")
         .trim()
-        .isLength({ min: 3 })
-        .withMessage('Must be at least 3 chars long'),
+        .isLength({ min: 3, max: 100 })
+        .withMessage('Must be 3-100 chars long'),
     body('tattoos')
         .optional()
         .notEmpty()
         .withMessage("Tattoos must be filled")
         .trim()
-        .isLength({ min: 3 })
-        .withMessage('Must be at least 3 chars long'),
+        .isLength({ min: 3, max: 300 })
+        .withMessage('Must be 3-300 chars long'),
     body('police_classification')
         .optional()
         .notEmpty()
         .withMessage("Police classification must be filled")
         .trim()
-        .isLength({ min: 3 })
-        .withMessage('Must be at least 3 chars long'),
+        .isLength({ min: 3, max: 100 })
+        .withMessage('Must be 3-100 chars long'),
     body('state')
         .optional()
         .notEmpty()

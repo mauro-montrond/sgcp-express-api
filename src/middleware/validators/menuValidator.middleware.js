@@ -12,10 +12,8 @@ exports.createMenuSchema = [
         .notEmpty()
         .withMessage("Code must be filled")
         .trim()
-        .isLength({ min: 3 })
-        .withMessage('Must be at least 3 chars long')
-        .isLength({ max: 18 })
-        .withMessage('Code can contain max 18 characters')
+        .isLength({ min: 3, max: 20 })
+        .withMessage('Must be 3-20 chars long')
         .matches(/^[a-zA-Z0-9-_ ]+$/)
         .withMessage("Can only contain: letters a-z, A-Z, - and _")
         .custom(async element => {
@@ -32,16 +30,16 @@ exports.createMenuSchema = [
         .notEmpty()
         .withMessage("Title must be filled")
         .trim()
-        .isLength({ min: 3 })
-        .withMessage('Must be at least 3 chars long'), 
+        .isLength({ min: 3, max: 45 })
+        .withMessage('Must be 3-45 chars long'), 
     body('description')
         .exists()
         .withMessage('A description is required')
         .notEmpty()
         .withMessage("Description must be filled")
         .trim()
-        .isLength({ min: 5 })
-        .withMessage('Must be at least 5 chars long'),     
+        .isLength({ min: 5, max: 200 })
+        .withMessage('Must be 5-200 chars long'),     
     body('parent_menu')
         .optional()
         .notEmpty()
@@ -108,10 +106,8 @@ exports.updateMenuSchema = [
         .notEmpty()
         .withMessage("Code must be filled")
         .trim()
-        .isLength({ min: 3 })
-        .withMessage('Must be at least 3 chars long')
-        .isLength({ max: 18 })
-        .withMessage('Code can contain max 18 characters')
+        .isLength({ min: 3, max: 20 })
+        .withMessage('Must be 3-20 chars long')
         .matches(/^[a-zA-Z0-9-_ ]+$/)
         .withMessage("Can only contain: letters a-z, A-Z, - and _")
         .custom(async (element, {req}) => {
@@ -136,15 +132,15 @@ exports.updateMenuSchema = [
         .notEmpty()
         .withMessage("Title must be filled")
         .trim()
-        .isLength({ min: 3 })
-        .withMessage('Must be at least 3 chars long'),
+        .isLength({ min: 3, max: 45 })
+        .withMessage('Must be 3-45 chars long'),
     body('description')
         .optional()
         .notEmpty()
         .withMessage("Description must be filled")
         .trim()
-        .isLength({ min: 5 })
-        .withMessage('Must be at least 5 chars long'),      
+        .isLength({ min: 5, max: 200 })
+        .withMessage('Must be 5-200 chars long'),      
     body('parent_menu')
         .optional()
         .notEmpty()
@@ -206,7 +202,7 @@ exports.updateMenuSchema = [
         })
         .withMessage('The menu you want to update does not exist!')
         .custom(async (value, {req}) => {
-            //inicuo
+            //inicio
             let found = false;
             let currentMenu = await MenuModel.findOne( {'CODIGO': req.params.code} );
             if(currentMenu){

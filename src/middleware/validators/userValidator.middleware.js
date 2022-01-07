@@ -13,8 +13,8 @@ exports.createUserSchema = [
         .withMessage("Username must be filled")
         .exists()
         .withMessage('username is required')
-        .isLength({ min: 3 })
-        .withMessage('Must be at least 3 chars long')
+        .isLength({ min: 3, max: 16 })
+        .withMessage('Must be 3-16 chars long')
         .trim()
         .custom(async element => {
             const findUsername = await UserModel.findOne( {'UTILIZADOR': element} );
@@ -32,8 +32,8 @@ exports.createUserSchema = [
         .trim()
         .matches(/^[a-zA-Z-' ]+$/)
         .withMessage("Can only contain: a-z, A-Z, - and '")
-        .isLength({ min: 3 })
-        .withMessage('Must be at least 3 chars long'),
+        .isLength({ min: 3, max: 45 })
+        .withMessage('Must be 3-45 chars long'),
     body('email')
         .notEmpty()
         .withMessage("Email must be filled")
@@ -118,10 +118,8 @@ exports.createUserSchema = [
         .withMessage('Password is required')
         .notEmpty()
         .withMessage("Password must be filled")
-        .isLength({ min: 6 })
-        .withMessage('Password must contain at least 6 characters')
-        .isLength({ max: 20 })
-        .withMessage('Password can contain max 10 characters'),
+        .isLength({ min: 6, max: 20 })
+        .withMessage('Password must contain 6-20 characters'),
     body('confirm_password')
         .exists()
         .withMessage('Please confirm passoerd')
@@ -144,8 +142,8 @@ exports.updateUserSchema = [
         .withMessage("Username must be filled")
         .optional()
         .trim()
-        .isLength({ min: 3 })
-        .withMessage('Must be at least 3 chars long')
+        .isLength({ min: 3, max: 16 })
+        .withMessage('Must be 3-16 chars long')
         .custom(async (element, {req}) => {
             const findUser = await UserModel.findOne( {'UTILIZADOR': req.params.username} );
             if(findUser){
@@ -169,8 +167,8 @@ exports.updateUserSchema = [
         .trim()
         .matches(/^[a-zA-Z-' ]+$/)
         .withMessage("Can only contain: a-z, A-Z, - and '")
-        .isLength({ min: 3 })
-        .withMessage('Must be at least 3 chars long'),
+        .isLength({ min: 3, max: 45 })
+        .withMessage('Must be 3-45 chars long'),
     body('email')
         .notEmpty()
         .withMessage("Email must be filled")
@@ -271,10 +269,8 @@ exports.updateUserSchema = [
         .optional()
         .notEmpty()
         .withMessage("Password must be filled")
-        .isLength({ min: 6 })
-        .withMessage('Password must contain at least 6 characters')
-        .isLength({ max: 20 })
-        .withMessage('Password can contain max 10 characters')
+        .isLength({ min: 6, max: 20 })
+        .withMessage('Password must contain 6-20 characters')
         .custom((value, { req }) => !!req.body.confirm_password)
         .withMessage('Please confirm your password'),
     body('confirm_password')

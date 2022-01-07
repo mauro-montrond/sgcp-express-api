@@ -44,24 +44,24 @@ exports.createPrecedentSchema = [
         .notEmpty()
         .withMessage("Reference number must be filled")
         .trim()
-        .isLength({ min: 3 })
-        .withMessage('Must be at least 3 chars long'),
+        .isLength({ min: 3, max: 45 })
+        .withMessage('Must be 3-45 chars long'),
     body('detention_reason')
         .exists()
         .withMessage('Detention reason is required')
         .notEmpty()
         .withMessage("Detention reason must be filled")
         .trim()
-        .isLength({ min: 3 })
-        .withMessage('Must be at least 3 chars long'),
+        .isLength({ min: 3, max: 100 })
+        .withMessage('Must be 3-100 chars long'),
     body('destination')
         .exists()
         .withMessage('Destination is required')
         .notEmpty()
         .withMessage("Destination must be filled")
         .trim()
-        .isLength({ min: 3 })
-        .withMessage('Must be at least 3 chars long'),
+        .isLength({ min: 3, max: 45 })
+        .withMessage('Must be 3-45 chars long'),
     body('date')
         .optional()
         .notEmpty()
@@ -106,22 +106,22 @@ exports.updatePrecedentSchema = [
         .notEmpty()
         .withMessage("Reference number must be filled")
         .trim()
-        .isLength({ min: 3 })
-        .withMessage('Must be at least 3 chars long'),
+        .isLength({ min: 3, max: 45 })
+        .withMessage('Must be 3-45 chars long'),
     body('detention_reason')
         .optional()
         .notEmpty()
         .withMessage("Detention reason must be filled")
         .trim()
-        .isLength({ min: 3 })
-        .withMessage('Must be at least 3 chars long'),
+        .isLength({ min: 3, max: 100 })
+        .withMessage('Must be 3-100 chars long'),
     body('destination')
         .optional()
         .notEmpty()
         .withMessage("Destination must be filled")
         .trim()
-        .isLength({ min: 3 })
-        .withMessage('Must be at least 3 chars long'),
+        .isLength({ min: 3, max: 45 })
+        .withMessage('Must be 3-45 chars long'),
     body('date')
         .optional()
         .notEmpty()
